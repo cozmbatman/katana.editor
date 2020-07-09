@@ -1,0 +1,340 @@
+#markers_container {
+  position: fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  top:100%;
+  z-index: 50;
+  background: $white;
+  transition:top 0.2s ease-in;
+  padding-bottom:15px;
+  .notes-opened & {
+    top:48px;
+    overflow: auto;
+  }
+  /*
+  // FIXME update mixin
+  @include media(min-width $small-breakpoint) {
+    position: absolute;
+    left:0;
+    top:0;
+    bottom: auto;
+    right:auto;
+    height: auto;
+    background: transparent;
+    box-shadow: none;
+  }*/
+}
+
+.loading-notes {
+  text-align: center;
+  .loader {
+    vertical-align: bottom;
+    margin-right:8px;
+  }
+}
+.notes-opened {
+  overflow: hidden;
+}
+
+.notes-list,
+.notes-form-container {
+  padding:15px;
+  padding-right:0;
+}
+
+.note-login-btn,
+.note-close-btn {
+  display: block;
+  background-color: $primary-color;
+  color: $white;
+  padding: 7px 0 8px 0;
+  text-align: center;
+  border-radius: 2px;
+  font-size: 13px;
+  text-transform: uppercase;
+  &:hover, &:focus {
+    color: $white;
+  }
+}
+
+.note-close-btn {
+  background-color: transparent;
+  color:$primary-text-color;
+  margin-top: 8px;
+  text-transform: uppercase;
+  font-size: 13px;
+  &:hover, &:focus {
+    color: $primary-text-color;
+  }
+}
+
+.read-prev-notes {
+  display: block;
+  text-align: center;
+  background: $silver;
+  font-size: 14px;
+  padding: 6px;
+  .loader {
+    vertical-align: bottom;
+  }
+}
+
+#notes_container {
+  position: fixed;
+  bottom:-50px;
+  left:0;
+  right:0;
+  height:48px;
+  z-index: 50;
+  background: $white;
+  box-shadow: 0 0 2px 2px $silver;
+  transition:bottom 0.2s ease-in;
+  &.open {
+    bottom: 0;
+  }
+  /*
+  // FIXME update mixin
+  @include media(min-width 992px) {
+    position:absolute;
+    left:0;
+    top:0;
+    bottom: 0;
+    right:0;
+    display: block;
+    z-index: 20; 
+    height:auto;
+    background: transparent;
+    box-shadow: none;
+    pointer-events:none;
+  }
+  */
+}
+
+.notes-marker-container {
+  text-align: center;
+  padding:9px;
+}
+
+.post-note-item {
+  overflow: hidden;
+  padding-bottom:8px;
+  width: 100%;
+  float:none;
+  clear: both;
+  display: block;
+}
+
+.post-note-avatar {
+  width:48px;
+  height:48px;
+  float:left;
+}
+
+.post-note-content-wrap {
+  float:right;
+  width:79.5%;
+}
+.post-note-author-name {
+  font-size:14px;
+  display: block;
+  a {
+    color:$steel;
+  }
+}
+.post-note-content {
+  font-size: 13px;
+  line-height: 1.4;
+  min-height: 32px;
+  display: block;
+  padding: 2px 0 4px 0;
+}
+
+#notes_textarea {
+  width:100%;
+  margin-top:6px;
+}
+
+[data-editor-actions], .note-edit {
+  font-size:12px;
+  & a {
+    padding-right:12px;
+  }
+}
+
+.notes-form-link {
+  font-size:12px;
+  padding-right:12px; 
+  display: inline-block;
+}
+
+.note-cancel-link {
+  color:$primary-text-color;
+}
+
+.notes-form {
+  overflow: hidden;
+  .notes-form-link {
+    padding:6px 0;
+    text-align: center;
+    float:left;
+    width:50%;
+  }
+}
+
+.notes-form.for-editing {
+  overflow: hidden;
+  margin-bottom:16px;
+  .notes-form-link {
+    width:33%;
+  }
+}
+
+
+.notes-counter {
+  font-size:14px;
+  padding-left:8px;
+  padding-right:6px;
+  float: right;
+  margin-top:-6px;
+  + .mfi-comment {
+    float:left;
+  }
+}
+.notes-marker-container {
+  .mfi-comment:before {
+    font-size: 24px;
+    padding-top: 0px;
+    vertical-align: top;
+  }  
+}
+
+
+.note-icon {
+  display: none;
+
+  &.item-clicked {
+    display: block;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .notes-form {
+    a {
+      cursor: pointer;
+    }
+  }
+}
+
+
+@media screen and (min-width: 992px) {
+  .post-note-content-wrap {
+    width:72%;
+    a {
+      cursor: pointer;
+    }
+  }
+  
+  .read-prev-notes {
+    background: $snow;
+    margin-left:15px;
+  }
+  #comments_closer {
+    position: fixed;
+    cursor: pointer;
+    left:0;
+    top: 0;
+    bottom:0;
+    display: none;
+    &.active { 
+      display:block;
+    }
+  }
+  .note-close-btn {
+    display: none;
+  }
+  .note-icon {
+    display: block;
+    opacity: 0;
+    transition:all .2s ease-in;
+    pointer-events:none;
+  }
+  .note-icon.is-active {
+    opacity: 1;
+    cursor: pointer;
+    pointer-events:initial;
+  }
+  .notes-opened {
+    overflow: inherit;
+  }
+
+  #markers_container {
+    position: absolute;
+    left:0;
+    right:0;
+    top:0;
+    bottom: 0;
+    pointer-events:none;
+    background: transparent;
+    .notes-opened & {
+      top:0;
+      overflow: inherit;
+    }
+    .notes-list-wrapper {
+      display: none;
+      pointer-events:initial;
+      &.opened {
+        display: block;
+      }
+    }
+  }
+  .notes-list-empty {
+    padding:0;
+  }
+  .notes-list-empty + .notes-form-container {
+    padding-top:0;
+  }
+  .article-layout {
+    transition:margin .2s ease-in;
+  }
+
+  .notes-opened {
+    overflow-x: hidden;
+    .article-layout {
+      margin-left:-560px;
+    }
+    .pullquote {
+      margin-right:0;
+    }
+    .notes-list-wrapper {
+      width:360px;
+    }
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .notes-opened {
+    .article-layout {
+      margin-left:-240px;
+    }
+  }
+}
+@media screen and (min-width: 1400px) {
+ .notes-opened {
+    .article-layout {
+      margin-left:auto;
+    }
+  } 
+}
+
+/** handling progress for actions **/
+.for-editing[disabled], .post-note-item[disabled], .notes-form[disabled] {
+  background: $silver;
+  cursor: wait;
+  textarea, a  {
+    pointer-events: none;
+  }
+  textarea {
+    background-color: $silver;
+  }
+}

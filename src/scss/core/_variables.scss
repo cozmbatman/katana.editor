@@ -1,0 +1,29 @@
+// global font base size
+$em-base: 16px;
+
+$grid-columns: 12 !default;
+$gutter: 20px;
+$max-width: 1200px;
+
+// visualize the grid
+$visual-grid: false !default;
+$visual-grid-color: #333 !default;
+
+// media query breakpoints
+$tiny-breakpoint: 320px;
+$smaller-breakpoint: 480px;
+$small-breakpoint: 768px;
+$medium-breakpoint: 992px;
+$large-breakpoint: 1200px;
+
+
+// font -families
+$font-family-sans-serif: 'Merriweather', Georgia, serif;
+$font-family-serif: 'Lato',"Helvetica Neue",Helvetica,Arial,sans-serif;
+
+$header-font-family: $font-family-serif;
+
+
+// zindexes
+
+$z-index-top-bar : 50;

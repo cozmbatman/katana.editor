@@ -1,0 +1,26 @@
+{
+  "name": "katana-editor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "grunt": "latest",
+    "grunt-build-number": "latest",
+    "grunt-cli": "latest",
+    "grunt-concurrent": "latest",
+    "grunt-contrib-concat": "latest",
+    "grunt-contrib-copy": "latest",
+    "grunt-contrib-watch": "latest",
+    "grunt-env": "latest",
+    "grunt-sass": "latest",
+    "load-grunt-config": "latest",
+    "load-grunt-tasks": "latest",
+    "node-neat": "latest",
+    "node-sass": "latest"
+  }
+}

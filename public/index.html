@@ -1,0 +1,76 @@
+<html>
+  <head>
+    <title>Katana.Editor</title>
+    <link rel="stylesheet" href="../build/app.css" />
+  </head>
+  <style type="text/css">
+    @font-face {
+      font-family: "mefacto-icons";
+      src: url("fonts/icons/mefacto-icons.eot");
+      src: url("fonts/icons/mefacto-icons.eot?#iefix") format("embedded-opentype"),
+      url("fonts/icons/mefacto-icons.woff") format("woff"),
+      url("fonts/icons/mefacto-icons.ttf") format("truetype"),
+      url("fonts/icons/mefacto-icons.svg#mefacto-icons") format("svg");
+      font-weight: normal;
+      font-style: normal;
+    } 
+  </style>
+
+<body>
+<section>
+  <div id="story_wrap">
+    <article class="story-layout" dir="auto">
+      <div id="editor" class="full-height-box article-body editable" style="min-height:100vh">
+      </div>
+    </article>
+    <div style="position:absolute;left:0;top:0;z-index: 200;" id="notes_container">
+      <div id="markers_container" style="position:relative;"></div>
+    </div>
+    <div id="comments_closer">
+    </div>
+  </div>
+  <section>
+
+<div id="placeable_popup" class="modal overlay overlay-scale" role="alertdialog" aria-labelledby="placeableTitle" aria-describedby="placeableMessage">
+  <div class="modal-background"></div>
+  <div class="container">
+    <div class="row">
+      <div data-modal-body="true">
+        <div class="valign-container full-height-box">
+          <div class="valign center">
+            <div class="col-sm-12 col-lg-4 col-lg-offset-2 displace-to-center text-center">
+              <div class="row">
+                <div class="col-lg-12 ">
+                  <h3 class="thin-text" place="title" id="placeableTitle"></h3>
+                  <h5>&nbsp;</h5>
+                </div>
+                <div class="col-lg-12">
+                  <h4 class="font-normal" place="message" id="placeableMessage"></h4>
+                  <div place="content"></div>
+                  <br/>
+                  <button class="close-overlay-modal trans" >OK</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <a class="close-overlay-modal close-overlay-cross" datakey="[ESC]" title="Press Escape Key or Click here to close dialog">&#215;</a>
+</div>
+
+<script src="../build/js/katana.js" ></script>
+<script>
+  const katanaObj = {
+    el: '#editor',
+    mode: 'write',
+    upload_url: '/upload'
+  };
+  const editor = new Katana.Editor(katanaObj);
+  editor.strike(function () {
+    //handleImages();
+  });
+</script>
+</body>
+</html>

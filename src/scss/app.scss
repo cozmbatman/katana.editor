@@ -1,0 +1,30 @@
+@import "core/all";
+
+@import "icons";
+
+@import "partials/all";
+@import "pages/all";
+
+
+body, html {
+  margin:0;
+  padding:0;
+  background: $white;
+  color:$text-color;
+  font:normal normal 300 16px/30px $font-family-sans-serif;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font-family-serif;
+}
+
+a {
+  text-decoration: none;
+}
+::selection {
+  background: $primary-color;
+  color:$white;
+}
+::-moz-selection {
+  background: $primary-color;
+  color:$white;
+}

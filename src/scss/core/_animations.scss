@@ -1,0 +1,35 @@
+@-webkit-keyframes load8 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes load8 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+
+@-webkit-keyframes filter-animation {
+  0% {
+    -webkit-filter: blur(0) grayscale(0);
+  }
+  
+  50% {
+    -webkit-filter: blur(2px) grayscale(50%);
+  }
+  
+  100% {
+    -webkit-filter: blur(0) grayscale(0);
+  }
+}
