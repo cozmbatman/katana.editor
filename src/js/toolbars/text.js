@@ -102,13 +102,16 @@
     };
 
     TextToolbar.prototype.template = function () {
-      var html;
-      html = "<div class='mf-menu-linkinput'><input class='mf-menu-input' placeholder='http://'><div class='mf-menu-button mf-link-close'>&#215;</div></div>";
-      html += "<ul class='mf-menu-buttons'>";
+      let html = `<div class="mf-menu-linkinput">
+          <input class="mf-menu-input" placeholder="https://">
+          <div class="mf-menu-button mf-link-close">&#215;</div></div>
+          <ul class='mf-menu-buttons'>`;
+
       this.config.buttons.forEach( item => {
-        return html += "<li class='mf-menu-button'><i class=\"mf-icon mfi-" + item.i + "\" data-action=\"" + item.a + "\"></i></li>";
+        return html += `<li class='mf-menu-button'><i class="mf-icon mfi-${item.i}"  data-action="${item.a}"></i></li>`;
       });
-      html += "</ul>";
+      
+      html += `</ul>`;
       return html;
     };
 
@@ -140,9 +143,14 @@
     };
 
     // click events
-    TextToolbar.prototype.handleClick = function(ev) {
+    TextToolbar.prototype.handleClick = function(ev, matched) {
       var action, element;
-      element = ev.currentTarget.querySelector('.mf-icon');
+      if(matched) {
+        element = matched.querySelector('.mf-icon');
+      } else {
+        element = ev.currentTarget.querySelector('.mf-icon');
+      }
+      
       if(element != null) {
         action = element.attr("data-action");
         var s = u.saveSelection();
@@ -243,10 +251,14 @@
       }
     };
 
-    TextToolbar.prototype.handleInputEnter = function(e) {
+    TextToolbar.prototype.handleInputEnter = function(e, matched) {
       if (e.which === 13) {
         u.restoreSelection(this.savedSel);
-        return this.createlink(e.target);
+        if(matched) {
+          return this.createlink(matched);
+        } else {
+          return this.createlink(e.target);
+        }
       }
     };
 

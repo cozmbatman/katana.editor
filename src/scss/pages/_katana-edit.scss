@@ -436,6 +436,7 @@ $tooltip-backward-transition:   transform 250ms;
                transform: rotate(45deg);
             border-color: rgba($tooltip-color, $tooltip-color-opacity-hover);
                    color: rgba($tooltip-color, $tooltip-color-opacity-hover);
+          vertical-align: top;
     }
   }
 

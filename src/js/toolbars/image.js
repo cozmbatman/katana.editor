@@ -73,11 +73,14 @@
 
     ImageToolbar.prototype.template = function () {
       if(this.config.buttons.length > 0) {
-        var html = '';
-        html = `<div class='mf-menu-linkinput'><input class='mf-menu-input' placeholder='http://'><div class='mf-menu-button mf-link-close'>&#215;</div></div>
-        <ul class='mf-menu-buttons'>`;
+        let html = `<div class="mf-menu-linkinput">
+              <input class="mf-menu-input" placeholder="http://">
+              <div class="mf-menu-button mf-link-close">&#215;</div>
+            </div>
+            <ul class='mf-menu-buttons'>`;
+
         this.config.buttons.forEach((item) => {
-          html += "<li class='mf-menu-button'><i class=\"mf-icon mfi-" + item.i + "\" data-action=\"" + item.a + "\"></i></li>";
+          html += `<li class='mf-menu-button'><i class="mf-icon mfi-${item.i}" data-action=" ${item.a}"></i></li>`;
         });
         html += `</ul>`;
         return html;  
@@ -114,9 +117,13 @@
       this.elNode.removeClass('hide');
     };
 
-    ImageToolbar.prototype.handleClick = function (ev) {
+    ImageToolbar.prototype.handleClick = function (ev, matched) {
       var action, element, input;
-      element = ev.currentTarget.querySelector('.mf-icon');
+      if(matched) {
+        element = matched.querySelector('.mf-icon');
+      } else {
+        element = ev.currentTarget.querySelector('.mf-icon');
+      }
       if(element != null) {
 
         action = element.attr("data-action");
@@ -186,9 +193,13 @@
       return false;
     };
 
-    ImageToolbar.prototype.handleInputEnter = function(e) {
+    ImageToolbar.prototype.handleInputEnter = function(e, matched) {
       if (e.which === 13) {
-        return this.createlink(e.target);
+        if(matched) {
+          return this.createlink(matched);
+        } else {
+          return this.createlink(e.target);
+        }
       }
     };
 
@@ -207,7 +218,7 @@
           this.elNode.removeClass("mf-menu--linkmode");
       if (input.value != '') {
         inputValue = input.value.replace(this.strReg.whiteSpace, "").replace(this.strReg.mailTo, "mailto:$1").replace(this.strReg.http, "http://$1");
-        var a = '<a href="' + inputValue + '" data-href="' + inputValue + '" class="markup-anchor markup-figure-anchor"></a>';
+        var a = `<a href="${inputValue}" data-href="${inputValue}" class="markup-anchor markup-figure-anchor"></a>`;
         var sel = document.querySelector('.item-figure.item-selected');
         if (sel != null) {
           sel.querySelector('img').wrap(a);
@@ -471,7 +482,7 @@
 
       nextRow.prepend(sel);
 
-      var newFigs = nextRow.find('.item-figure');
+      var newFigs = nextRow.querySelectorAll('.item-figure');
       nextRow.attr('data-paragraph-count', newFigs.length);
 
       this.current_editor.$el.trigger({
@@ -481,10 +492,10 @@
         figures: newFigs
       });
 
-      if (row.find('.item-figure').length == 0) {
+      if (row.querySelectorAll('.item-figure').length == 0) {
         row.remove();
       } else {
-        var figs = row.find('.item-figure');
+        var figs = row.querySelectorAll('.item-figure');
         row.attr('data-paragraph-count', figs.length);
         this.current_editor.$el.trigger({
           type: 'Katana.Images.Restructure',
@@ -499,21 +510,21 @@
       var currRow = figure.closest('.block-grid-row'),
           prevRow = currRow.prev('.block-grid-row');
 
-      if (prevRow.length == 0 && currRow.find('.item-figure').length == 1) {
+      if (prevRow.length == 0 && currRow.querySelectorAll('.item-figure').length == 1) {
         this.current_editor.moveFigureUp(figure);
         return;
       }
 
       if (prevRow.length == 0) {
-        var tmpl = '<div class="block-grid-row" data-name="' + u.generateId() + '"></div>';
-        tmpl = $(tmpl);
+        var tmpl = `<div class="block-grid-row" data-name="${u.generateId()}"></div>`;
+        tmpl = u.createElement(tmpl);
         tmpl.insertBefore(currRow);
         prevRow = tmpl;
       }
 
       if (prevRow.length) {
         prevRow.append(figure);
-        var prevFigures = prevRow.find('.item-figure');
+        var prevFigures = prevRow.querySelectorAll('.item-figure');
         prevRow.attr('data-paragraph-count', prevFigures.length);
 
         this.current_editor.$el.trigger({
@@ -523,7 +534,7 @@
           figures: prevFigures
         });
 
-        var currFigures = currRow.find('.item-figure');
+        var currFigures = currRow.querySelectorAll('.item-figure');
         if (currFigures.length) {
           currRow.attr('data-paragraph-count', currFigures.length);
           this.current_editor.$el.trigger({
@@ -542,19 +553,22 @@
 
     /** commands **/
     ImageToolbar.prototype.commandPositionSwitch = function (direction, figure) {
-      var sel = $('.item-figure.item-selected'), toSwitchWith;
+      var sel = document.querySelector('.item-figure.item-selected'), toSwitchWith;
       if (typeof figure != 'undefined') {
         sel = figure;
+      }
+      if(sel == null) {
+        return;
       }
       if (sel.hasClass('figure-in-row')) {
         if (direction == 'left') {
           toSwitchWith = sel.prev('.figure-in-row');
-          if(toSwitchWith.length) {
+          if(toSwitchWith != null) {
             sel.insertBefore(toSwitchWith);
           }
         } else if(direction == 'right') { 
           toSwitchWith = sel.next('.figure-in-row');
-          if(toSwitchWith.length) {
+          if(toSwitchWith != null) {
             toSwitchWith.insertBefore(sel);
           }
         } else if(direction == 'down') {
@@ -580,7 +594,10 @@
     ImageToolbar.prototype.commandSideLeft = function () {
       this.pullBackgroundContainer();
       this.pullFullWidthContainer();
-      var sel = $('.item-figure.item-selected');
+      var sel = document.querySelector('.item-figure.item-selected');
+      if(sel == null) {
+        return;
+      }
       this.removeFigureClasses(sel);
       sel.addClass('figure-to-left');
 
@@ -588,40 +605,51 @@
       this.current_editor.mergeInnerSections(sel.closest('section'));
 
       //activate the node
-      sel = $('.item-figure.item-selected');
+      sel = document.querySelector('.item-figure.item-selected');
+      if(sel == null) { return; }
       this.current_editor.selectFigure(sel);
     };
 
     ImageToolbar.prototype.commandDefaultSize = function () {
       this.pullBackgroundContainer();
       this.pullFullWidthContainer();
-      var sel = $('.item-figure.item-selected');
+      var sel = document.querySelector('.item-figure.item-selected');
+      if(sel == null) {return;}
       this.removeFigureClasses(sel); 
 
       // merge the sections
       this.current_editor.mergeInnerSections(sel.closest('section'));     
-      sel = $('.item-figure.item-selected');
+      sel = document.querySelector('.item-figure.item-selected');
+      if(sel == null) {return;}
       this.current_editor.selectFigure(sel);
     };
 
     ImageToolbar.prototype.commandFullWidth = function () {
       this.pullBackgroundContainer();
       this.pushFullWidthContainer();
-      var sel = $('.item-figure.item-selected');
+      var sel = document.querySelector('.item-figure.item-selected');
+      if(sel == null) {return;}
       this.removeFigureClasses(sel);
       sel.addClass('figure-full-width');
-      var style = sel.find('.padding-cont').attr('style');
-      sel.find('.padding-cont').attr('data-style', style).removeAttr('style');
+      var padC = sel.querySelector('.padding-cont');
+      if(padC != null) {
+        var style = padC.attr('style');
+        padC.attr('data-style', style);
+        padC.removeAttr('style');
+      }
+      
 
       // merge the sections
       this.current_editor.mergeInnerSections(sel.closest('section'));
-      sel = $('.item-figure.item-selected');
+      sel = document.querySelector('.item-figure.item-selected');
+      if(sel == null) {return;}
       this.current_editor.selectFigure(sel);
     };
 
     ImageToolbar.prototype.commandBackground = function () {
       var section = this.pushBackgroundContainer();
-      var sel = $('.item-figure.item-selected');
+      var sel = document.querySelector('.item-figure.item-selected');
+      if(sel == null) {return;}
       this.removeFigureClasses(sel);
       this.current_editor.selectFigure(section);
     };
@@ -636,19 +664,28 @@
     /** commands ends **/
 
     ImageToolbar.prototype.displayHighlights = function () {
-      var sel = $('.item-figure.figure-focused'), tag = '';
+      var sel = document.querySelector('.item-figure.figure-focused'), tag = '';
       this.refresh();
-      this.$el.find('.active').removeClass('active');
+      var ac = this.$el.querySelector('.active');
+      if(ac != null) {
+        ac.removeClass('active');
+      }
       this.menuGridMode = false;
-      if (sel.length == 0) {
-        sel = $('.block-content.figure-focused');
+      if (sel == null) {
+        sel = document.querySelector('.block-content.figure-focused');
+      }
+      if(sel == null) {
+        return;
       }
 
       if (sel.hasClass('figure-in-row')) {
         this.menuGridMode = true;
         sel.removeClass('can-go-right can-show-add');
 
-        this.$el.find('[data-action="background"]').parent('li').hide();
+        var bgE = this.$el.querySelector('[data-action="background"]');
+        if(bgE != null) {
+          bgE.parent('li').addClass('hide');
+        }
 
         var grid = sel.closest('.block-grid');
         if (grid.hasClass('block-grid-full')) {
@@ -658,23 +695,22 @@
         }
         
         // this.$el.find('[data-action="defaultsize"]').parent('li').hide();
-         this.$el.find('[data-action="sideleft"]').parent('li').hide();
-
+        this.hideAction('sideleft');
+        
         var nxt = sel.next('.figure-in-row');
         
-        if (nxt.length != 0) {
+        if (nxt != null) {
           sel.addClass('can-go-right');
         }
 
-        if(nxt.length == 0) {
+        if(nxt == null) {
           sel.addClass('can-show-add');
         }
 
         sel.addClass('can-go-down');
 
       } else {
-        this.$el.find('[data-action="goleft"]').parent('li').hide();
-        this.$el.find('[data-action="goright"]').parent('li').hide();
+        this.hideAction('goleft', 'goright');
       }
 
       if (!this.menuGridMode) {
@@ -690,25 +726,23 @@
           }
         }
 
+      
         // no position change for iframe embeds
         if (sel.hasClass('item-iframe')) {
-          this.$el.find('[data-action="goleft"]').parent('li').hide();
-          this.$el.find('[data-action="goright"]').parent('li').hide(); 
-
+          this.hideAction('goleft', 'goright');
+          
           if (!sel.hasClass('can-go-background')) {
-            this.$el.find('[data-action="background"]').parent('li').hide();
+            this.hideAction('background');
           }
         }
 
-        if (sel.closest('.with-background').length && !sel.hasClass('with-background')) {
-          this.$el.find('[data-action="fullwidth"]').parent('li').hide();
-          this.$el.find('[data-action="background"]').parent('li').hide();
+        if (sel.closest('.with-background') != null && !sel.hasClass('with-background')) {
+          this.hideAction('fullwidth', 'background');
         }
 
         // no fullsize form small photos 
         if (sel.hasClass('n-fullSize')) {
-          this.$el.find('[data-action="background"]').parent('li').hide();
-          this.$el.find('[data-action="fullwidth"]').parent('li').hide();
+          this.hideAction('fullwidth', 'background');
         }
 
         if (sel.find('img').parent().hasClass('markup-anchor')) {
@@ -717,16 +751,13 @@
       }
 
       if (sel.hasClass('item-iframe')) {
-        this.$el.find('[data-action="createlink"]').parent('li').hide();
+        this.hideAction('createlink');
       } else {
-        this.$el.find('[data-action="createlink"]').parent('li').show();
+        this.showAction('createlink');
       }
 
       if ($('.grid-focused').length && $('.figure-focused').length == 0) {
-        this.$el.find('[data-action="goleft"]').parent('li').hide();
-        this.$el.find('[data-action="sideleft"]').parent('li').hide();
-        this.$el.find('[data-action="goright"]').parent('li').hide();
-        this.$el.find('[data-action="background"]').parent('li').hide();
+        this.hideAction('goleft', 'sideleft', 'goright', 'background');
       }
 
       if(tag != '') {
@@ -734,16 +765,46 @@
       }
     };
 
+    ImageToolbar.prototype.hideAction = function(...names) {
+      for(const name of names) {
+        let go = this.$el.querySelector('[data-action="' + name + '"]');
+        if(go != null) {
+          let pl = go.parent('li');
+          if(pl != null) {
+            pl.hide();
+          }
+        }
+      }
+    }
+
+    ImageToolbar.prototype.showAction = function(...names) {
+      for(const name of names) {
+        let go = this.$el.querySelector('[data-action="' + name + '"]');
+        if(go != null) {
+          let pl = go.parent('li');
+          if(pl != null) {
+            pl.show();
+          }
+        }
+      }
+    }
+
     ImageToolbar.prototype.highlight = function (tag) {
-      this.$el.find('[data-action="' + tag + '"]').parent("li").addClass('active');
+      const tg = this.$el.querySelector('[data-action="' + tag + '"]');
+      if(tg != null) {
+        let tgp = tg.parent("li");
+        if(tgp != null) {
+          tgp.addClass('active');
+        }
+      }
     };
 
     /** layout related modifications **/
     ImageToolbar.prototype.removeFigure = function (figure) {
       var container = figure.closest('.block-grid-row');
-      if (container.length) {
+      if (container != null) {
         figure.remove();
-        var remaining = container.find('.item-figure');
+        var remaining = container.querySelectorAll('.item-figure');
         if (remaining.length) {
           container.attr('data-paragraph-count', remaining.length);
           this.current_editor.$el.trigger({
@@ -759,7 +820,7 @@
           container.remove();
         }
         // check if we grid has any image left inside
-        var gridImages = grid.find('.item-image');
+        var gridImages = grid.querySelectorAll('.item-image');
         if (gridImages.length) {
           var len = gridImages.length;
           if (len > 1) { // more than one image remaining, just update para count for the grid
@@ -775,31 +836,34 @@
 
       } else {
         this.current_editor.replaceWith("p", figure);
-        this.current_editor.setRangeAt($(".item-selected")[0]);
+        this.current_editor.setRangeAt(document.querySelector(".item-selected"));
       }
     };
 
     ImageToolbar.prototype.unwrapSingleFigure = function (container) {
-      var figures = container.find('.item-figure'),
+      var figures = container.querySelectorAll('.item-figure'),
           moveIn,
           firstGraf;
 
       if (figures.length == 1) {
         // try to move content in the upper section if we have one..
         moveIn = container.prev('.block-content-inner');
-        if (moveIn.length) {
+        if (moveIn != null) {
           moveIn.append(container.find('.item-figure'));
           container.remove();
           figures.removeClass('figure-in-row can-go-right can-go-down');
           figures.removeAttr('style');
         } else {
           moveIn = container.next('.block-content-inner');
-          if (moveIn.length) {
-            firstGraf = $(moveIn).find(' > .item');
-            if(firstGraf.length) {
-              container.find('.item-figure').insertBefore(firstGraf);
+          if (moveIn != null) {
+            firstGraf = moveIn.querySelector(' > .item');
+            if(firstGraf != null) {
+              let itf = container.querySelector('.item-figure');
+              if(itf != null) {
+                itf.insertBefore(firstGraf);
+              }
             }else {
-              moveIn.append(container.find('.item-figure'));
+              moveIn.append(container.querySelectorAll('.item-figure'));
             }
             container.remove();
             figures.removeClass('figure-in-row can-go-right can-go-down');
@@ -812,7 +876,7 @@
           }
         }
 
-        var ig = figures.find('.item-image');
+        var ig = figures.querySelectorAll('.item-image');
         if (ig.length) {
           ig = ig[0];
           this._setAspectRatio(figures, ig.naturalWidth, ig.naturalHeight);
@@ -846,14 +910,16 @@
 
       fill_ratio = height / width * 100;
 
-      figure.find(".padding-cont").css({
-        'max-width': width,
-        'max-height': height
-      });
-
-      figure.find(".padding-box").css({
-        "padding-bottom": "" + fill_ratio + "%"
-      });
+      var figP = figure.querySelector(".padding-cont");
+      if(figP != null) {
+        figP.style.maxWidth = width;
+        figP.style.maxHeight = height;
+      }
+      
+      var figPB = figure.querySelector(".padding-box");
+      if(figPB != null) {
+        figPB.style.paddingBottom = fill_ratio + "%";
+      }
 
     }
 

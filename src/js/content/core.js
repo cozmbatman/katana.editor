@@ -65,12 +65,12 @@
         if (b.template) {
           menu += b.template();
         } else {
-          menu += "<button class='inlineTooltip-button scale' title='" + b.title + "' data-action='inline-menu-" + b.action + "' " + data_action_value + "> <span class='tooltip-icon " + b.icon + "'></span> </button>";
+          menu += `<button class="inlineTooltip-button scale" title="${b.title}" data-action="inline-menu-${b.action} ${data_action_value}"> <span class="tooltip-icon ${b.icon}"></span> </button>`;
         }
         return menu;
       });
 
-      return "<button class='inlineTooltip-button control' data-action='inline-menu' title='Content Options'> <span class='tooltip-icon mfi-plus'></span> </button> <div class='inlineTooltip-menu'> " + menu + " </div>";
+      return `<button class='inlineTooltip-button control' data-action='inline-menu' title='Content Options'> <span class='tooltip-icon mfi-plus'></span> </button> <div class='inlineTooltip-menu'>${menu}</div>`;
     };
 
     Manager.prototype.render = function () {
@@ -144,9 +144,13 @@
       });
     };
 
-    Manager.prototype.handleClick = function (ev) {
+    Manager.prototype.handleClick = function (ev, matched) {
       var detected_widget, name, sub_name;
-      name = ev.currentTarget.attr('data-action');
+      if(matched) {
+        name = matched.attr('data-action');
+      } else {
+        name = ev.currentTarget.attr('data-action');
+      }
       sub_name = name.replace("inline-menu-", "");
       detected_widget = this.findWidgetByAction(sub_name);
       if (detected_widget != null && detected_widget.length > 0) {

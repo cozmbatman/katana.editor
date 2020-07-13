@@ -140,6 +140,7 @@
           el.classList.add(a)
         });
       }
+      return this;
     }
   }
 
@@ -153,6 +154,7 @@
           el.classList.remove(a);
         });
       }
+      return this;
     }
   }
 
@@ -162,7 +164,8 @@
       if(typeof value === 'undefined') {
         return el.getAttribute(key);
       }
-      return el.setAttribute(key, value);
+      el.setAttribute(key, value);
+      return this;
     }
   }
 
@@ -787,7 +790,7 @@
     parent.addEventListener(eventName, (event) => {
       const clickedElement = event.target,
       matchingChild = clickedElement.closest(childSelector)
-      if (matchingChild) cb(matchingChild)
+      if (matchingChild) cb(event, matchingChild)
     })
   };
 

@@ -4,4 +4,4 @@ default:
   description: 'Just Building stuff'
   tasks:
     - 'env:dev'
-    - 'concurrent:katana'
+    - 'concurrent:dev'

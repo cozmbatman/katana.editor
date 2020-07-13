@@ -2596,8 +2596,7 @@
 
           _this.markAsSelected(node);
           _this.setupFirstAndLast();
-          console.log('#node is ');
-          console.log(node);
+          
           if ( node.textContent.isEmpty() ) {
             Array.from(node.children).forEach(n => {
               n.parentNode.removeChild(n);
