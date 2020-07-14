@@ -96,46 +96,40 @@
     };
 
     Images.prototype.processSingleImageElement = function (image_element, opts, key) {
-      var url = image_element.attr('src'),
-          dt = {}, 
-          processData = true, 
-          contentType = 'application/x-www-form-urlencoded; charset=UTF-8';
+      const url = image_element.attr('src');
+      const formData = new FormData();
+      const _this = this;
 
       if (url.indexOf('data:image') == 0) {
-        var m = new FormData();
-        m.append('image', url);
-        processData = false;
-        contentType = false;
-        dt = m;
+        formData.append('image', url);
       } else {
-        dt = {url: url};
+        formData.append('url', url);
       }
-
+    
       this.current_editor.currentRequestCount++;
 
-      $.ajax({
-        url: '/upload-url',
-        method: 'POST',
-        data: dt,
-        processData: processData,
-        contentType: contentType,
-        dataType: 'json',
-        success: (function (_this) {
-          return function (resp) {
-            if (resp.success)  {
-              var imgSrc = resp.file,
-                  imageId = resp.id;
+      const oReq = new XMLHttpRequest();
+      oReq.open("POST", '/upload-url', true);
+      oReq.onload = function(event) {
+        if (oReq.status == 200) {
+          try {
+            const data = JSON.parse(oReq.responseText);
+            if(data.success) {
+              var imgSrc = data.file,
+                  imageId = data.id;
               _this.thirdPartyImageLoaded({url: url, file: imgSrc, imageId: imageId, key: key});
               _this.current_editor.currentRequestCount--;
             }
-          }
-        })(this),
-        error: (function (_this) {
-          return function (jqxhr) {
+          } catch(e) {
+            console.log('While uploading image');
+            console.error(e);
             _this.current_editor.currentRequestCount--;
           }
-        })(this)
-      });
+        } else {
+          _this.current_editor.currentRequestCount--;
+        }
+      };
+      oReq.send(formData);
     };
 
     Images.prototype.processThirdPartyQueue = function () {
@@ -363,7 +357,7 @@
     };
 
     Images.prototype.displayAndUploadImages = function(file, cont, callback) {
-      return this.displayCachedImage(file, cont, callback);
+      this.displayCachedImage(file, cont, callback);
     };
 
     Images.prototype.viaDrop = false;
@@ -404,6 +398,7 @@
       var _this = this;
       img.onload = function(e) {
         window.URL.revokeObjectURL(this.src); // Clean up after yourself
+
         if (_this.droppedCount) {
           _this.droppedCount--;
         }
@@ -460,7 +455,7 @@
             dp.parentNode.removeChild(dp);
           }
         }
-        return self.uploadFile(file, replaced_node);
+        self.uploadFile(file, replaced_node);
       };
 
       img.src = window.URL.createObjectURL(file);
@@ -742,79 +737,59 @@
       var node;
       if (typeof figure != 'undefined') {
         node = figure;
-      } else if ($('.drop-placeholder').length) {
-        node = $('.drop-placeholder');
+      } else if (document.querySelectorAll('.drop-placeholder').length) {
+        node = document.querySelector('.drop-placeholder');
       } else {
-        node = $(this.current_editor.getNode());  
+        node = this.current_editor.getNode();
       }
       
       var parentContainer = node.closest('.block-content-inner');
       var item = node.closest('.item');
     
-      var bottomContainer = $('<div class="' +parentContainer.prop('class')+ '"></div>');
+      var bottomContainer = u.generateElement(`<div class="${parentContainer.attr('class')}"></div>`);
 
-      while(item.next().length) {
-        bottomContainer.append(item.next());
+      while(item.nextElementSibling != null) {
+        bottomContainer.append(item.nextElementSibling);
       }
 
-      var new_tmpl = $(this.blockGridTemplate(count));
+      var new_tmpl = this.blockGridTemplate(count);
       new_tmpl.insertAfter(parentContainer);
       bottomContainer.insertAfter(new_tmpl);
 
       this.addImagesInContainer = true;
       bottomContainer.prepend(item);
-      this.current_editor.setRangeAt($('.item-selected')[0]);
+      this.current_editor.setRangeAt(document.querySelector('.item-selected'));
 
-      return $(new_tmpl.find('.block-grid-row'));
+      return new_tmpl.querySelector('.block-grid-row');
     };
 
     Images.prototype.uploadFile = function(file, node) {
-      var handleUp, n;
-      n = node,
-      _this = this;
-      handleUp = (function(_this) {
-        return function(jqxhr) {
-          return _this.uploadCompleted(jqxhr, n);
-        };
-      })(this);
-      return $.ajax({
-        type: "post",
-        url: this.current_editor.upload_url,
-        dataType: 'json',
-        xhr: (function(_this) {
-          return function() {
-            var xhr;
-            xhr = new XMLHttpRequest();
-            xhr.upload.onprogress = _this.updateProgressBar;
-            return xhr;
-          };
-        })(this),
-        cache: false,
-        contentType: false,
-        beforeSend: function (jqxhr) {
-          _this.current_editor.currentRequestCount++;
-          return true;
-        },
-        success: (function(_this) {
-          return function(response) {
+      const _this = this;
+      
+      _this.current_editor.currentRequestCount++;
+      const formData = this.formatData(file);
+      const oReq = new XMLHttpRequest();
+      oReq.open("POST", this.current_editor.upload_url, true);
+      oReq.onprogress = this.updateProgressBar;
+      oReq.onload = function(event) {
+        if (oReq.status == 200) {
+          _this.current_editor.currentRequestCount--;
+          try {
+            let resp = JSON.parse(oReq.responseText);
             if (_this.current_editor.upload_callback) {
-              response = _this.current_editor.upload_callback(response);
+              resp = _this.current_editor.upload_callback(resp);
             }
-            _this.current_editor.currentRequestCount--;
-            handleUp(response);
-          };
-        })(this),
-        error: (function(_this) {
-          return function(jqxhr) {
-            _this.current_editor.currentRequestCount--;
-            _this.popupTitle.text('Error');
-            _this.popupMessage.text('Unable to upload image right now');
-            u.openOverlay({overlay: _this.popup});
-          };
-        })(this),
-        processData: false,
-        data: this.formatData(file)
-      });
+            _this.uploadCompleted(resp, node);
+          } catch(e) {
+            console.log('--- image upload issue ---');
+            console.error(e);
+          }
+        } else {
+          _this.current_editor.currentRequestCount--;
+        }
+      };
+      oReq.send(formData);
+
     };
 
     Images.prototype.updateProgressBar = function(e) {
