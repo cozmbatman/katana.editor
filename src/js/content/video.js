@@ -141,11 +141,12 @@
             fim.attr("data-height", this.height);
             fim.attr("data-width", this.width);
           }
-
-          figure.find(".padding-box").css({
-            "padding-bottom": "" + ar.ratio + "%"
-          });
-
+          
+          const fpdb = figure.querySelector('.padding-box');
+          if(fpdb != null) {
+            fpdb.style.paddingBotom = ar.ratio + "%"
+          }
+        
           if (this.width < 700) {
             figure.addClass('n-fullSize');
           }

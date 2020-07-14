@@ -2666,7 +2666,7 @@
         if (anchor_node.hasClass("item-p") && this.isFirstChar()) {
           if (anchor_node.previousElementSibling && anchor_node.previousElementSibling.hasClass("item-figure")) {
             //e.preventDefault();
-            //anchor_node.prev().find("img").click();
+            
             //return false;
           }
         }
@@ -3857,12 +3857,12 @@
     };
 
     // Anchor tooltip //
-     Editor.prototype.displayPopOver = function(ev) {
-      return this.tooltip.displayAt(ev);
+     Editor.prototype.displayPopOver = function(ev, matched) {
+      return this.tooltip.displayAt(ev, matched);
     };
 
-    Editor.prototype.hidePopOver = function(ev) {
-      return this.tooltip.hide(ev);
+    Editor.prototype.hidePopOver = function(ev, matched) {
+      return this.tooltip.hide(ev, matched);
     };
     // Anchor tooltip ends //
 

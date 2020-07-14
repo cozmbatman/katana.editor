@@ -129,6 +129,17 @@
       return el.classList.contains(toTest);
     }
   }
+  if(!Element.prototype.toggleClass) {
+    Element.prototype.toggleClass = function(toToggle) {
+      let el = this;
+      if(el.hasClass(toToggle)) {
+        el.removeClass(toToggle);
+      } else {
+        el.addClass(toToggle);
+      }
+      return el;
+    }
+  }
 
   if(!Element.prototype.addClass) {
     Element.prototype.addClass = function(toAdd) {

@@ -694,7 +694,6 @@
           tag = 'defaultsize';
         }
         
-        // this.$el.find('[data-action="defaultsize"]').parent('li').hide();
         this.hideAction('sideleft');
         
         var nxt = sel.next('.figure-in-row');
@@ -745,9 +744,13 @@
           this.hideAction('fullwidth', 'background');
         }
 
-        if (sel.find('img').parent().hasClass('markup-anchor')) {
-          this.highlight('createlink');
-        }   
+        let simg = sel.querySelector('img');
+        if(simg != null) {
+          let sprnt = simg.parentElement;
+          if (sprnt != null && sprnt.hasClass('markup-anchor')) {
+            this.highlight('createlink');
+          } 
+        }
       }
 
       if (sel.hasClass('item-iframe')) {
@@ -756,7 +759,10 @@
         this.showAction('createlink');
       }
 
-      if ($('.grid-focused').length && $('.figure-focused').length == 0) {
+      let gfocused = document.querySelectorAll('.grid-focused');
+      let gfigureFoucsed = document.querySelectorAll('.figure-focused');
+
+      if (gfocused.length && gfigureFoucsed.length == 0) {
         this.hideAction('goleft', 'sideleft', 'goright', 'background');
       }
 
@@ -849,7 +855,10 @@
         // try to move content in the upper section if we have one..
         moveIn = container.prev('.block-content-inner');
         if (moveIn != null) {
-          moveIn.append(container.find('.item-figure'));
+          const itemFigures = container.querySelectorAll('.item-figure');
+          itemFigures.forEach( ll => {
+            moveIn.appendChild(ll);
+          });
           container.remove();
           figures.removeClass('figure-in-row can-go-right can-go-down');
           figures.removeAttr('style');
@@ -1076,12 +1085,17 @@
       this.current_editor.removeUnnecessarySections();
       this.current_editor.fixSectionClasses();
 
-      figure = figure.find('[name="'+figureName+'"]');
+      figure = figure.querySelector('[name="'+figureName+'"]');
 
-      this.current_editor.markAsSelected(figure);
-      figure.addClass('figure-focused').removeClass('uploading');
-      figure.find('.padding-cont').addClass('selected');
-
+      if(figure != null) {
+        this.current_editor.markAsSelected(figure);
+        figure.addClass('figure-focused').removeClass('uploading');
+        let fpct = figure.querySelector('.padding-cont');
+        if(fpct != null) {
+          fpct.addClass('selected');
+        }
+      }
+      
       this.current_editor.setupFirstAndLast();
 
       this.current_editor.parallaxCandidateChanged()

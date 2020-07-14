@@ -37,23 +37,21 @@
           markup.resourceMarkup = { w: grounded.attr('data-width'), h: grounded.attr('data-height'), a: grounded.attr('data-aspect'), s: grounded.attr('data-style') };  
         }
 
-        var bgImage = this.$el.find('.block-background-image');
+        var bgImage = this.$el.querySelector('.block-background-image');
+        if(bgImage != null) {
+          var path = bgImage.css('background-image');
+          path = /^url\((['"]?)(.*)\1\)$/.exec(path);
+          path = path ? path[2] : '';
 
-        var path = bgImage.css('background-image');
-        // path = path.replace('url(','').replace(')','');
-
-        path = /^url\((['"]?)(.*)\1\)$/.exec(path);
-        //path.replace('url(','').replace(')','');
-        path = path ? path[2] : '';
-
-        if (this.elNode.hasClass('video-in-background')) {
-          markup.resourceFrame = bgImage.attr('data-frame-url');
-          markup.resourceAspect = bgImage.attr('data-frame-aspect');
-          ob.type = 2;
-        } 
-
-        markup.resourceUrl = path;
-
+          if (this.elNode.hasClass('video-in-background')) {
+            markup.resourceFrame = bgImage.attr('data-frame-url');
+            markup.resourceAspect = bgImage.attr('data-frame-aspect');
+            ob.type = 2;
+          } 
+  
+          markup.resourceUrl = path;
+        }
+      
         ob.meta = markup;
         var caption = this.elNode.querySelector('.section-caption');
         if (caption != null) {

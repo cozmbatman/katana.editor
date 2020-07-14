@@ -734,13 +734,16 @@
     }
 
     Images.prototype.pushMultipleImageContainer = function (count, figure) {
-      var node;
+      let node;
       if (typeof figure != 'undefined') {
         node = figure;
       } else if (document.querySelectorAll('.drop-placeholder').length) {
         node = document.querySelector('.drop-placeholder');
       } else {
         node = this.current_editor.getNode();
+      }
+      if(node == null) {
+        return;
       }
       
       var parentContainer = node.closest('.block-content-inner');
@@ -765,9 +768,10 @@
 
     Images.prototype.uploadFile = function(file, node) {
       const _this = this;
-      
-      _this.current_editor.currentRequestCount++;
       const formData = this.formatData(file);
+
+      this.current_editor.currentRequestCount++;
+
       const oReq = new XMLHttpRequest();
       oReq.open("POST", this.current_editor.upload_url, true);
       oReq.onprogress = this.updateProgressBar;

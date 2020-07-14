@@ -27,11 +27,17 @@
     };
 
     Tooltip.prototype.template = function() {
-      return `<div class='popover popover-tooltip popover-bottom active'> <div class='popover-inner'> <a href='#' target='_blank'> Link </a> </div> <div class='popover-arrow'> </div> </div>`;
+      return `<div class='popover popover-tooltip popover-bottom active'> 
+          <div class='popover-inner'>
+            <a href='#' target='_blank'> Link </a>
+          </div> 
+          <div class='popover-arrow'> </div> </div>`;
     };
 
     Tooltip.prototype.positionAt = function(ev) {
-      var left_value, popover_width, target, target_height, target_offset, target_positions, target_width, top_value, target_is_figure;
+      var left_value, popover_width, 
+        target, target_height, target_offset, target_positions, 
+        target_width, top_value, target_is_figure;
 
       target = ev.currentTarget;
 
@@ -48,29 +54,45 @@
 
       popover_width = popover.outerWidth();
 
-
       if (target_is_figure) {
         popover.addClass('pop-for-figure');
         top_value = target_offset.top;
         left_value = (target_offset.left + target_width) - popover_width - 15;
-        popover.css({"top" : top_value ,"left" : left_value}).show();
+        popover.style.top = top_value + 'px';
+        popover.style.left = left_value + 'px';
+        popover.show();
       } else {
         popover.removeClass('pop-for-figure');
         top_value = target_offset.top + target_height;
         left_value = target_offset.left + (target_width / 2) - (popover_width / 2);
-        popover.css({"top" : top_value ,"left" : left_value}).show();
+        popover.style.top = top_value + 'px';
+        popover.style.left = left_value + 'px';
+        popover.show();
       }
       return;
     };
 
-    Tooltip.prototype.displayAt = function(ev) {
+    Tooltip.prototype.displayAt = function(ev, matched) {
       var target;
       this.cancelHide();
-      target = $(ev.currentTarget);
-      $(this.el).find(".popover-inner a").text(target.attr('href')).attr('href', target.attr("href"));
+      if(matched) {
+        target = matched;
+      } else {
+        target = ev.currentTarget;
+      }
+      const $el = document.querySelector(this.el);
+      const an = $el.querySelector(".popover-inner a");
+      if(an != null) {
+        an.innerHTML = target.attr('href');
+        an.attr('href', target.attr("href"));
+      }
       this.positionAt(ev);
-      $(this.el).find(".popover-tooltip").css("pointer-events", "auto");
-      return $(this.el).show();
+
+      const elNT = $el.querySelector(".popover-tooltip");
+      if(elNT != null) {
+        elNT.style.pointerEvents = 'auto';
+      }
+      return $el.show();
     };
 
     Tooltip.prototype.cancelHide = function() {
@@ -79,11 +101,13 @@
 
     Tooltip.prototype.hide = function(ev) {
       this.cancelHide();
-      return this.hideTimeout = setTimeout((function(_this) {
-        return function() {
-          return $(_this.el).find(".popover").hide();
-        };
-      })(this), this.settings.timeout);
+      const $el = document.querySelector(this.el);
+      this.hideTimeout = setTimeout(() => {
+        const pp = $el.querySelector('.popover');
+        if(pp != null) {
+          pp.hide();
+        }
+      }, this.settings.timeout);
     };
 
     Tooltip.prototype.resolveTargetPosition = function(target) {

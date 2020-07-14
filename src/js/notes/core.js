@@ -144,7 +144,7 @@
     };
 
     Notes.prototype.deactivateAll = function () {
-      var clicked = this.$el.find(".is-clicked");
+      var clicked = this.$el.querySelectorAll(".is-clicked");
       if (clicked.length) {
         clicked.removeClass('is-clicked').addClass('hide');
         var _this = this;
@@ -156,7 +156,10 @@
     };
 
     Notes.prototype.hidePreviousVisible = function () {
-      this.$el.find('.note-icon.empty:not(.is-clicked)').removeClass('is-active');
+      let nics = this.$el.querySelector('.note-icon.empty:not(.is-clicked)');
+      if(nics != null) {
+        nics.removeClass('is-active');
+      }
       this.deactivateCloser();
     };
 
@@ -176,16 +179,16 @@
 
     Notes.prototype._getNoteIcon = function (ob) {
       var name = ob.node.attr('name'),
-          $node = $(ob.node),
+          $node = ob.node,
           onDark = false;
 
-      if ($node.closest('.with-background').length) {
+      if ($node.closest('.with-background') != null) {
         onDark = true;
       }
-      var existing = this.$el.find('[note-for="' + name + '"]');
+      var existing = this.$el.querySelector('[note-for="' + name + '"]');
 
-      if (!existing.length) {
-        if (_.isUndefined(this.existing_notes[name])) {
+      if (existing ==  null) {
+        if (typeof this.existing_notes[name] == 'undefined') {
           existing = this._addIcon(name, 0);  
         } else {
           existing = this._addIcon(name, this.existing_notes[name]);
@@ -266,17 +269,16 @@
     };
 
     Notes.prototype.getIconTemplate = function () {
-      var ht = '';
-      ht += '<div class="notes-marker-container note-icon empty">';
-      ht += '<span class="notes-counter" data-note-count=""></span>';
-      ht += '<i class="mfi-comment"></i>';
-      ht += '</div>'
-      return ht;
+      var ht = `<div class="notes-marker-container note-icon empty">
+      <span class="notes-counter" data-note-count=""></span>
+      <i class="mfi-comment"></i>
+      </div>`;
+      return u.createElement(ht);
     };
 
     Notes.prototype._addIcon = function (name, currentCount) {
-      var icon = $(this.getIconTemplate());
-      var iconSpan = icon.find('.notes-counter');
+      var icon = this.getIconTemplate();
+      var iconSpan = icon.querySelector('.notes-counter');
       if (currentCount > 0) {
         icon.removeClass('empty');
         iconSpan.text(currentCount);
@@ -330,8 +332,8 @@
       var notes = this.existing_notes;
       for (var name in notes) {
         if (notes.hasOwnProperty(name)) {
-          var sel = this.current_editor.$el.find('[name="' + name + '"]');
-          if (sel.length) {
+          var sel = this.current_editor.$el.querySelector('[name="' + name + '"]');
+          if (sel != null) {
             this.showNoteIcon({node: sel, text: ''});
           }
         }
@@ -340,34 +342,38 @@
     };
 
     Notes.prototype.incrementCounter = function (name) {
-      var icon = this.$el.find('[note-for="' + name + '"]');
-      if (icon.length) {
-        var counter = icon.find('.notes-counter');
-        var currentCount = parseInt(counter.attr('data-note-count'));
-        if (isNaN(currentCount)) {
-          currentCount = 0;
+      var icon = this.$el.querySelector('[note-for="' + name + '"]');
+      if (icon != null) {
+        var counter = icon.querySelector('.notes-counter');
+        if(counter != null) {
+          var currentCount = parseInt(counter.attr('data-note-count'));
+          if (isNaN(currentCount)) {
+            currentCount = 0;
+          }
+          currentCount++;
+          counter.text(currentCount);
+          counter.attr('data-note-count', currentCount);
+          icon.removeClass('empty');
         }
-        currentCount++;
-        counter.text(currentCount);
-        counter.attr('data-note-count', currentCount);
-        icon.removeClass('empty');
       }
     };
 
     Notes.prototype.decrementCounter = function (name) {
-      var icon = this.$el.find('[note-for="' + name + '"]');
-      if (icon.length) {
-        var counter = icon.find('.notes-counter');
-        var currentCount = parseInt(counter.attr('data-note-count'));
-        currentCount--;
-        counter.text(currentCount);
-        counter.attr('data-note-count', currentCount);
-        if (currentCount == 0) {
-          icon.addClass('empty');
+      var icon = this.$el.querySelector('[note-for="' + name + '"]');
+      if (icon != null) {
+        var counter = icon.querySelector('.notes-counter');
+        if(counter != null) {
+          var currentCount = parseInt(counter.attr('data-note-count'));
+          currentCount--;
+          counter.text(currentCount);
+          counter.attr('data-note-count', currentCount);
+          if (currentCount == 0) {
+            icon.addClass('empty');
+          }
+          if (currentCount == 0) {
+            counter.text('+');
+          }    
         }
-        if (currentCount == 0) {
-          counter.text('+');
-        }    
       }
     };
 
