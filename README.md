@@ -1,7 +1,7 @@
 # Katana Editor
 
 It was part of something i was working on in the past and was totally inspired from Medium.com's editor.
-Lot of codebase from [Yabwe editor](https://github.com/yabwe/medium-editor) and Danke Editor(_cant find it anymore_) was used in the first version. Editor default theme is also inspired from Medium only(big fan).
+Lot of codebase used from [Yabwe editor](https://github.com/yabwe/medium-editor) and Danke Editor(_cant find it anymore_) was used in the first version. Editor default theme is also inspired from Medium only(big fan).
 
 But this was few years ago, Trying to put it out now as still good medium style editors are missing from the web(maybe i should search more).
 
