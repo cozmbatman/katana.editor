@@ -676,8 +676,9 @@
       xhr.onload = () => {
         if(xhr.status == "200" && xhr.readyState == 4) {
           try {
-            Array.prototype.forEach.call(container.querySelectorAll('.loading-notes'), el => el.remove());
-            Array.prototype.forEach.call(container.querySelectorAll('.read-prev-notes'), el => el.remove());
+            container.querySelectorAll('.loading-notes').forEach(el => el.remove());
+            container.querySelectorAll('.read-prev-notes').forEach( el => el.remove());
+
             $icon.addClass('notes-loaded');
 
             const response = JSON.parse(xhr.responseText);
@@ -695,7 +696,7 @@
   
                 if (notes.length) {
                   var ht = _this.getNotesList(notes);
-                  Array.prototype.forEach.call(container.querySelectorAll('.read-prev-notes'), el => el.remove());
+                  container.querySelectorAll('.read-prev-notes').forEach( el => el.remove() );
 
                   var li = container.querySelector('.notes-list');
                   if (dt.page) {
@@ -717,10 +718,7 @@
         }
       }
       xhr.onerror = () => {
-        const notes = container.querySelectorAll('.loading-notes');
-        if(notes.length > 0) {
-          Array.prototype.forEach.call(notes, (el) => el.remove());//.remove(); 
-        }
+        container.querySelectorAll('.loading-notes').forEach(el => el.remove());
       }
       xhr.send(null);
 
@@ -732,13 +730,15 @@
           form = isLoggedIn ? this.getForm('new') : u.generateElement(this.getSignInLink());
 
       if(!$icon.hasClass('notes-loaded')) {
-        var count = $icon.find('.notes-counter').attr('data-note-count');
-        count = parseInt(count);
-        if(!isNaN(count) && count > 0) {
-
-          this.loadNotesDetails(name, $icon, container);
-        } else {
-          container.find('.loading-notes').remove();
+        const notesCounter = $icon.querySelector('.notes-counter');
+        if(notesCounter != null) {
+          var count = notesCounter.attr('data-note-count');
+          count = parseInt(count);
+          if(!isNaN(count) && count > 0) {
+            this.loadNotesDetails(name, $icon, container);
+          } else {
+            container.querySelectorAll('.loading-notes').forEach(el => el.remove());
+          }
         }
       }
 
@@ -749,57 +749,68 @@
       }else {
         container.removeClass('on-dark');
       }
-      container.find('.note-login-btn').remove();
-      container.find('.note-close-btn').remove();
-      container.find('.notes-form-container').append(form);
+      let lb = container.querySelector('.note-login-btn');
+      if(lb != null) {
+        lb.remove();
+      }
+      let lc = container.find('.note-close-btn');
+      if(lc != null) {
+        lc.remove();
+      }
+
+      const notesFormContainer = container.querySelector('.notes-form-container');
+      if(notesFormContainer != null) {
+        notesFormContainer.append(form);
+      }
       this.positionContainer(container, name);
 
-      if (form && form.find('textarea').length) {
-        form.find('textarea').focus();
+      if (form && form.querySelector('textarea') != null) {
+        form.querySelector('textarea').focus();
       }
     };
 
     Details.prototype.positionContainer = function (container, name) {
-      var against = $('[name="' + name + '"]');
-      if (against.length) {
+      var against = document.querySelector('[name="' + name + '"]');
+      if (against != null) {
         if (this.smallScreen) {
 
         } else {
-          var offset = against.offset();
-          container.css({left: offset.left + against.width() + 50, top: offset.top , position: 'absolute'});  
+          var rect = against.getBoundingClientRect();
+          var offset = {
+            top: rect.top + document.body.scrollTop,
+            left: rect.left + document.body.scrollLeft
+          };
+          const st = container.style;
+          const agwidth = parseFloat(getComputedStyle(against, null).width.replace("px", ""));
+          st.left = offset.left + gwidth + 50 + 'px';
+          st.top = offset.top + 'px';
+          st.position = 'absolute';
         }
         
       }
     };
 
     Details.prototype.makeRequest = function (url, method, params, scallback, ecallback) {
-      var opt = {
-        url: url,
-        type: method,
-        dataType: 'json'
-      };
-      if (!_.isEmpty(params)) {
-        opt.data = params;
-      }
 
-      opt.success = function (resp) {
-        if (typeof scallback != 'undefined') {
-          scallback(resp);
+      const xhr = new XMLHttpRequest();
+      xhr.open(method, url, true);
+      xhr.onload = () => {
+        if(xhr.status == "200" && xhr.readyState == 4) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            if (typeof scallback != 'undefined') {
+              scallback(response);
+            }
+          }catch(e) {
+            console.error(e);
+          }
         }
       };
-
-      opt.error = function (resp) {
-        if (typeof ecallback != 'undefined') {
-          ecallback(resp);
-        }
-      };
-
-      $.ajax(opt);
     };
 
     Details.prototype.existingNotes = function (notes) {
       this.existing_notes = notes;
-      this.$el.html(''); // remove all existing notes..
+      this.$el.innerHTML = ''; // remove all existing notes..
       this.replyForm = null;
     };
 
