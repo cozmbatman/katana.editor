@@ -239,7 +239,23 @@
       if(toAdd === null) {
         return;
       }
-      el.appendChild(toAdd);
+      if(toAdd instanceof NodeList) {
+        Array.prototype.forEach.call(toAdd, (nd) => {
+          el.appendChild(nd);
+        })
+      } else {
+        el.appendChild(toAdd);
+      }
+    }
+  }
+
+  if(!Node.prototype.prepend) {
+    Node.prototype.prepend = function(el) {
+      let refNode = this;
+      if(refNode != null && refNode.parentNode != null) {
+        return refNode.parentNode.insertBefore(el, refNode.parentNode.firstElementChild);
+      }
+      return null;
     }
   }
 
@@ -601,7 +617,14 @@
   utils.prototype.generateElement = (txt) => {
     const d = document.createElement('div');
     d.innerHTML = txt;
-    return d.firstChild;
+    if(d.children.length == 0) {
+      return null;
+    }
+    if( d.children.length == 1 ) {
+      return d.firstChild;
+    } else {
+      return d.children;
+    }
   };
 
   utils.prototype.arrayToNodelist = (arr) => {
