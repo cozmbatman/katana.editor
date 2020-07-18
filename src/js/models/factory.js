@@ -114,13 +114,10 @@
       delta = this.findDelta();
 
       if (delta ) {
-        const aEvent = new CustomEvent('Katana.Commit', {
-          type: 'Katana.Commit',
+        //TODO generate sequence information here
+        this.current_editor.notifySubscribers('Katana.Commit', {
           delta: delta,
-          success: this.successCallback,
-          error: this.errorCallback
         });
-        this.elNode.dispatchEvent(aEvent);
         
         if (this.goingForUnload) {
           this.goingForUnload = false;

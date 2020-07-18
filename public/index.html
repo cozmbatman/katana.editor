@@ -29,48 +29,40 @@
     <div id="comments_closer">
     </div>
   </div>
-  <section>
-
-<div id="placeable_popup" class="modal overlay overlay-scale" role="alertdialog" aria-labelledby="placeableTitle" aria-describedby="placeableMessage">
-  <div class="modal-background"></div>
-  <div class="container">
-    <div class="row">
-      <div data-modal-body="true">
-        <div class="valign-container full-height-box">
-          <div class="valign center">
-            <div class="col-sm-12 col-lg-4 col-lg-offset-2 displace-to-center text-center">
-              <div class="row">
-                <div class="col-lg-12 ">
-                  <h3 class="thin-text" place="title" id="placeableTitle"></h3>
-                  <h5>&nbsp;</h5>
-                </div>
-                <div class="col-lg-12">
-                  <h4 class="font-normal" place="message" id="placeableMessage"></h4>
-                  <div place="content"></div>
-                  <br/>
-                  <button class="close-overlay-modal trans" >OK</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <a class="close-overlay-modal close-overlay-cross" datakey="[ESC]" title="Press Escape Key or Click here to close dialog">&#215;</a>
-</div>
+<section>
 
 <script src="../build/js/katana.js" ></script>
 <script>
   const katanaObj = {
     el: '#editor',
     mode: 'write',
-    upload_url: '/upload'
+    base_content_options: ['image', 'video', 'section'],
+    editorType: 'blog',
+    enableDraft: false,
+    image : {
+      upload: false,
+      url: '/upload'
+    },
+    embed: {
+      enabled: false,
+      url: 'http://iframe.ly/api/iframely?api_key=4afb3d8a83ee3fdb9ecf73&url='
+    },
+    placeholders: {
+      title: 'Title here',
+      subtitle: 'Start with introduction ..',
+      embed: 'Paste a YouTube video link, and press Enter'
+    }
   };
   const editor = new Katana.Editor(katanaObj);
-  editor.strike(function () {
-    //handleImages();
+  editor.init(() => {});
+  const comSub = editor.subscribe('Katana.Commit', (ev) => {
+    
   });
+  comSub.release();
+  const errSub = editor.subscribe('Katana.Error', (ev) => {
+
+  });
+  errSub.release();
 </script>
 </body>
 </html>

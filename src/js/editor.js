@@ -48,8 +48,10 @@
 
       this.editor_options = opts;
       // entry points
-      this.strike = u.__bind(this.strike, this); // activate
-      this.bow = u.__bind(this.bow, this); // deactivate
+      this.init = u.__bind(this.init, this); // activate
+      this.destroy = u.__bind(this.destroy, this); // deactivate
+      this.subscribe = u.__bind(this.subscribe, this); // for subscription to events
+      this.notifySubscribers = u.__bind(this.notifySubscribers, this); // notify subscribers of events
 
       // ui related
       this.render = u.__bind(this.render, this);
@@ -210,7 +212,7 @@
       if (opts == null) {
         opts = {};
       }
-      
+      this.editorOpts = opts;
       this.el = opts.el || "#editor";
 
       // debug mode
@@ -230,13 +232,18 @@
       this.prev_current_node = null;
       this.current_range = null;
 
-      this.upload_url = opts.upload_url;
+      this.image_options = opts.image ? opts.image : { enabled: false };
+      this.embed_options = opts.embed ? opts.embed : { enabled: false };
       this.json_quack = opts.json_quack;
+
+      let embedPlcStr = opts.placeholders && opts.placeholders.embed ? opts.placeholders.embed : 'Paste a YouTube video link, and press Enter';
+      let titlePlcStr = opts.placeholders && opts.placeholders.title ? opts.placeholders.title : 'Title here';
+      let subTitlePlcStr = opts.placeholders && opts.placeholders.subtitle ? opts.placeholders.subtitle : 'Start with introduction ..';
       
-      this.embed_placeholder = `<span class='placeholder-text placeholder-text--root'>Paste a YouTube video link, and press Enter</span><br>`;
-      this.oembed_url = `http://iframe.ly/api/iframely?api_key=4afb3d8a83ee3fdb9ecf73&url=`;
-      this.title_placeholder = `<span class="placeholder-text placeholder-text--root" data-placeholder-text="Title here">Title here</span><br>`;
-      this.subtitle_placeholder = `<span class="placeholder-text placeholder-text--root" data-placeholder-text="Start with introduction ..">Start with introduction ..</span><br>`;
+      this.embed_placeholder = `<span class='placeholder-text placeholder-text--root'>${embedPlcStr}</span><br>`;
+      //this.oembed_url = `http://iframe.ly/api/iframely?api_key=4afb3d8a83ee3fdb9ecf73&url=`;
+      this.title_placeholder = `<span class="placeholder-text placeholder-text--root" data-placeholder-text="${titlePlcStr}">${titlePlcStr}</span><br>`;
+      this.subtitle_placeholder = `<span class="placeholder-text placeholder-text--root" data-placeholder-text="${subTitlePlcStr}">${subTitlePlcStr}</span><br>`;
 
       this.sectionsForParallax = [];
       this.parallax = null;
@@ -249,10 +256,12 @@
 
       this.paste_element_id = '#mf_paste_div';
 
+      this.streamHandlers = {};
+
       return this;
     };
 
-    Editor.prototype.strike = function(cb) {
+    Editor.prototype.init = function(cb) {
       this.render(cb);
       if (this.mode == 'write') {
         this.elNode.attr('contenteditable', true);
@@ -274,8 +283,11 @@
       this.appendParallax();
 
       if (this.mode == 'write') {
-        this.committer = new Katana.ModelFactory({editor: this, mode: 'write'});
-        this.committer.manage(true);
+        const enabled = this.editorOpts && this.editorOpts.enableDraft ? this.editorOpts.enableDraft : true;
+        if(enabled) {
+          this.committer = new Katana.ModelFactory({editor: this, mode: 'write'});
+          this.committer.manage(true);
+        }
       }
 
       if (this.notes_options.commentable) {
@@ -312,6 +324,38 @@
         document.addEventListener('selectionchange', this.handleSelectionChange);
       }
     };
+
+    const _SubWrap = function(name, cb, set) {
+      this.name = name;
+      this.cb = cb;
+      this.set = set;
+    }
+    _SubWrap.prototype.execute = function(ev) {
+      this.cb(ev);
+    }
+    _SubWrap.prototype.release = function() {
+      this.cb = null;
+      this.set.clear(this);
+    }
+
+    Editor.prototype.subscribe = function(name, cb) {
+      if(typeof this.streamHandlers[name] === 'undefined') {
+        this.streamHandlers[name] = new Set();
+      }
+      const sub = new _SubWrap(name, cb, this.streamHandlers[name]);
+      this.streamHandlers[name].add(sub);
+      return sub;
+    };
+
+    Editor.prototype.notifySubscribers = function(name, ev) {
+      if(typeof this.streamHandlers[name] === 'undefined') {
+        return;
+      }
+      const entries = this.streamHandlers[name].entries();
+      for(const [k, v] of entries) {
+        v.execute(ev);
+      }
+    }
 
     Editor.prototype.addBlanktoTargets = function() {
       var anchors = this.elNode.querySelectorAll('a');

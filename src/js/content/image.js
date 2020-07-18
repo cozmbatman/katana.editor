@@ -27,9 +27,9 @@
 
       this.pushMultipleImageContainer = u.__bind(this.pushMultipleImageContainer, this);
       
-      this.popup = document.querySelector('#placeable_popup');
+      /*this.popup = document.querySelector('#placeable_popup');
       this.popupTitle = this.popup.querySelector('[place="title"]');
-      this.popupMessage = this.popup.querySelector('[place="message"]');
+      this.popupMessage = this.popup.querySelector('[place="message"]');*/
 
       return Images.__super__.constructor.apply(this, arguments);
     }
@@ -542,9 +542,10 @@
       }
 
       if (sizeError) {
-        this.popupTitle.textContent = 'Error';
-        this.popupMessage.textContent = 'Image exceeds maximum file size of 8 mb';
-        u.openOverlay({overlay: this.popup});
+        this.current_editor.notifySubscribers('Katana.Error', {
+            target : 'image',
+            message: 'Max file size exceeded'
+          });
       }
 
       if (this.batchesFiles.length == 0) {
@@ -767,13 +768,16 @@
     };
 
     Images.prototype.uploadFile = function(file, node) {
+      if(!this.current_editor.image_options || !this.current_editor.image_options.upload) {
+        return;
+      }
       const _this = this;
       const formData = this.formatData(file);
 
       this.current_editor.currentRequestCount++;
 
       const oReq = new XMLHttpRequest();
-      oReq.open("POST", this.current_editor.upload_url, true);
+      oReq.open("POST", this.current_editor.image_options.url, true);
       oReq.onprogress = this.updateProgressBar;
       oReq.onload = function(event) {
         if (oReq.status == 200) {
@@ -787,6 +791,7 @@
           } catch(e) {
             console.log('--- image upload issue ---');
             console.error(e);
+            _this.current_editor.notifySubscribers('Katana.Error', e);
           }
         } else {
           _this.current_editor.currentRequestCount--;
