@@ -37,9 +37,9 @@
           markup.resourceMarkup = { w: grounded.attr('data-width'), h: grounded.attr('data-height'), a: grounded.attr('data-aspect'), s: grounded.attr('data-style') };  
         }
 
-        var bgImage = this.$el.querySelector('.block-background-image');
+        var bgImage = this.elNode.querySelector('.block-background-image');
         if(bgImage != null) {
-          var path = bgImage.css('background-image');
+          var path = u.getStyle(bgImage, 'backgroundImage');
           path = /^url\((['"]?)(.*)\1\)$/.exec(path);
           path = path ? path[2] : '';
 

@@ -388,17 +388,13 @@
     };
 
     Images.prototype.displayCachedImage = function(file, cont, callback) {
-      var reader;
       this.current_editor.content_bar.hide();
-      reader = new FileReader();
-
       window.URL = window.webkitURL || window.URL; // Vendor prefixed in Chrome.
 
       var img = document.createElement('img');
       var _this = this;
       img.onload = function(e) {
-        window.URL.revokeObjectURL(this.src); // Clean up after yourself
-
+        
         if (_this.droppedCount) {
           _this.droppedCount--;
         }
@@ -428,14 +424,14 @@
         
         img_tag = new_tmpl.querySelector('img.item-image');
         if(img_tag != null) {
-          img_tag.attr('src', e.target.result);
+          img_tag.attr('src', e.target.currentSrc ? e.target.currentSrc : e.target.result);
         }
         img_tag.height = this.height;
         img_tag.width = this.width;
         
         self.setAspectRatio(replaced_node, this.width, this.height);
         
-        let rig = replaced_node.querySelector(".item-image")
+        let rig = replaced_node.querySelector(".item-image");
         
         if(rig != null) {
           rig.attr("data-height", this.height);
@@ -444,6 +440,11 @@
 
         if (img_tag.width < 700) {
           replaced_node.addClass('n-fullSize');
+        }
+
+        if(self.current_editor.image_options && self.current_editor.image_options.upload) {
+          // release blob when actual image uploads starts
+          window.URL.revokeObjectURL(this.src); // Clean up after yourself
         }
 
         if( typeof callback != 'undefined') {
@@ -546,6 +547,7 @@
             target : 'image',
             message: 'Max file size exceeded'
           });
+        return;
       }
 
       if (this.batchesFiles.length == 0) {

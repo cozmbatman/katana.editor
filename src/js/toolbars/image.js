@@ -127,6 +127,7 @@
       if(element != null) {
 
         action = element.attr("data-action");
+        if(action) {action = action.trim();}
         if (/(?:createlink)/.test(action)) {
           this.actionIsLink(ev.currentTarget);
         } else {
@@ -321,12 +322,24 @@
             ct.appendChild(sel);
             prevContainer = ct;
           }
-          if(!prevContainer.querySelectorAll(' > .item').length) {
-            prevContainer.parentNode.removeChild(prevContainer);
+          if(prevContainer != null) {
+            const aPChilds = prevContainer.children;
+            const validPChilds = Array.prototype.filter.call(aPChilds, el => { return el.classList.contains('item'); });
+            if(validPChilds.length == 0) {
+              prevContainer.parentNode.removeChild(prevContainer);
+            }
           }
 
           if(!nextContainer.hasClass('full-width-column')) {
-            prevContainer.appendChild(nextContainer.querySelector(' > .item'));
+
+            const aNChilds = nextContainer.children;
+            const vNChilds = Array.prototype.filter.call(aNChilds, el => { return el.classList.contains('item'); });
+            if(vNChilds.length > 0) {
+              vNChilds.forEach(el => {
+                prevContainer.appendChild(el);
+              })
+            }
+
             nextContainer.parentNode.removeChild(nextContainer);
           }
           curr.parentNode.removeChild(curr);
@@ -336,7 +349,7 @@
 
           if (firstGraf != null && firstGraf == sel) { // add in upper container or create one
             if (prevContainer != null) {
-              prevContainer.appendChild(sel);
+              prevContainer.append(sel);
             } else {
               var newCont = u.generateElement(this.current_editor.getSingleLayoutTempalte());
               newCont.appendChild(sel);
@@ -369,9 +382,9 @@
       if (sel == null || sel.closest('.full-width-column') != null) {
         return;
       }
-      var bottomContainer = u.createElement('<div class="block-content-inner center-column"></div>'),
+      var bottomContainer = u.generateElement('<div class="block-content-inner center-column"></div>'),
       currentContainer = sel.closest('.block-content-inner'),
-      figureContainer = u.createElement('<div class="block-content-inner full-width-column"></div>');
+      figureContainer = u.generateElement('<div class="block-content-inner full-width-column"></div>');
 
       while(sel.nextElementSibling != null) {
         bottomContainer.appendChild(sel.nextElementSibling);
@@ -405,7 +418,7 @@
       if (nxtFigures != null) {
         if(nextRow == null) {
           var tmpl = `<div class="block-grid-row" data-name="${u.generateId()}"></div>`;
-          tmpl = u.createElement(tmpl);
+          tmpl = u.generateElement(tmpl);
           tmpl.insertAfter(currentRow);
           nextRow = tmpl;
         }
@@ -413,7 +426,7 @@
       }
 
       var stretchRow = `<div class="block-grid-row" data-name="${u.generateId()}" data-paragraph-count="1"></div>`;
-      stretchRow = u.createElement(stretchRow);
+      stretchRow = u.generateElement(stretchRow);
       stretchRow.appendChild(figure);
       stretchRow.insertAfter(currentRow);
 
@@ -517,7 +530,7 @@
 
       if (prevRow.length == 0) {
         var tmpl = `<div class="block-grid-row" data-name="${u.generateId()}"></div>`;
-        tmpl = u.createElement(tmpl);
+        tmpl = u.generateElement(tmpl);
         tmpl.insertBefore(currRow);
         prevRow = tmpl;
       }
@@ -635,7 +648,7 @@
       if(padC != null) {
         var style = padC.attr('style');
         padC.attr('data-style', style);
-        padC.removeAttr('style');
+        padC.removeAttribute('style');
       }
       
 
@@ -861,26 +874,33 @@
           });
           container.remove();
           figures.removeClass('figure-in-row can-go-right can-go-down');
-          figures.removeAttr('style');
+          figures.removeAttribute('style');
         } else {
           moveIn = container.next('.block-content-inner');
           if (moveIn != null) {
-            firstGraf = moveIn.querySelector(' > .item');
+            const allFirst = moveIn.children;
+            const vAlLFirst = Array.prototype.filter.call(allFirst, el => { return el.classList.contains('item'); });
+            firstGraf = vAlLFirst.length > 0 ? vAlLFirst[0] : null;
+
             if(firstGraf != null) {
               let itf = container.querySelector('.item-figure');
               if(itf != null) {
                 itf.insertBefore(firstGraf);
               }
             }else {
-              moveIn.append(container.querySelectorAll('.item-figure'));
+              container.querySelectorAll('.item-figure').forEach(el => {
+                moveIn.appendChild(el);
+              })
             }
             container.remove();
             figures.removeClass('figure-in-row can-go-right can-go-down');
-            figures.removeAttr('style');
+            figures.removeAttribute('style');
           } else {
-            container.removeClass('block-grid figure-focused can-go-right can-go-down').removeAttr('data-paragraph-count').addClass('center-column');
+            container.removeClass('block-grid figure-focused can-go-right can-go-down')
+            .addClass('center-column')
+            .removeAttribute('data-paragraph-count');
             figures.removeClass('figure-in-row');
-            figures.removeAttr('style');
+            figures.removeAttribute('style');
             figures.unwrap();
           }
         }

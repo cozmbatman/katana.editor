@@ -17,6 +17,7 @@
     return this;
   };
 
+  
   YouTubePlayer.prototype.parse = function () {
     var a = document.createElement('a');
     a.href = this._url;
@@ -139,7 +140,7 @@
       var frameHeight = ww / asp;
 
       frame.attr('height', frameHeight);
-      frame.removeAttr('width');
+      frame.removeAttribute('width');
 
       var neg = -1 * (frameHeight - wh) / 2 ;
       

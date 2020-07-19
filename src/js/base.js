@@ -91,10 +91,10 @@
   if (!Element.prototype.prev) {
     Element.prototype.prev = function(s) {
       let el = this;
-      do {
-        if (el.matches(s)) return el;
+      while(el !== null && el.nodeType === 1) {
         el = el.previousElementSibling || el.previousSibling;
-      } while(el !== null && el.nodeType === 1);
+        if(el.matches(s)) return el;
+      }
       return null;
     }
   }
@@ -102,10 +102,10 @@
   if (!Element.prototype.next) {
     Element.prototype.next = function(s) {
       let el = this;
-      do {
-        if (el.matches(s)) return el;
+      while(el !== null && el.nodeType === 1) {
         el = el.nextElementSibling || el.nextSibling;
-      } while(el !== null && el.nodeType === 1);
+        if (el.matches(s)) return el;
+      }
       return null;
     }
   };
@@ -864,7 +864,7 @@
     this.scrollAttached = true;
     var $d = document,
         $w = window,
-        wHeight = $w.height(),
+        wHeight = this.getWindowHeight(),
         didScroll = false,
         $body = $d.querySelector('body'),
         _this = this;

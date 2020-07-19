@@ -256,10 +256,10 @@
                 nFormContainer.append(_this.getForm('new'));
               }
             } else {
-              form.removeAttr('disabled')
+              form.removeAttribute('disabled')
             }
           }, function () {
-            form.removeAttr('disabled')
+            form.removeAttribute('disabled')
           });
           // update 
         } else {
@@ -284,10 +284,10 @@
                 nFormContainer.append(_this.getForm('new'));  
               }
             } else {
-              form.removeAttr('disabled');
+              form.removeAttribute('disabled');
             }
           }, function () { // error callback
-            form.removeAttr('disabled');
+            form.removeAttribute('disabled');
           });
         }
         if(textArea != null) {
@@ -400,13 +400,13 @@
               if(rnote != null) {
                 rnote.attr('data-note-id', sresp.data.note_id);
               }
-              form.removeAttr('disabled');
+              form.removeAttribute('disabled');
             }
           } else {
-            form.removeAttr('disabled');
+            form.removeAttribute('disabled');
           }
         }, function () {
-          form.removeAttr('disabled');
+          form.removeAttribute('disabled');
         });
       }
       return false;
@@ -540,7 +540,7 @@
 
             _this.iconHandler.decrementCounter(piece);
           }, function () {
-            noteItem.removeAttr('disabled');
+            noteItem.removeAttribute('disabled');
           });
       }
     };
@@ -578,7 +578,7 @@
             var ta = container.find('.notes-form-container textarea');
             ta.focus();
           }, function () {
-            editMode.removeAttr('disabled');
+            editMode.removeAttribute('disabled');
           });
         }
       return false;

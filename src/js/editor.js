@@ -232,7 +232,7 @@
       this.prev_current_node = null;
       this.current_range = null;
 
-      this.image_options = opts.image ? opts.image : { enabled: false };
+      this.image_options = opts.image ? opts.image : { upload: true };
       this.embed_options = opts.embed ? opts.embed : { enabled: false };
       this.json_quack = opts.json_quack;
 
@@ -4348,7 +4348,7 @@
         var bg = item.querySelector('.block-background-image');
         if(bg != null) {
           // const styles = getComputedStyle(bg);
-          let path = u.getStyle(item, 'backgroundImage'); // styles.getPropertyValue('background-image');
+          let path = u.getStyle(bg, 'backgroundImage'); // styles.getPropertyValue('background-image');
           path = /^url\((['"]?)(.*)\1\)$/.exec(path);
           path = path ? path[2] : '';
           if (path != '') {

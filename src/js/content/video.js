@@ -197,7 +197,7 @@
       this.node_name = this.node.attr("name");
       this.node.addClass("loading-embed");
       this.node.attr('contenteditable','false');
-      this.node.appendChild(u.createElement('<i class="loader small dark"></i>'));
+      this.node.appendChild(u.generateElement('<i class="loader small dark"></i>'));
 
       var url = typeof extractedUrl != 'undefined' ? extractedUrl : this.node.textContent, 
           canGoBackground = false;

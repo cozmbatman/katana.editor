@@ -237,7 +237,11 @@
       } 
       if (ag.length) {
         var pos = this.calculateIconPosition(ag);
-        icon.css({left: pos.left, top : pos.top , position: 'absolute'});  
+        const st = icon.style;
+        st.left = pos.left + 'px';
+        st.top = pos.top + 'px';
+        st.position = 'absolute';
+        //icon.css({left: pos.left, top : pos.top , position: 'absolute'});  
         setTimeout(function () {
           icon.removeClass('hide');
         },100);
@@ -263,7 +267,11 @@
           //icon.css({left:0, top:0, position:'absolute'});
         } else {
           var pos = this.calculateIconPosition(against);
-          icon.css({left: pos.left, top : pos.top , position: 'absolute'});  
+          const ist = icon.style;
+          ist.left = pos.left + 'px';
+          ist.top = pos.top + 'px';
+          ist.position = 'absolute';
+          //icon.css({left: pos.left, top : pos.top , position: 'absolute'});  
         }
       }
     };
@@ -273,7 +281,7 @@
       <span class="notes-counter" data-note-count=""></span>
       <i class="mfi-comment"></i>
       </div>`;
-      return u.createElement(ht);
+      return u.generateElement(ht);
     };
 
     Notes.prototype._addIcon = function (name, currentCount) {

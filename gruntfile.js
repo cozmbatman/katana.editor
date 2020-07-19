@@ -18,7 +18,7 @@ module.exports = function(grunt) {
           './src/js/notes/*.js',
           './src/js/toolbars/*.js'
         ],
-        dest: './build/js/katana.js'
+        dest: './public/build/js/katana.js'
       },
     }
   });
