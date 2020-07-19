@@ -91,22 +91,29 @@
   if (!Element.prototype.prev) {
     Element.prototype.prev = function(s) {
       let el = this;
-      while(el !== null && el.nodeType === 1) {
+      let all = [];
+      while(el !== null) {
         el = el.previousElementSibling || el.previousSibling;
-        if(el != null && el.matches(s)) return el;
+        if(el != null && el.nodeType === 1 && el.matches(s)) {
+          all.push(el);
+        }
       }
-      return null;
+      //TODO maybe revere order of array
+      return all.length == 0 ? null : (all.length == 1 ? all[0] : all);
     }
   }
 
   if (!Element.prototype.next) {
     Element.prototype.next = function(s) {
       let el = this;
-      while(el !== null && el.nodeType === 1) {
+      let all = [];
+      while(el !== null) {
         el = el.nextElementSibling || el.nextSibling;
-        if (el != null && el.matches(s)) return el;
+        if (el != null && el.nodeType === 1 && el.matches(s)) {
+          all.push(el);
+        }
       }
-      return null;
+      return all.length == 0 ? null : (all.length == 1 ? all[0] : all);
     }
   };
 
@@ -670,9 +677,14 @@
   };
 
   utils.prototype.prependNode = (el, refNode) => {
-    if(refNode != null && refNode.parentNode != null) {
-      return refNode.parentNode.insertBefore(el, refNode.parentNode.firstElementChild);
+    if(typeof el.length == 'undefined') {
+      el = [el];
     }
+    el.forEach(e => {
+      if(refNode != null && refNode.parentNode != null) {
+        return refNode.parentNode.insertBefore(e, refNode.parentNode.firstElementChild);
+      }
+    })
     return null;
   };
 
@@ -1002,6 +1014,38 @@
     Base.prototype._ensureEvents = function() {
       return this.setEvent(u.__result(this, 'events'));
     };
+
+    const _SubWrap = function(name, cb, set) {
+      this.name = name;
+      this.cb = cb;
+      this.set = set;
+    }
+    _SubWrap.prototype.execute = function(ev) {
+      this.cb(ev);
+    }
+    _SubWrap.prototype.release = function() {
+      this.cb = null;
+      this.set.clear(this);
+    }
+
+    Base.prototype.subscribe = function(name, cb) {
+      if(typeof this.streamHandlers[name] === 'undefined') {
+        this.streamHandlers[name] = new Set();
+      }
+      const sub = new _SubWrap(name, cb, this.streamHandlers[name]);
+      this.streamHandlers[name].add(sub);
+      return sub;
+    };
+
+    Base.prototype.notifySubscribers = function(name, ev) {
+      if(typeof this.streamHandlers[name] === 'undefined') {
+        return;
+      }
+      const entries = this.streamHandlers[name].entries();
+      for(const [k, v] of entries) {
+        v.execute(ev);
+      }
+    }
 
     return Base;
   })();

@@ -56,13 +56,13 @@
   const editor = new Katana.Editor(katanaObj);
   editor.init(() => {});
   const comSub = editor.subscribe('Katana.Commit', (ev) => {
-    
+    console.log('commit called');
   });
-  comSub.release();
+  //comSub.release();
   const errSub = editor.subscribe('Katana.Error', (ev) => {
 
   });
-  errSub.release();
+  //errSub.release();
 </script>
 </body>
 </html>

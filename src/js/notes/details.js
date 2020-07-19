@@ -35,7 +35,7 @@
       this.edit_url = opts.info.edit_url || '';
       this.reply_url = opts.info.reply_url || '';
       this.privacy_url = opts.info.privacy_url || '';
-      this.smallScreen = $(window).width() <= 480 ? true : false;
+      this.smallScreen = u.getWindowWidth() <= 480 ? true : false;
       this.currentUser = typeof Mefacto.User != 'undefined' && Mefacto.User.id != 0 ? Mefacto.User.id : false;
     };
 

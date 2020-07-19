@@ -80,7 +80,7 @@
             <ul class='mf-menu-buttons'>`;
 
         this.config.buttons.forEach((item) => {
-          html += `<li class='mf-menu-button'><i class="mf-icon mfi-${item.i}" data-action=" ${item.a}"></i></li>`;
+          html += `<li class='mf-menu-button'><i class="mf-icon mfi-${item.i}" data-action="${item.a}"></i></li>`;
         });
         html += `</ul>`;
         return html;  
@@ -267,14 +267,12 @@
         for (var i = 0; i < rows.length; i = i + 1) {
           var row = rows[i];
           var figures = row.querySelectorAll('.item-figure');
-          const evnt = new CustomEvent('Katana.Images.Restructure', {
-            type: 'Katana.Images.Restructure',
+          this.current_editor.notifySubscribers('Katana.Images.Restructure', {
             container: row,
             count: figures.length,
             figures: figures
           });
 
-          this.current_editor.elNode.dispatchEvent(evnt);
         }
       }
     };
@@ -287,13 +285,11 @@
         for (var i = 0; i < rows.length; i = i + 1) {
           var row = rows[i];
           var figures = row.querySelectorAll('.item-figure');
-          const evnt = new CustomEvent('Katana.Images.Restructure', {
-            type: 'Katana.Images.Restructure',
+          this.current_editor.notifySubscribers('Katana.Images.Restructure', {
             container: row,
             count: figures.length,
             figures: figures
           });
-          this.current_editor.elNode.dispatchEvent(evnt);
         }
       }
     }    
@@ -421,24 +417,27 @@
         if(nextRow == null) {
           var tmpl = `<div class="block-grid-row" data-name="${u.generateId()}"></div>`;
           tmpl = u.generateElement(tmpl);
-          tmpl.insertAfter(currentRow);
+          currentRow.insertAdjacentElement('afterend', tmpl);
           nextRow = tmpl;
         }
-        u.prependNode(nxtFigures, nextRow);
+        if(typeof nxtFigures.length == 'undefined') {
+          nxtFigures = [nxtFigures];
+        }
+        nxtFigures.forEach(n => {
+          nextRow.insertBefore(n, nextRow.firstChild);
+        });
       }
 
       var stretchRow = `<div class="block-grid-row" data-name="${u.generateId()}" data-paragraph-count="1"></div>`;
       stretchRow = u.generateElement(stretchRow);
       stretchRow.appendChild(figure);
-      stretchRow.insertAfter(currentRow);
+      currentRow.insertAdjacentElement('afterend', stretchRow);
 
-      const reEvnt = new CustomEvent('Katana.Images.Restructure', {
-        type: 'Katana.Images.Restructure',
+      this.current_editor.notifySubscribers('Katana.Images.Restructure', {
         container: stretchRow,
         count: 1,
         figures: [figure]
       });
-      this.current_editor.elNode.dispatchEvent(reEvnt);
 
       // format figure in row just below stretch
       if (nextRow != null) {
@@ -447,13 +446,12 @@
           nextRowFigures.forEach(el => {
             el.attr('data-paragraph-count', nextRowFigures.length);
           });
-          const rEvnt = new CustomEvent('Katana.Images.Restructure', {
-            type: 'Katana.Images.Restructure',
+          this.current_editor.notifySubscribers('Katana.Images.Restructure', {
             container: nextRow,
             count: nextRowFigures.length,
             figures: nextRowFigures
           });
-          this.current_editor.elNode.dispatchEvent(rEvnt);
+
         } else {
           nextRow.parentNode.removeChild(nextRow);
         }
@@ -464,13 +462,12 @@
         currentRowFigures.forEach(el => {
           el.attr('data-paragraph-count', currentRowFigures.length);
         });
-        const cEvnt = new CustomEvent( 'Katana.Images.Restructure', {
-          type: 'Katana.Images.Restructure',
+        this.current_editor.notifySubscribers( 'Katana.Images.Restructure', {
           container: currentRow,
           count: currentRowFigures.length,
           figures: currentRowFigures
         });
-        this.current_editor.elNode.dispatchEvent(cEvnt);
+
       } else {
         currentRow.parentNode.removeChild(currentRow);
       }
@@ -491,7 +488,7 @@
       if (nextRow == null) {
         var tmpl = `<div class="block-grid-row" data-name="${u.generateId()}"></div>`;
         tmpl = u.generateElement(tmpl);
-        tmpl.insertAfter(row);
+        row.insertAdjacentElement('afterend', tmpl);
         nextRow = tmpl;
       }
 
@@ -500,8 +497,7 @@
       var newFigs = nextRow.querySelectorAll('.item-figure');
       nextRow.attr('data-paragraph-count', newFigs.length);
 
-      this.current_editor.$el.trigger({
-        type: 'Katana.Images.Restructure',
+      this.current_editor.notifySubscribers('Katana.Images.Restructure',{
         container: nextRow,
         count: newFigs.length,
         figures: newFigs
@@ -512,8 +508,7 @@
       } else {
         var figs = row.querySelectorAll('.item-figure');
         row.attr('data-paragraph-count', figs.length);
-        this.current_editor.$el.trigger({
-          type: 'Katana.Images.Restructure',
+        this.current_editor.notifySubscribers('Katana.Images.Restructure',{
           container: row,
           count: figs.length,
           figures: figs
@@ -525,25 +520,28 @@
       var currRow = figure.closest('.block-grid-row'),
           prevRow = currRow.prev('.block-grid-row');
 
-      if (prevRow.length == 0 && currRow.querySelectorAll('.item-figure').length == 1) {
+      if (prevRow == null && currRow.querySelectorAll('.item-figure').length == 1) {
         this.current_editor.moveFigureUp(figure);
         return;
       }
 
-      if (prevRow.length == 0) {
+      if (prevRow == null) {
         var tmpl = `<div class="block-grid-row" data-name="${u.generateId()}"></div>`;
         tmpl = u.generateElement(tmpl);
         tmpl.insertBefore(currRow);
         prevRow = tmpl;
       }
 
-      if (prevRow.length) {
+      if(typeof prevRow.length != 'undefined') {
+        prevRow = prevRow[0];
+      }
+
+      if (prevRow != null) {
         prevRow.append(figure);
         var prevFigures = prevRow.querySelectorAll('.item-figure');
         prevRow.attr('data-paragraph-count', prevFigures.length);
 
-        this.current_editor.$el.trigger({
-          type: 'Katana.Images.Restructure',
+        this.current_editor.notifySubscribers('Katana.Images.Restructure', {
           container: prevRow,
           count: prevFigures.length,
           figures: prevFigures
@@ -552,8 +550,7 @@
         var currFigures = currRow.querySelectorAll('.item-figure');
         if (currFigures.length) {
           currRow.attr('data-paragraph-count', currFigures.length);
-          this.current_editor.$el.trigger({
-            type: 'Katana.Images.Restructure',
+          this.current_editor.notifySubscribers('Katana.Images.Restructure', {
             container: currRow,
             count: currFigures.length,
             figures: currFigures
@@ -579,12 +576,12 @@
         if (direction == 'left') {
           toSwitchWith = sel.prev('.figure-in-row');
           if(toSwitchWith != null) {
-            sel.insertBefore(toSwitchWith);
+            sel.insertAdjacentElement('afterend', toSwitchWith);
           }
         } else if(direction == 'right') { 
           toSwitchWith = sel.next('.figure-in-row');
           if(toSwitchWith != null) {
-            toSwitchWith.insertBefore(sel);
+            toSwitchWith.insertAdjacentElement('afterend', sel);
           }
         } else if(direction == 'down') {
           this._commandGoDownInGrid(sel);
@@ -699,7 +696,7 @@
 
         var bgE = this.$el.querySelector('[data-action="background"]');
         if(bgE != null) {
-          bgE.parent('li').addClass('hide');
+          bgE.closest('li').addClass('hide');
         }
 
         var grid = sel.closest('.block-grid');
@@ -790,7 +787,7 @@
       for(const name of names) {
         let go = this.$el.querySelector('[data-action="' + name + '"]');
         if(go != null) {
-          let pl = go.parent('li');
+          let pl = go.closest('li');
           if(pl != null) {
             pl.hide();
           }
@@ -828,8 +825,7 @@
         var remaining = container.querySelectorAll('.item-figure');
         if (remaining.length) {
           container.attr('data-paragraph-count', remaining.length);
-          this.current_editor.$el.trigger({
-            type: 'Katana.Images.Restructure',
+          this.current_editor.notifySubscribers('Katana.Images.Restructure', {
             container: container,
             count: remaining.length,
             figures: remaining
@@ -856,9 +852,17 @@
         
 
       } else {
-        this.current_editor.replaceWith("p", figure);
-        this.current_editor.setRangeAt(document.querySelector(".item-selected"));
+        const itemSelected = this.current_editor.replaceWith("p", figure);
+        const nextItem = itemSelected.next('.item');
+        if(nextItem != null) {
+          itemSelected.parentNode.removeChild(itemSelected);
+          nextItem.addClass('item-selected');
+          this.current_editor.setRangeAt(nextItem);
+        } else {
+          this.current_editor.setRangeAt(document.querySelector(".item-selected"));
+        }
       }
+      this.hide();
     };
 
     ImageToolbar.prototype.unwrapSingleFigure = function (container) {
@@ -926,7 +930,10 @@
       height = h;
 
       if (figure.hasClass('figure-in-row')) {
-        maxWidth = figure.closest('.block-grid-row').width();
+        const brg = figure.closest('.block-grid-row');
+        if(brg != null) {
+          maxWidth = brg.getBoundingClientRect().width;
+        } 
       }
       
       if (width > maxWidth) {

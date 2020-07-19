@@ -65,7 +65,7 @@
         if (b.template) {
           menu += b.template();
         } else {
-          menu += `<button class="inlineTooltip-button scale" title="${b.title}" data-action="inline-menu-${b.action} ${data_action_value}"> <span class="tooltip-icon ${b.icon}"></span> </button>`;
+          menu += `<button class="inlineTooltip-button scale" title="${b.title}" data-action="inline-menu-${b.action}" ${data_action_value}"> <span class="tooltip-icon ${b.icon}"></span> </button>`;
         }
         return menu;
       });

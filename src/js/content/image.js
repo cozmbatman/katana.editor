@@ -27,10 +27,6 @@
 
       this.pushMultipleImageContainer = u.__bind(this.pushMultipleImageContainer, this);
       
-      /*this.popup = document.querySelector('#placeable_popup');
-      this.popupTitle = this.popup.querySelector('[place="title"]');
-      this.popupMessage = this.popup.querySelector('[place="message"]');*/
-
       return Images.__super__.constructor.apply(this, arguments);
     }
 
@@ -51,11 +47,11 @@
 
       _this = this;
 
-      this.editorEl.addEventListener('Katana.Images.Restructure', function (event) {
+      this.current_editor.subscribe('Katana.Images.Restructure', (event) => {
         _this.fixPositioningForMultipleImages(event.container, event.figures, event.count);
       });
 
-      this.editorEl.addEventListener('Katana.Images.Add', function (event) {
+      this.current_editor.subscribe('Katana.Images.Add', (event) => {
         if (typeof event.row != 'undefined') {
           _this.addImagesInRow = event.row;  
           _this.imageSelect(event);
@@ -63,6 +59,7 @@
           _this.imageSelect(event);
         }
       });
+
       return this;
     };
 
@@ -330,8 +327,8 @@
           fig.attr("data-width", this.width);
         }
 
-        if (this.width < 760) {
-          figure.addClass('n-fullSize');
+        if (this.naturalWidth < 760) {
+          //figure.addClass('n-fullSize');
         }
         
         if (typeof srcToUse == 'undefined') {
@@ -411,7 +408,8 @@
           new_tmpl.addClass('figure-in-row');
 
           if(cont.contains(node)) {
-            replaced_node = node.parentNode.insertBefore(new_tmpl, node);
+            node.insertAdjacentElement('afterend', new_tmpl);
+            replaced_node = new_tmpl; //node.parentNode.insertBefore(new_tmpl, node);
           }else {
             replaced_node = new_tmpl;
             cont.appendChild(replaced_node);
@@ -663,12 +661,15 @@
     };
 
     Images.prototype.fixPositioningForMultipleImages = function (cont, figures, count)  {
+      if(cont == null) {
+        return;
+      }
       var ratios = [],
           rsum = 0,
           height, 
           len = figures.length,
           widths = [],
-          totalWidth = cont.width(),
+          totalWidth = cont.getBoundingClientRect().width,
           i = 0;
 
       for (i; i < len; i = i + 1) {
@@ -708,7 +709,7 @@
       }
 
       if (count == 1) {
-        let pcA = figures.querySelectorAll('.padding-cont');
+        let pcA = figures[0].querySelectorAll('.padding-cont');
         pcA.forEach(pc => {
           pc.removeAttribute('style');
         });
@@ -758,8 +759,10 @@
       }
 
       var new_tmpl = this.blockGridTemplate(count);
-      new_tmpl.insertAfter(parentContainer);
-      bottomContainer.insertAfter(new_tmpl);
+      parentContainer.insertAdjacentElement('afterend', new_tmpl);
+      //new_tmpl.insertAfter(parentContainer);
+      new_tmpl.insertAdjacentElement('afterend', bottomContainer);
+      //bottomContainer.insertAfter(new_tmpl);
 
       this.addImagesInContainer = true;
       bottomContainer.prepend(item);

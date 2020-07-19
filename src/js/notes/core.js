@@ -37,15 +37,20 @@
         _this.deactivateAll();          
       });
 
-      var w = ('innerWidth' in window) ? window.innerWidth : $(window).width();
+      var w = ('innerWidth' in window) ? window.innerWidth : u.getWindowWidth();
       this.smallScreen = w <= 480 ? true : false;
-      var layoutWidth = $('.center-column').width();
+      const cc = document.querySelector('.center-column');
+      var layoutWidth = 1020;
+      if(cc != null) {
+        layoutWidth = cc.getBoundingClientRect().width;
+      }
+
       var cen = (w - layoutWidth) / 2,
           tot = (cen + layoutWidth + 355);
       this.llShift = false;
       if (tot > w) {
         this.llShift = false;
-        $('body').addClass('notes-ll-shift');
+        document.querySelector('body').addClass('notes-ll-shift');
       }
 
       this.readNotes();
@@ -133,14 +138,15 @@
 
     Notes.prototype.activateCloser = function(against) {
       this.commentsCloserElement.addClass('active');
-      var w = $(window).width();
-      var o = against.offset().left + against.width();
-      this.commentsCloserElement.css({right: (w - o) + 'px'});
+      var w = u.getWindowWidth();
+      const box = against.getBoundingClientRect();
+      var o = box.left + box.width;
+      this.commentsCloserElement.style.right = (w - o) + 'px';
     };
 
     Notes.prototype.deactivateCloser = function() {
       this.commentsCloserElement.removeClass('active');
-      $('body').removeClass('notes-opened');
+      document.querySelector('body').removeClass('notes-opened');
     };
 
     Notes.prototype.deactivateAll = function () {
@@ -206,9 +212,13 @@
     };
 
     Notes.prototype.calculateIconPosition = function (against) {
-      var aoffset = against.offset();
+      const box = against.getBoundingClientRect();
+      var aoffset = {
+        top: box.top + document.body.scrollTop,
+        left: box.left + document.body.scrollLeft
+      };
       var top = aoffset.top,
-          left = aoffset.left + against.width() + 5;
+          left = aoffset.left + box.width + 5;
       if (this.smallScreen) {
         if (left < 790) {
           left = 800;
