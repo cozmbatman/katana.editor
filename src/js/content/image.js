@@ -419,9 +419,7 @@
         } else {
           replaced_node = node.parentNode.insertBefore(new_tmpl, node);
         }
-
-        new_tmpl.addClass('item-uploading');
-        
+  
         img_tag = new_tmpl.querySelector('img.item-image');
         if(img_tag != null) {
           img_tag.attr('src', e.target.currentSrc ? e.target.currentSrc : e.target.result);
@@ -443,6 +441,7 @@
         }
 
         if(self.current_editor.image_options && self.current_editor.image_options.upload) {
+          new_tmpl.addClass('item-uploading');
           // release blob when actual image uploads starts
           window.URL.revokeObjectURL(this.src); // Clean up after yourself
         }

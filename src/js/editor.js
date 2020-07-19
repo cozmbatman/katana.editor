@@ -2666,7 +2666,7 @@
     
         }
 
-        if(anchor_node.length && anchor_node.querySelectorAll('.placeholder-text').length) {
+        if(anchor_node != null && anchor_node.querySelectorAll('.placeholder-text').length) {
           e.preventDefault();
           anchor_node.addClass('item-empty');
           anchor_node.innerHTML = '<br />';
@@ -2841,8 +2841,8 @@
 
       this.handleTextSelection(anchor_node);
       if ([BACKSPACE, SPACEBAR, ENTER].indexOf(e.which) != -1) {
-        if (anchor_node.hasClass("item-li")) {
-          this.removeSpanTag($anchor_node);
+        if (anchor_node != null && anchor_node.hasClass("item-li")) {
+          this.removeSpanTag(anchor_node);
         }
       }
 
@@ -3917,16 +3917,18 @@
       }
 
       setTimeout(() => {
-        var pos;
-          pos = u.getImageSelectionDimension();  
+          var pos = u.getImageSelectionDimension();  
           this.image_toolbar.render();
+          this.image_toolbar.show();
           this.relocateImageToolbar(pos);
-          return this.image_toolbar.show();
-      }, 10);
+      }, 16);
 
     };
 
     Editor.prototype.relocateImageToolbar = function (position) {
+      if(position == null) {
+        return;
+      }
       var height, left, padd, top, scrollTop;
       const ebr = this.image_toolbar.elNode.getBoundingClientRect();
 
@@ -3934,7 +3936,7 @@
       padd = ebr.width / 2;
       top = position.top - height;
       left = position.left + (position.width / 2) - padd;
-      scrollTop = window.scrollTop;
+      scrollTop = window.pageYOffset;
 
       if (scrollTop > top) {
         top = scrollTop;
@@ -3986,13 +3988,13 @@
       figure.focus();
     };
 
-    Editor.prototype.handleGrafFigureSelectImg = function (ev) {
+    Editor.prototype.handleGrafFigureSelectImg = function (ev, matched) {
       var element;
       var text = this.getSelectedText();
       if (text && text.killWhiteSpace().length > 0) {
         return false;
       }
-      element = ev.currentTarget;
+      element = matched ? matched : ev.currentTarget;
       var sec = element.closest('.with-background');
       if (sec != null) {
         this.selectFigure(sec);
@@ -4056,8 +4058,8 @@
       }
     };
 
-    Editor.prototype.handleImageActionClick = function (ev) {
-      var tg = ev.currentTarget,
+    Editor.prototype.handleImageActionClick = function (ev, matched) {
+      var tg = matched ? matched : ev.currentTarget,
         action = tg.attr('data-action'),
         figure = tg.closest('figure');
       

@@ -93,7 +93,7 @@
       let el = this;
       while(el !== null && el.nodeType === 1) {
         el = el.previousElementSibling || el.previousSibling;
-        if(el.matches(s)) return el;
+        if(el != null && el.matches(s)) return el;
       }
       return null;
     }
@@ -104,7 +104,7 @@
       let el = this;
       while(el !== null && el.nodeType === 1) {
         el = el.nextElementSibling || el.nextSibling;
-        if (el.matches(s)) return el;
+        if (el != null && el.matches(s)) return el;
       }
       return null;
     }

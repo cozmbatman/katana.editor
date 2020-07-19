@@ -93,7 +93,7 @@
       let el = this;
       while(el !== null && el.nodeType === 1) {
         el = el.previousElementSibling || el.previousSibling;
-        if(el.matches(s)) return el;
+        if(el != null && el.matches(s)) return el;
       }
       return null;
     }
@@ -104,7 +104,7 @@
       let el = this;
       while(el !== null && el.nodeType === 1) {
         el = el.nextElementSibling || el.nextSibling;
-        if (el.matches(s)) return el;
+        if (el != null && el.matches(s)) return el;
       }
       return null;
     }
@@ -3677,7 +3677,7 @@
     
         }
 
-        if(anchor_node.length && anchor_node.querySelectorAll('.placeholder-text').length) {
+        if(anchor_node != null && anchor_node.querySelectorAll('.placeholder-text').length) {
           e.preventDefault();
           anchor_node.addClass('item-empty');
           anchor_node.innerHTML = '<br />';
@@ -3852,8 +3852,8 @@
 
       this.handleTextSelection(anchor_node);
       if ([BACKSPACE, SPACEBAR, ENTER].indexOf(e.which) != -1) {
-        if (anchor_node.hasClass("item-li")) {
-          this.removeSpanTag($anchor_node);
+        if (anchor_node != null && anchor_node.hasClass("item-li")) {
+          this.removeSpanTag(anchor_node);
         }
       }
 
@@ -4928,16 +4928,18 @@
       }
 
       setTimeout(() => {
-        var pos;
-          pos = u.getImageSelectionDimension();  
+          var pos = u.getImageSelectionDimension();  
           this.image_toolbar.render();
+          this.image_toolbar.show();
           this.relocateImageToolbar(pos);
-          return this.image_toolbar.show();
-      }, 10);
+      }, 16);
 
     };
 
     Editor.prototype.relocateImageToolbar = function (position) {
+      if(position == null) {
+        return;
+      }
       var height, left, padd, top, scrollTop;
       const ebr = this.image_toolbar.elNode.getBoundingClientRect();
 
@@ -4945,7 +4947,7 @@
       padd = ebr.width / 2;
       top = position.top - height;
       left = position.left + (position.width / 2) - padd;
-      scrollTop = window.scrollTop;
+      scrollTop = window.pageYOffset;
 
       if (scrollTop > top) {
         top = scrollTop;
@@ -4997,13 +4999,13 @@
       figure.focus();
     };
 
-    Editor.prototype.handleGrafFigureSelectImg = function (ev) {
+    Editor.prototype.handleGrafFigureSelectImg = function (ev, matched) {
       var element;
       var text = this.getSelectedText();
       if (text && text.killWhiteSpace().length > 0) {
         return false;
       }
-      element = ev.currentTarget;
+      element = matched ? matched : ev.currentTarget;
       var sec = element.closest('.with-background');
       if (sec != null) {
         this.selectFigure(sec);
@@ -5067,8 +5069,8 @@
       }
     };
 
-    Editor.prototype.handleImageActionClick = function (ev) {
-      var tg = ev.currentTarget,
+    Editor.prototype.handleImageActionClick = function (ev, matched) {
+      var tg = matched ? matched : ev.currentTarget,
         action = tg.attr('data-action'),
         figure = tg.closest('figure');
       
@@ -6613,9 +6615,7 @@
         } else {
           replaced_node = node.parentNode.insertBefore(new_tmpl, node);
         }
-
-        new_tmpl.addClass('item-uploading');
-        
+  
         img_tag = new_tmpl.querySelector('img.item-image');
         if(img_tag != null) {
           img_tag.attr('src', e.target.currentSrc ? e.target.currentSrc : e.target.result);
@@ -6637,6 +6637,7 @@
         }
 
         if(self.current_editor.image_options && self.current_editor.image_options.upload) {
+          new_tmpl.addClass('item-uploading');
           // release blob when actual image uploads starts
           window.URL.revokeObjectURL(this.src); // Clean up after yourself
         }
@@ -9931,7 +9932,9 @@
             prevContainer.appendChild(sel);
           }else {
             var ct = u.generateElement(this.current_editor.getSingleLayoutTempalte());
-            ct.insertBefore(curr);
+            curr.parentNode.insertBefore(ct, curr);;
+            //curr.insertBefore(ct, curr.firstChild);
+            //ct.insertBefore(curr);
             ct.appendChild(sel);
             prevContainer = ct;
           }
@@ -9943,7 +9946,7 @@
             }
           }
 
-          if(!nextContainer.hasClass('full-width-column')) {
+          if(nextContainer != null && !nextContainer.hasClass('full-width-column')) {
 
             const aNChilds = nextContainer.children;
             const vNChilds = Array.prototype.filter.call(aNChilds, el => { return el.classList.contains('item'); });

@@ -318,7 +318,9 @@
             prevContainer.appendChild(sel);
           }else {
             var ct = u.generateElement(this.current_editor.getSingleLayoutTempalte());
-            ct.insertBefore(curr);
+            curr.parentNode.insertBefore(ct, curr);;
+            //curr.insertBefore(ct, curr.firstChild);
+            //ct.insertBefore(curr);
             ct.appendChild(sel);
             prevContainer = ct;
           }
@@ -330,7 +332,7 @@
             }
           }
 
-          if(!nextContainer.hasClass('full-width-column')) {
+          if(nextContainer != null && !nextContainer.hasClass('full-width-column')) {
 
             const aNChilds = nextContainer.children;
             const vNChilds = Array.prototype.filter.call(aNChilds, el => { return el.classList.contains('item'); });
