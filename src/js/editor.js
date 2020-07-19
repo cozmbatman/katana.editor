@@ -1874,7 +1874,7 @@
             u.setCaretAtPosition(node, 0);
           }  
         }
-      }else if(el.hasClass('block-background')) {        
+      }else if(el.hasClass('block-background') || el.hasClass('table-view') || el.hasClass('table-cell-view')) {
         var section = el.closest('section');
         if(section != null) {
           this.selectFigure(section);
@@ -4145,14 +4145,14 @@
           for(var i = 0; i < inners.length; i = i + 1) {
             var curr = inners[i],
                 k = i + 1,
-                next = !inners[k] ? inners[k] : false;
+                next = typeof inners[k] != 'undefined' ? inners[k] : false;
             if (next) {
               if(next.querySelectorAll('.item').length == 0) {
                 next.parentNode.removeChild(next);
                 return merge();
               }
               if (!curr.hasClass('block-grid') && u.elementsHaveSameClasses(curr, next)) {
-                next.querySelector('.item').forEach(elm => {
+                next.querySelectorAll('.item').forEach(elm => {
                   curr.appendChild(elm);
                 });
                 _this.setupFirstAndLast();

@@ -259,52 +259,76 @@
     }
   }
 
-  Node.prototype.unwrap = (el) => {
-    // get the element's parent node
-    var parent = el.parentNode;
+  if(!Node.prototype.unwrap) {
+    Node.prototype.unwrap = (el) => {
+      // get the element's parent node
+      var parent = el.parentNode;
+  
+      // move all children out of the element
+      while (el.firstChild) parent.insertBefore(el.firstChild, el);
+  
+      // remove the empty element
+      return parent.removeChild(el);
+    };
+  }
 
-    // move all children out of the element
-    while (el.firstChild) parent.insertBefore(el.firstChild, el);
+  if(!NodeList.prototype.wrap) {
+    NodeList.prototype.wrap = function(wrapper) {
+      if(this.length == 0) {
+        return;
+      }
+      // creating a temporary element to contain the HTML string ('wrapper'):
+      var temp = document.createElement('div'),
+      // a reference to the parent of the first Node:
+          parent = this.parentNode,
+      // a reference to where the newly-created nodes should be inserted:
+          insertWhere = this.previousSibling,
+      // caching a variable:
+          target;
+  
+      // setting the innerHTML of the temporary element to what was passed-in:
+      temp.innerHTML = wrapper;
+  
+      // getting a reference to the outermost element in the HTML string passed-in:
+      target = temp.firstChild;
+  
+      // a naive search for the deepest node of the passed-in string:        
+      while (target.firstChild) {
+          target = target.firstChild;
+      }
+  
+      // iterating over each Node:
+      [].forEach.call(this, (a) => {
+          // appending each of those Nodes to the deepest node of the passed-in string:
+          target.appendChild(a);
+      });
+  
+      // inserting the created-nodes either before the previousSibling of the first
+      // Node (if there is one), or before the firstChild of the parent:
+      return parent.insertBefore(temp.firstChild, (insertWhere ? insertWhere.nextSibling : parent.firstChild));
+    };
+  }
 
-    // remove the empty element
-    return parent.removeChild(el);
-  };
+  if(!Node.prototype.wrap) {
+    Node.prototype.wrap = function(wrapper) {
+      var temp = document.createElement('div'),
+          parent = this.parentNode,
+          insertWhere = this.previousSibling,
+          target;
+  
+      temp.innerHTML = wrapper;
+      target = temp.firstChild;
+  
+      while (target.firstChild) {
+          target = target.firstChild;
+      }
 
-  NodeList.prototype.wrap = function(wrapper) {
-    if(this.length == 0) {
-      return;
+      target.appendChild(this);
+
+      return parent.insertBefore(temp.firstChild, (insertWhere ? insertWhere.nextSibling : parent.firstChild));
     }
-    // creating a temporary element to contain the HTML string ('wrapper'):
-    var temp = document.createElement('div'),
-    // a reference to the parent of the first Node:
-        parent = this.parentNode,
-    // a reference to where the newly-created nodes should be inserted:
-        insertWhere = this.previousSibling,
-    // caching a variable:
-        target;
-
-    // setting the innerHTML of the temporary element to what was passed-in:
-    temp.innerHTML = wrapper;
-
-    // getting a reference to the outermost element in the HTML string passed-in:
-    target = temp.firstChild;
-
-    // a naive search for the deepest node of the passed-in string:        
-    while (target.firstChild) {
-        target = target.firstChild;
-    }
-
-    // iterating over each Node:
-    [].forEach.call(this, (a) => {
-        // appending each of those Nodes to the deepest node of the passed-in string:
-        target.appendChild(a);
-    });
-
-    // inserting the created-nodes either before the previousSibling of the first
-    // Node (if there is one), or before the firstChild of the parent:
-    return parent.insertBefore(temp.firstChild, (insertWhere ? insertWhere.nextSibling : parent.firstChild));
-
-  };
+  }
+  
 
   function utils() {};
 
@@ -565,13 +589,19 @@
   })();
 
   utils.prototype.elementsHaveSameClasses = (first, second) => {
-    var arr1 = first.classList,
-        arr2 = second.classList;
-    if(arr1.length != arr2.length) {
-      return false;
+    var arr1 = [...first.classList],
+        arr2 = [...second.classList];
+        if(arr1.length != arr2.length) {
+          return false;
+        }
+    arr1.sort();
+    arr2.sort();
+    for(let i = 0; i < arr1.length; i++) {
+      if(arr1[i] !== arr2[i]) {
+        return false;
+      }
     }
-
-    return arr1.filter(value => arr2.includes(value)).length === 0;
+    return true;
   };
 
   utils.prototype.urlIsFromDomain = (url, domain) => {

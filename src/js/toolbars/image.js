@@ -1060,7 +1060,13 @@
       figure.querySelector('.padding-cont').attr('style', backgrounded.attr('data-style'));
 
       //remove the continue writing 
-      section.querySelector('.placeholder-text').closest('.item').remove();
+      const pt = section.querySelector('.placeholder-text');
+      if(pt != null) {
+        const pti = pt.closest('.item');
+        if(pti != null) {
+          pti.remove();
+        }
+      }
 
       caption = figure.querySelector('.figure-caption');
 
@@ -1069,7 +1075,7 @@
         figure.removeClass('item-text-default');
       }
 
-      figure.wrap(u.generateElement(this.current_editor.getSingleLayoutTempalte()));
+      figure.wrap(this.current_editor.getSingleLayoutTempalte());
 
       figure = figure.closest('.center-column');
 
@@ -1077,8 +1083,10 @@
         var sect = section.nextElementSibling,
             inner = sect.querySelector('.main-body');
         if(inner != null) {
-          u.prependNode(inner, currentContent);
-          u.prependNode(inner, figure);
+          inner.insertBefore(currentContent, inner.firstChild);
+          //u.prependNode(currentContent, inner);
+          inner.insertBefore(figure, inner.firstChild);
+//          u.prependNode(figure, inner);
           this.current_editor.mergeInnerSections(sect);
         }
         section.parentNode.removeChild(section);
