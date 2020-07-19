@@ -4265,14 +4265,13 @@
             this.moveFigureInsideGrid(figure, nextColumn, true);
             toGrid = true;
           } else if (nextColumn.hasClass('center-column')) {  // next is text based center clumn.. prepend item there..
-            u.prependNode(figure, nextColumn);
-
+            nextColumn.insertBefore(figure, nextColumn.firstChild);
           } else if (nextColumn.hasClass('full-width-column')) { //next is full width image..move image to next column after that..
             var nextAfterFW = nextColumn.nextElementSibling;
             if (nextAfterFW != null) { // we have something after next column
               if (nextAfterFW.hasClass('center-column')) { // its centered column
-                u.prependNode(figure, nextAfterFW);
-
+                nextAfterFW.insertBefore(figure, nextAfterFW.firstChild);
+                //u.prependNode(figure, nextAfterFW);
               } else if (nextAfterFW.hasClass('full-width-column') || nextAfterFW.hasClass('block-grid')) { // anotehr full width here..or block grid put a center column inbetween and put figure there
                 var centerColumn = this.pushCenterColumn(nextAfterFW, true);
                 centerColumn.appendChild(figure);
@@ -6531,7 +6530,9 @@
         }
 
         if (this.naturalWidth < 760) {
-          //figure.addClass('n-fullSize');
+          figure.addClass('n-fullSize');
+        } else {
+          figure.removeChild('n-fullSize');
         }
         
         if (typeof srcToUse == 'undefined') {
@@ -6637,8 +6638,10 @@
           rig.attr("data-width", this.width);
         }
 
-        if (img_tag.width < 700) {
+        if (img_tag.naturalWidth < 700) {
           replaced_node.addClass('n-fullSize');
+        } else {
+          replaced_node.removeClass('n-fullSize');
         }
 
         if(self.current_editor.image_options && self.current_editor.image_options.upload) {
@@ -10116,6 +10119,21 @@
         if (figs.length == 1) {
           // we are the only item.. should breakout from the grid now
           this.current_editor.moveFigureDown(sel);
+          const grid = row.closest('.block-content-inner');
+          const allFig = grid.querySelectorAll('.item-figure');
+          grid.attr('data-paragraph-count', allFig.length);
+          row.parentNode.removeChild(row);
+
+          if(allFig.length == 1) {
+            this._commandGoDownInGrid(allFig[0]);
+          }
+          if(allFig.length == 0) {
+            const section = grid.closest('.block-content');
+            grid.parentNode.removeChild(grid);
+            if(section != null) {
+              this.current_editor.mergeInnerSections(section);
+            }
+          }
           return;
         }
       }

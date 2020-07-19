@@ -3210,14 +3210,13 @@
             this.moveFigureInsideGrid(figure, nextColumn, true);
             toGrid = true;
           } else if (nextColumn.hasClass('center-column')) {  // next is text based center clumn.. prepend item there..
-            u.prependNode(figure, nextColumn);
-
+            nextColumn.insertBefore(figure, nextColumn.firstChild);
           } else if (nextColumn.hasClass('full-width-column')) { //next is full width image..move image to next column after that..
             var nextAfterFW = nextColumn.nextElementSibling;
             if (nextAfterFW != null) { // we have something after next column
               if (nextAfterFW.hasClass('center-column')) { // its centered column
-                u.prependNode(figure, nextAfterFW);
-
+                nextAfterFW.insertBefore(figure, nextAfterFW.firstChild);
+                //u.prependNode(figure, nextAfterFW);
               } else if (nextAfterFW.hasClass('full-width-column') || nextAfterFW.hasClass('block-grid')) { // anotehr full width here..or block grid put a center column inbetween and put figure there
                 var centerColumn = this.pushCenterColumn(nextAfterFW, true);
                 centerColumn.appendChild(figure);

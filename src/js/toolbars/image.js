@@ -482,6 +482,21 @@
         if (figs.length == 1) {
           // we are the only item.. should breakout from the grid now
           this.current_editor.moveFigureDown(sel);
+          const grid = row.closest('.block-content-inner');
+          const allFig = grid.querySelectorAll('.item-figure');
+          grid.attr('data-paragraph-count', allFig.length);
+          row.parentNode.removeChild(row);
+
+          if(allFig.length == 1) {
+            this._commandGoDownInGrid(allFig[0]);
+          }
+          if(allFig.length == 0) {
+            const section = grid.closest('.block-content');
+            grid.parentNode.removeChild(grid);
+            if(section != null) {
+              this.current_editor.mergeInnerSections(section);
+            }
+          }
           return;
         }
       }

@@ -328,7 +328,9 @@
         }
 
         if (this.naturalWidth < 760) {
-          //figure.addClass('n-fullSize');
+          figure.addClass('n-fullSize');
+        } else {
+          figure.removeChild('n-fullSize');
         }
         
         if (typeof srcToUse == 'undefined') {
@@ -434,8 +436,10 @@
           rig.attr("data-width", this.width);
         }
 
-        if (img_tag.width < 700) {
+        if (img_tag.naturalWidth < 700) {
           replaced_node.addClass('n-fullSize');
+        } else {
+          replaced_node.removeClass('n-fullSize');
         }
 
         if(self.current_editor.image_options && self.current_editor.image_options.upload) {
