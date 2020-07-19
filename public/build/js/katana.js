@@ -603,7 +603,7 @@
     }
     return true;
   };
-
+  
   utils.prototype.urlIsFromDomain = (url, domain) => {
     var a = document.createElement('a');
     a.href = url;
