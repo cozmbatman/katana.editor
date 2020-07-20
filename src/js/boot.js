@@ -1,5 +1,4 @@
 import Poly from './polyfills';
-import Utils from './utils';
 
 function Boot() {
   
@@ -13,7 +12,7 @@ function Boot() {
 
   const attachEvents = (obj, node, events) => {
     for (const [key, f] of Object.entries(events)) {
-      var element, func, key_arr;
+      let element, func, key_arr;
       key_arr = key.split(" ");
       
       if(f && {}.toString.call(f) === '[object Function]') {

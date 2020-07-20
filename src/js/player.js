@@ -8,10 +8,9 @@ function YouTubePlayer(url) {
 };
 
 YouTubePlayer.prototype.init = function() {
+  this.onYoutubePlayerReady = this.onYoutubePlayerReady.bind(this);
   this.parse();
   this.createContainers();
-
-  this.onYoutubePlayerReady = u.__bind(this.onYoutubePlayerReady, this);
   return this;
 };
 
@@ -26,29 +25,26 @@ YouTubePlayer.prototype.parse = function () {
 };
 
 YouTubePlayer.prototype.locateContainer = function (){
-  var nodes = $('.block-background-image[data-frame-url="' + this._url + '"]');
-  if (nodes.length) {
+  const nodes = document.querySelectorAll('.block-background-image[data-frame-url="' + this._url + '"]');
+  if (nodes.length > 0) {
     return nodes;
   }
   return false;
 };
 
 YouTubePlayer.prototype.createContainers = function () {
-  var nodes = this.locateContainer(); // in case we have multiple video embeds in background , but video is same.
+  const nodes = this.locateContainer(); // in case we have multiple video embeds in background , but video is same.
   if (nodes) {
-    for (var i = 0; i < nodes.length; i = i + 1) {
-      var playerContainer = this._addContainer(nodes[i]);
-      this.initPlayer(playerContainer);
+    for (let i = 0; i < nodes.length; i = i + 1) {
+      this.initPlayer(this._addContainer(nodes[i]));
     }
   }
 };
 
 YouTubePlayer.prototype.backgroundContainerTemplate = function () {
-  var ht = '';
-  ht += '<div class="video-container container-fixed in-background" name="' + u.generateId() + '">';
-  ht += '<div class="actual-wrapper" id="' + u.generateId() + '"></div>'
-  ht += '</div>';
-  return ht;
+  return `<div class="video-container container-fixed in-background" name="${Utils.generateId()}">
+  <div class="actual-wrapper" id="${Utils.generateId()}"></div>
+  </div>`;
 };
 
 YouTubePlayer.prototype._addContainer = function (node) {
@@ -59,7 +55,7 @@ YouTubePlayer.prototype._addContainer = function (node) {
     }
     const alreadyAdded = sec.querySelector('.video-container');
     if (alreadyAdded != null) {
-      const tmpl = this.backgroundContainerTemplate();
+      const tmpl = Utils.generateElement(this.backgroundContainerTemplate());
       const aspect = node.attr('data-frame-aspect');
 
       if (aspect && aspect.substring(0,4) == '1.77') {
@@ -68,7 +64,7 @@ YouTubePlayer.prototype._addContainer = function (node) {
         tmpl.addClass('video16by9');
       }
       tmpl.hide();
-      tmpl.insertBefore($node);
+      node.parentNode.insertBefore(tmpl, node);
       return tmpl;  
     } else {
       return alreadyAdded;
@@ -80,37 +76,37 @@ YouTubePlayer.prototype.initPlayer = function (container) {
   if (typeof container == 'undefined') {
     return;
   }
-  var containerWrapper = container.querySelector('.actual-wrapper');
+  let containerWrapper = container.querySelector('.actual-wrapper');
   if(containerWrapper == null) {
     return;
   }
-  var containerId = containerWrapper.attr('id'),
-      containerWrapper = container.closest('.block-background'),
-      width,
-      height;
+  let containerId = containerWrapper.attr('id'),
+    width,
+    height,
+    playerOptions = {
+      autohide: true,
+      autoplay: false,
+      controls: 0,
+      disablekb: 1,
+      iv_load_policy: 3,
+      loop: 0,
+      modestbranding:1,
+      showinfo:0,
+      rel:0
+    };
 
-  var playerOptions = {
-    autohide: true,
-    autoplay: false,
-    controls: 0,
-    disablekb: 1,
-    iv_load_policy: 3,
-    loop: 0,
-    modestbranding:1,
-    showinfo:0,
-    rel:0
-  };
+  containerWrapper = container.closest('.block-background');
 
   if (containerWrapper != null) {
     const wrapperRect = containerWrapper.getBoundingClientRect();
     width = wrapperRect.right - wrapperRect.left;
     const wH = wrapperRect.bottom - wrapperRect.top;
-    height = wH < u.getWindowHeight() ? wH : u.getWindowHeight();
+    height = wH < Utils.getWindowHeight() ? wH : Utils.getWindowHeight();
   }else {
     playerOptions.controls = 1;
   }
   
-  var player = new YT.Player(containerId, {
+  new YT.Player(containerId, {
     videoId: this.videoId,
     playerVars: playerOptions,
     events: {
@@ -121,26 +117,26 @@ YouTubePlayer.prototype.initPlayer = function (container) {
 };
 
 YouTubePlayer.prototype.onYoutubePlayerReady = function (event){
-  var target = event.target;
-  var frame = target.getIframe(),
+  let target = event.target,
+      frame = target.getIframe(),
       frameWrap = frame.closest('.video-container'),
       sectionBackground = frame.closest('.block-background'),
       containerSection = frame.closest('.video-in-background');
 
   if (frameWrap != null && containerSection != null) {
-    var wh = u.getWindowHeight(),
-        ww = u.getWindowWidth(),
-        buttonsCont = u.generateElement('<div class="button-controls"><div class="container"><div class="row"><div class="col-lg-12 columns"></div></div></div></div>');
-        playButton = u.generateElement('<span class="play-button" stat="play"><i class="mfi-action"></i></span>'),
-        muteButton = u.generateElement('<span class="mute-button" stat="unmute"><b><i class="mfi-action"></i></b></span>')
-        asp = frameWrap.hasClass('video16by9') ? 1.77 : 1.33;
+    let wh = Utils.getWindowHeight(),
+        ww = Utils.getWindowWidth(),
+        buttonsCont = Utils.generateElement('<div class="button-controls"><div class="container"><div class="row"><div class="col-lg-12 columns"></div></div></div></div>');
+        playButton = Utils.generateElement('<span class="play-button" stat="play"><i class="mfi-action"></i></span>'),
+        muteButton = Utils.generateElement('<span class="mute-button" stat="unmute"><b><i class="mfi-action"></i></b></span>')
+        asp = frameWrap.hasClass('video16by9') ? 1.77 : 1.33,
 
-    var frameHeight = ww / asp;
+        frameHeight = ww / asp;
 
     frame.attr('height', frameHeight);
     frame.removeAttribute('width');
 
-    var neg = -1 * (frameHeight - wh) / 2 ;
+    let neg = -1 * (frameHeight - wh) / 2 ;
     
     const fsty = frameWrap.style;
     fsty.position = 'absolute';
@@ -153,7 +149,8 @@ YouTubePlayer.prototype.onYoutubePlayerReady = function (event){
       columns.append(muteButton);
     }
 
-    buttonsCont.insertAfter(sectionBackground);
+    sectionBackground.insertAdjacentElement('afterend', buttonsCont);
+    
     sectionBackground.style.height = wh + 'px';
     sectionBackground.style.overflow = 'hidden';
     
@@ -180,7 +177,7 @@ YouTubePlayer.prototype.onYoutubePlayerReady = function (event){
     });
 
     muteButton.addEventListener('click', function () {
-      var $ths = muteButton
+      const $ths = muteButton
       if ($ths.attr('stat') == 'unmute') {
         target.unMute();
         $ths.attr('stat', 'mute');
@@ -199,7 +196,7 @@ Player.manage = function (videos) {
   if (!videos) {
     return;
   }
-  var youtubeLoadTimer,
+  let youtubeLoadTimer,
       _this = this;
   if (videos.youtube) {
     if (YoutubeScriptLoaded) {
@@ -216,7 +213,7 @@ Player.manage = function (videos) {
 };
 
 Player.addYoutubePlayers = function (urls) {
-  for (var i = 0; i < urls.length; i = i + 1) {
+  for (let i = 0; i < urls.length; i = i + 1) {
     var url = urls[i];
     new YouTubePlayer(url);
   }
