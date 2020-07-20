@@ -3448,6 +3448,10 @@
 
     Editor.prototype.cleanContents = function(element) {
 
+    };
+
+    Editor.prototype.cleanContentsOld = function(element) {
+
       var s;
       if (!element) {
         this.element = this.elNode.querySelectorAll('.block-content-inner');

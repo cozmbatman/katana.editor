@@ -16,7 +16,7 @@ module.exports = {
       includePaths: nodeNeat.includePaths
     },
     files: {
-      './public/build/app.css': './src/scss/app.scss'
+      './public/build/katana.css': './src/scss/app.scss'
     }
   }
 };

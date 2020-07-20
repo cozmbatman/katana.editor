@@ -1,6 +1,6 @@
 {
 	"version": 3,
-	"file": "app.css",
+	"file": "katana.css",
 	"sources": [
 		"../../src/scss/app.scss",
 		"../../src/scss/core/all.scss",
