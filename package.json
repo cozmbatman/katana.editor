@@ -4,24 +4,29 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "webpack --config webpack.dev.js --mode development",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "serve": "NODE_ENV=development webpack-dev-server --config webpack.dev.js --mode=development --hot"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "grunt": "latest",
-    "grunt-build-number": "latest",
-    "grunt-cli": "latest",
-    "grunt-concurrent": "latest",
-    "grunt-contrib-concat": "latest",
-    "grunt-contrib-connect": "^3.0.0",
-    "grunt-contrib-copy": "latest",
-    "grunt-contrib-watch": "latest",
-    "grunt-env": "latest",
-    "grunt-sass": "latest",
-    "load-grunt-config": "latest",
-    "load-grunt-tasks": "latest",
-    "node-neat": "latest",
-    "node-sass": "latest"
+    "@babel/core": "^7.10.5",
+    "autoprefixer": "^9.8.5",
+    "babel-loader": "^8.1.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "css-loader": "^3.6.0",
+    "extract-loader": "^5.1.0",
+    "file-loader": "^6.0.0",
+    "html-webpack-plugin": "^4.3.0",
+    "mini-css-extract-plugin": "^0.9.0",
+    "node-sass": "^4.14.1",
+    "postcss-loader": "^3.0.0",
+    "sass": "^1.26.10",
+    "sass-loader": "^9.0.2",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-md5-hash": "0.0.6",
+    "webpack-node-externals": "^2.5.0"
   }
 }
