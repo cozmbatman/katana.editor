@@ -36,7 +36,7 @@ Details.prototype.initialize = function () {
 };
 
 Details.prototype.isLoggedIn = function () {
-  if (_.isUndefined(this.story.user_name)) {
+  if (typeof this.story.user_name == 'undefined') {
     return false;
   }
   return true;
