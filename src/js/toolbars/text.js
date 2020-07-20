@@ -97,23 +97,27 @@ TextToolbar.prototype.defaultConfig = function () {
 };
 
 TextToolbar.prototype.template = function () {
-  let html = `<div class="mf-menu-linkinput">
-      <input class="mf-menu-input" placeholder="https://">
-      <div class="mf-menu-button mf-link-close">&#215;</div></div>
-      <ul class='mf-menu-buttons'>`;
-
-  this.config.buttons.forEach( item => {
-    return html += `<li class='mf-menu-button'><i class="mf-icon mfi-${item.i}"  data-action="${item.a}"></i></li>`;
-  });
+  if(this.cachedTemplate == null) {
+    let html = `<div class="mf-menu-linkinput">
+        <input class="mf-menu-input" placeholder="https://">
+        <div class="mf-menu-button mf-link-close">&#215;</div></div>
+        <ul class='mf-menu-buttons'>`;
   
-  html += `</ul>`;
-  return html;
+    this.config.buttons.forEach( item => {
+      return html += `<li class='mf-menu-button'><i class="mf-icon mfi-${item.i}"  data-action="${item.a}"></i></li>`;
+    });
+    
+    html += `</ul>`;
+    this.cachedTemplate = html;
+  }
+  return this.cachedTemplate;
 };
 
 TextToolbar.prototype.built = false;
 
 TextToolbar.prototype.render = function () {
   if(!this.built) {
+    this.cachedTemplate = null;
     var html = this.template();
     this.elNode.innerHTML = html;
     this.built = true;  
@@ -379,7 +383,7 @@ TextToolbar.prototype.commandCenter = function (cmd, val) {
 };
 
 TextToolbar.prototype.commandOverall = function(cmd, val) {
-  var n, origNode;
+  var n, origNode, extrakls;
   
   origNode = this.current_editor.current_node,
   extrakls = false;
@@ -479,9 +483,8 @@ TextToolbar.prototype.effectNode = function(el, returnAsNodeName) {
   });
   let _this = this;
   nodes.forEach( (node) => {
-      var tag;
-      tag = node.nodeName.toLowerCase(),
-      _thisEl = this.el;
+      var tag = node.nodeName.toLowerCase(),
+      _thisEl = this.elNode;
       switch (tag) {
         case "a":
           _thisEl.querySelector('input').value = node.attr("href");
@@ -652,14 +655,17 @@ TextToolbar.prototype.highlight = function(tag, double) {
     tag = tag.toUpperCase();
   }
   var ic = document.querySelector(".mfi-" + tag);
-  // let icl = ic.closest("li");
+  if(ic == null) {
+    return;
+  }
+  let icl = ic.closest("li");
   if(!double) {
-    if(ic != null) {
-      ic.addClass('doble');
+    if(icl != null) {
+      icl.addClass('doble');
     }
   }
-  if(ic != null) {
-    return ic.addClass("active");
+  if(icl != null) {
+    return icl.addClass("active");
   }
 };
 

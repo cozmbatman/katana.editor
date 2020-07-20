@@ -35,7 +35,7 @@ Video.prototype.handleEnterKey = function(ev, $node) {
   if ($node.hasClass("is-embedable")) {
     return this.getEmbedFromNode($node);
   } else {
-    var text = $node.textContent;
+    var text = $node.textContent,
     texts = text.split(' ');
     if (texts.length == 1) {
       var validLink = this.isYoutubeLink(texts[0]);

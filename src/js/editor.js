@@ -3,9 +3,12 @@ import Stream from './stream';
 import Poly from './polyfills';
 import boot from './boot';
 import Tooltip from './tooltip';
+import Player from './player';
 
 import {TextToolbar, ImageToolbar} from './toolbars/index';
 import { ContentBar, ImageContentBarItem, VideoContentBarItem, SectionContentBarItem, EmbedContentBarItem } from './content/index';
+import ModelFactory from './models/factory';
+import Notes from './notes/core';
 
 const BACKSPACE = 8,
     ESCAPE = 27,
@@ -293,7 +296,7 @@ Editor.prototype.init = function(cb) {
   if (this.mode == 'write') {
     const enabled = this.opts && typeof this.opts.enableDraft !== 'undefined' ? this.opts.enableDraft : true;
     if(enabled) {
-      this.committer = new Katana.ModelFactory({editor: this, mode: 'write'});
+      this.committer = new ModelFactory({editor: this, mode: 'write'});
       this.committer.manage(true);
     }
   }
@@ -301,7 +304,7 @@ Editor.prototype.init = function(cb) {
   if (this.notes_options.commentable) {
     const winWidth = Utils.getWindowWidth();
     var layout = winWidth <= 480 ? 'popup' : 'side';
-    this.notesManager = new Katana.Notes({editor: this, notes: [], info : this.notes_options, layout: layout});
+    this.notesManager = new Notes({editor: this, notes: [], info : this.notes_options, layout: layout, node: document.querySelector('#notes_container')});
     this.notesManager.init();
   }
 
@@ -313,7 +316,7 @@ Editor.prototype.init = function(cb) {
   }
 
   if (this.mode == 'read') {
-    Katana.Player.manage(this.opts.video);
+    Player.manage(this.opts.video);
   }
 
   if (this.mode == 'write') {
@@ -929,8 +932,7 @@ Editor.prototype.hideContentBar = function() {
 
 // DOM related methods //
 Editor.prototype.getSelectedText = function() {
-  var text;
-  text = "";
+  var text = "";
   if (typeof window.getSelection !== "undefined") {
     text = window.getSelection().toString();
   } else if (typeof document.selection !== "undefined" && document.selection.type === "Text") {
@@ -941,16 +943,16 @@ Editor.prototype.getSelectedText = function() {
 
 Editor.prototype.selection = function() {
   if (window.getSelection) {
-    return selection = window.getSelection();
+    return window.getSelection();
   } else if (document.selection && document.selection.type !== "Control") {
-    return selection = document.selection;
+    return document.selection;
   }
 };
 
 Editor.prototype.getRange = function() {
   var editor, range;
   editor = this.elNode;
-  range = selection && selection.rangeCount && selection.getRangeAt(0);
+  range = this.selection && this.selection.rangeCount && this.selection.getRangeAt(0);
   if (!range) {
     range = document.createRange();
   }
@@ -1060,7 +1062,7 @@ Editor.prototype.focusNode = function(node, range) {
 };
 
 Editor.prototype.getNode = function() {
-  var node, range, root;
+  var node, range, root, selection;
   node = void 0;
   root = this.elNode,
   selection = this.selection();
@@ -2679,7 +2681,7 @@ Editor.prototype.handleKeyDown = function(e) {
 
     // Undo to normal quotes and dash if user immediately pressed backspace
     var existingText = this.getCharacterPrecedingCaret(), 
-        existingTextLength = existingText.length;
+        existingTextLength = existingText.length,
         charAtEnd = existingText.charAt(existingText.length - 1);
 
     if ( UNICODE_SPECIAL_CHARS.indexOf(charAtEnd) != -1) {
@@ -3396,6 +3398,9 @@ Editor.prototype.addClassesToElement = function(element, forceKlass) {
         n.addClass('with-cite');
       }
       n.addClass('item item-' + name);
+      if(fK) {
+        n.addClass(fK);
+      }
       break;
     case "figure":
       if (n.hasClass("item-figure")) {
@@ -4432,7 +4437,7 @@ Editor.prototype.checkViewPortForCanvas = function () {
   var i = 0,
       sect,
       sections = this.sectionsForParallax,
-      isVisible = false
+      isVisible = false,
       draf = [],
       videos = [];
 
@@ -4462,9 +4467,9 @@ Editor.prototype.checkViewPortForCanvas = function () {
   
   if (this.mode == 'read') {
     if (videos.length) {
-      Katana.Player.cameInView(videos);  
+      Player.cameInView(videos);  
     } else {
-      Katana.Player.notInView();
+      Player.notInView();
     }
   }
   

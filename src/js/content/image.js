@@ -516,7 +516,7 @@ Images.prototype.uploadFiles = function(files, viaDrop) {
 
   var sizeLimit = 17900000, // 8 MB
 
-  acceptedTypes, file, i, _results;
+  acceptedTypes, file, i, _results, sizeError;
   
   acceptedTypes = {
     "image/png": true,

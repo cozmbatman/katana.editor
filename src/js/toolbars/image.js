@@ -691,7 +691,7 @@ ImageToolbar.prototype._commandMoveImageDown = function (figure) {
 ImageToolbar.prototype.displayHighlights = function () {
   var sel = document.querySelector('.item-figure.figure-focused'), tag = '';
   this.refresh();
-  var ac = this.$el.querySelector('.active');
+  var ac = this.elNode.querySelector('.active');
   if(ac != null) {
     ac.removeClass('active');
   }
@@ -707,7 +707,7 @@ ImageToolbar.prototype.displayHighlights = function () {
     this.menuGridMode = true;
     sel.removeClass('can-go-right can-show-add');
 
-    var bgE = this.$el.querySelector('[data-action="background"]');
+    var bgE = this.elNode.querySelector('[data-action="background"]');
     if(bgE != null) {
       bgE.closest('li').addClass('hide');
     }
@@ -798,7 +798,7 @@ ImageToolbar.prototype.displayHighlights = function () {
 
 ImageToolbar.prototype.hideAction = function(...names) {
   for(const name of names) {
-    let go = this.$el.querySelector('[data-action="' + name + '"]');
+    let go = this.elNode.querySelector('[data-action="' + name + '"]');
     if(go != null) {
       let pl = go.closest('li');
       if(pl != null) {
@@ -810,9 +810,9 @@ ImageToolbar.prototype.hideAction = function(...names) {
 
 ImageToolbar.prototype.showAction = function(...names) {
   for(const name of names) {
-    let go = this.$el.querySelector('[data-action="' + name + '"]');
+    let go = this.elNode.querySelector('[data-action="' + name + '"]');
     if(go != null) {
-      let pl = go.parent('li');
+      let pl = go.closest('li');
       if(pl != null) {
         pl.show();
       }
@@ -821,9 +821,9 @@ ImageToolbar.prototype.showAction = function(...names) {
 }
 
 ImageToolbar.prototype.highlight = function (tag) {
-  const tg = this.$el.querySelector('[data-action="' + tag + '"]');
+  const tg = this.elNode.querySelector('[data-action="' + tag + '"]');
   if(tg != null) {
-    let tgp = tg.parent("li");
+    let tgp = tg.closest("li");
     if(tgp != null) {
       tgp.addClass('active');
     }

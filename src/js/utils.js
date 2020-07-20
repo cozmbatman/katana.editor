@@ -44,42 +44,6 @@ const editableSetRange = (range) => {
   return sel.addRange(range);
 };
 
-
-const editableCaretAtStart = (el) =>  {
-  var range;
-  range = editableRange();
-  if (!range) {
-    return false;
-  }
-  return is_caret_at_start_of_node(el, range);
-};
-
-const editableCaretAtEnd = (el) =>  {
-  var range;
-  range = editableRange();
-  if (!range) {
-    return false;
-  }
-  return is_caret_at_end_of_node(el, range);
-};
-
-const editableCaretOnFirstLine = (el) => {
-  var ctop, etop, range;
-  range = editableRange();
-  if (!range) {
-    return false;
-  }
-  if (is_caret_at_start_of_node(el, range)) {
-    return true;
-  } else if (is_caret_at_end_of_node(el, range)) {
-    ctop = el.getBoundingClientRect().bottom - LINE_HEIGHT;
-  } else {
-    ctop = range.getClientRects()[0].top;
-  }
-  etop = el.getBoundingClientRect().top;
-  return ctop < etop + LINE_HEIGHT;
-};
-
 const Utils = {
   scrollHandlers: {},
   scrollAttached: false,
@@ -534,7 +498,7 @@ const Utils = {
       }
     })(),
 
-  handleScroll : (items) =>{
+  handleScroll : (items) => {
     if (Utils.scrollAttached) {
       return;
     }
@@ -565,6 +529,41 @@ const Utils = {
       }
     }
     window.addEventListener('scroll', checkScroll);
+  },
+
+  editableCaretAtStart: (el) =>  {
+    var range;
+    range = editableRange();
+    if (!range) {
+      return false;
+    }
+    return is_caret_at_start_of_node(el, range);
+  },
+  
+  editableCaretAtEnd: (el) =>  {
+    var range;
+    range = editableRange();
+    if (!range) {
+      return false;
+    }
+    return is_caret_at_end_of_node(el, range);
+  },
+  
+  editableCaretOnFirstLine : (el) => {
+    var ctop, etop, range;
+    range = editableRange();
+    if (!range) {
+      return false;
+    }
+    if (is_caret_at_start_of_node(el, range)) {
+      return true;
+    } else if (is_caret_at_end_of_node(el, range)) {
+      ctop = el.getBoundingClientRect().bottom - LINE_HEIGHT;
+    } else {
+      ctop = range.getClientRects()[0].top;
+    }
+    etop = el.getBoundingClientRect().top;
+    return ctop < etop + LINE_HEIGHT;
   }
 };
 

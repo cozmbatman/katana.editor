@@ -17,10 +17,8 @@ function Section(opts) {
 
 Section.prototype.contentId = 'SECTION';
 
-Section.prototype.initialize = function (opts) {
-  if (opts == null) {
-    opts = {};
-  }
+Section.prototype.initialize = function () {
+  const opts = this.opts;
   this.icon = 'mfi-hyphens';
   this.title = 'section';
   this.action = 'section';
