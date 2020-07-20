@@ -74,19 +74,19 @@ Tooltip.prototype.displayAt = function(ev, matched) {
   } else {
     target = ev.currentTarget;
   }
-  const $el = this.elNode;
-  const an = $el.querySelector(".popover-inner a");
+  const el = this.elNode;
+  const an = el.querySelector(".popover-inner a");
   if(an != null) {
     an.innerHTML = target.attr('href');
     an.attr('href', target.attr("href"));
   }
   this.positionAt(ev, matched);
 
-  const elNT = $el.querySelector(".popover-tooltip");
+  const elNT = el.querySelector(".popover-tooltip");
   if(elNT != null) {
     elNT.style.pointerEvents = 'auto';
   }
-  return $el.show();
+  return el.show();
 };
 
 Tooltip.prototype.cancelHide = function() {
@@ -95,9 +95,9 @@ Tooltip.prototype.cancelHide = function() {
 
 Tooltip.prototype.hide = function(ev) {
   this.cancelHide();
-  const $el = this.elNode;
+  const el = this.elNode;
   this.hideTimeout = setTimeout(() => {
-    const pp = $el.querySelector('.popover');
+    const pp = el.querySelector('.popover');
     if(pp != null) {
       pp.hide();
     }

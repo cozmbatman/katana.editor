@@ -620,10 +620,10 @@ Details.prototype.closePreviousBox = function () {
 
 Details.prototype._currentlyOpen = null;
 
-Details.prototype.showDetailsFor = function(name, $icon) {
+Details.prototype.showDetailsFor = function(name, icon) {
   if (name && name != this._currentlyOpen) {
     this.closePreviousBox();
-    this.openFor(name, $icon);
+    this.openFor(name, icon);
     this._currentlyOpen = name;
   }else if(name == this._currentlyOpen) {
     this.closePreviousBox();
@@ -635,18 +635,18 @@ Details.prototype.getSignInLink = function () {
 };
 
 Details.prototype.loadPreviousNotes = function(ev, matched) {
-  let $tg = matched ? matched : ev.currentTarget;
-  var url = $tg.attr('href');
-  var container = $tg.closest('.notes-list-wrapper');
+  let tg = matched ? matched : ev.currentTarget;
+  var url = tg.attr('href');
+  var container = tg.closest('.notes-list-wrapper');
   var name = container.attr('data-cont-for');
-  var $icon = document.querySelector('[note-for="' +name+ '"]');
-  $tg.innerHTML = '<span class="loader ib small dark"></span> Loading..';
-  this.loadNotesDetails(name, $icon, container, url);
+  var icon = document.querySelector('[note-for="' +name+ '"]');
+  tg.innerHTML = '<span class="loader ib small dark"></span> Loading..';
+  this.loadNotesDetails(name, icon, container, url);
   return false;
 };
 
 
-Details.prototype.loadNotesDetails = function(name, $icon, container, loadUrl) {
+Details.prototype.loadNotesDetails = function(name, icon, container, loadUrl) {
   var url = this.read_url + '/' + this.story.id + '/' + name,
   _this = this,
   mergeUserObject;
@@ -673,7 +673,7 @@ Details.prototype.loadNotesDetails = function(name, $icon, container, loadUrl) {
         container.querySelectorAll('.loading-notes').forEach(el => el.remove());
         container.querySelectorAll('.read-prev-notes').forEach( el => el.remove());
 
-        $icon.addClass('notes-loaded');
+        icon.addClass('notes-loaded');
 
         const response = JSON.parse(xhr.responseText);
         if (response && response.success) {
@@ -697,7 +697,7 @@ Details.prototype.loadNotesDetails = function(name, $icon, container, loadUrl) {
                 var page = Utils.generateElement(`<a href="${getPreviousUrl(dt.page)}" class="read-prev-notes">Read previous</a>`);
 
                 li.parentNode.insertBefore(page, li);
-                //$(page).insertBefore(li);
+                //(page).insertBefore(li);
               }
 
               li.removeClass('notes-list-empty');
@@ -718,18 +718,18 @@ Details.prototype.loadNotesDetails = function(name, $icon, container, loadUrl) {
 
 };
 
-Details.prototype.openFor = function (name, $icon) {
+Details.prototype.openFor = function (name, icon) {
   var container = this.getContainer(name),
       isLoggedIn = this.isLoggedIn(),
       form = isLoggedIn ? this.getForm('new') : Utils.generateElement(this.getSignInLink());
 
-  if(!$icon.hasClass('notes-loaded')) {
-    const notesCounter = $icon.querySelector('.notes-counter');
+  if(!icon.hasClass('notes-loaded')) {
+    const notesCounter = icon.querySelector('.notes-counter');
     if(notesCounter != null) {
       var count = notesCounter.attr('data-note-count');
       count = parseInt(count);
       if(!isNaN(count) && count > 0) {
-        this.loadNotesDetails(name, $icon, container);
+        this.loadNotesDetails(name, icon, container);
       } else {
         container.querySelectorAll('.loading-notes').forEach(el => el.remove());
       }
@@ -738,7 +738,7 @@ Details.prototype.openFor = function (name, $icon) {
 
   container.addClass('opened');
 
-  if ($icon.hasClass('on-dark')) {
+  if (icon.hasClass('on-dark')) {
     container.addClass('on-dark');
   }else {
     container.removeClass('on-dark');

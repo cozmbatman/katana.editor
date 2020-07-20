@@ -59,21 +59,19 @@ Notes.prototype.events = {
 
 Notes.prototype.readNotes = function () {
   var read_url = this.options.info.read_url + '/' + this.options.info.story.id;
-  $.ajax({
-    url : read_url,
-    type: 'GET',
-    dataType: 'json',
-    success: (function (_this) {
-      return function (resp) {
+  const xhr = new XMLHttpRequest();
+  xhr.open("GET", read_url, true);
+  xhr.onload = () => {
+    if(xhr.status == "200" && xhr.readyState == 4) {
+      try {
+        const resp = JSON.parse(xhr.responseText);
         _this.parseNotes(resp);
+      } catch(e) {
+        console.error(e);
       }
-    })(this),
-    error: (function (_this) {
-      return function (jqxhr) {
-
-      }
-    })(this)
-  });
+    }
+  }
+  xhr.send(null);
 };
 
 Notes.prototype.parseNotes = function (data) {
@@ -102,29 +100,28 @@ Notes.prototype.handleNoteIconClick = function (ev, matched) {
 
   if (currentHovered && currentHovered.nodeType == 1) {
     name = currentHovered.attr('note-for');
-    against = $('[name="' + name + '"]');
-    if (against.length) {
+    against = document.querySelector('[name="' + name + '"]');
+    if (against != null) {
       this.deactivateAll();
       var _this = this;
-      var $curr = $(currentHovered);
-      $('body').addClass('notes-opened');
-      $curr.addClass('is-clicked');
+      var curr = currentHovered;
+      document.body.addClass('notes-opened');
+      curr.addClass('is-clicked');
 
       if (!_this.smallScreen) {
 
         setTimeout(function () {
-          _this.repositionIcon($curr, against);
+          _this.repositionIcon(curr, against);
           _this.activateCloser(against);
-          _this.detailsHandler.showDetailsFor(name, $curr );
+          _this.detailsHandler.showDetailsFor(name, curr );
         }, 300);
 
-        // $curr.animate({left: '-=160'}, 200, function () {
-        //   _this.activateCloser($curr); 
-          
+        // curr.animate({left: '-=160'}, 200, function () {
+        //   _this.activateCloser(curr);
         // });  
       } else {
         _this.activateCloser(against); 
-        _this.detailsHandler.showDetailsFor(name, $curr );
+        _this.detailsHandler.showDetailsFor(name, curr );
       }
     }
   }
@@ -182,10 +179,10 @@ Notes.prototype.showNoteIcon = function (ob) {
 
 Notes.prototype._getNoteIcon = function (ob) {
   var name = ob.node.attr('name'),
-      $node = ob.node,
+      node = ob.node,
       onDark = false;
 
-  if ($node.closest('.with-background') != null) {
+  if (node.closest('.with-background') != null) {
     onDark = true;
   }
   var existing = this.elNode.querySelector('[note-for="' + name + '"]');
@@ -204,7 +201,7 @@ Notes.prototype._getNoteIcon = function (ob) {
     existing.removeClass('on-dark');
   }
 
-  this.positionIcon(existing, $node, ob.show);
+  this.positionIcon(existing, node, ob.show);
   return existing;
 };
 
@@ -240,9 +237,9 @@ Notes.prototype.repositionIcon = function (icon, against) {
   if (typeof against != 'undefined') {
     ag = against;
   }else {
-    ag = $('[name="'+name+'"]');
+    ag = document.querySelector('[name="'+name+'"]');
   } 
-  if (ag.length) {
+  if (ag != null) {
     var pos = this.calculateIconPosition(ag);
     const st = icon.style;
     st.left = pos.left + 'px';
@@ -259,7 +256,10 @@ Notes.prototype.positionIcon = function (icon, against, show) {
   if (against.length) {
     if (this.smallScreen) {
       //icon.addClass('open');
-      $('.item-clicked').removeClass('item-clicked');
+      const iClicked = document.querySelector('.item-clicked');
+      if(iClicked != null) {
+        iClicked.removeClass('item-clicked');
+      }
       if (typeof show != 'undefined' && show) {
         this.elNode.removeClass('open');
         var _this = this;
@@ -271,14 +271,12 @@ Notes.prototype.positionIcon = function (icon, against, show) {
       }
       
       icon.addClass('item-clicked');
-      //icon.css({left:0, top:0, position:'absolute'});
     } else {
-      var pos = this.calculateIconPosition(against);
+      const pos = this.calculateIconPosition(against);
       const ist = icon.style;
       ist.left = pos.left + 'px';
       ist.top = pos.top + 'px';
       ist.position = 'absolute';
-      //icon.css({left: pos.left, top : pos.top , position: 'absolute'});  
     }
   }
 };
@@ -315,7 +313,7 @@ Notes.prototype.init = function () {
         if (typeof ev.selectedText != 'undefined') {
           selection = Utils.saveSelection();
         }
-    _this.showNoteIcon({node: $(node), text: text, selection: selection});
+    _this.showNoteIcon({node, text, selection});
   });
 };
 
@@ -333,9 +331,9 @@ Notes.prototype.showNote = function (ev) {
       name;
   if (currentHovered && currentHovered.nodeType == 1) {
     name = currentHovered.attr('name');
-    if (name != null && this.currentHover != name && !$(currentHovered).hasClass('item-empty') && !$(currentHovered).hasClass('item-figure')) {
+    if (name != null && this.currentHover != name && !currentHovered.hasClass('item-empty') && !currentHovered.hasClass('item-figure')) {
       this.hidePreviousVisible();
-      var ob = {node : $(currentHovered), text: '', show: true};
+      var ob = {node : currentHovered, text: '', show: true};
       this.showNoteIcon(ob);
       this.currentHover = name;
     }

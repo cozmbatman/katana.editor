@@ -432,7 +432,7 @@ TextToolbar.prototype.commandInsert = function(name) {
 };
 
 TextToolbar.prototype.commandBlock = function(name) {
-  var list, node, $node;
+  var list, node;
   node = this.current_editor.current_node;
   list = this.effectNode(this.current_editor.getNode(node), true);
 

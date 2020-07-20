@@ -73,7 +73,7 @@ Section.prototype.handleClick = function (ev, matched) {
 Section.prototype.handleDeleteKey = function (e, node) {
   var sect, cont, last;
   if (this.current_editor.isLastChar()) {
-    sect = $node.closest('.block-content');
+    sect = node.closest('.block-content');
     if (sect != null && !sect.hasClass('block-last')) {
       cont = node.closest('.block-content-inner');
       if(cont != null) {
@@ -198,7 +198,7 @@ Section.prototype.handlePreviousStoryTypeOptionsAfterAddition = function (newCon
       var opts = ot.querySelectorAll('option');
       if (opts.length) {
         for (var m = 0; m < opts.length; m = m + 1) {
-          var kopts = $(opts[m]);
+          var kopts = opts[m];
           if (kopts.attr('value') == stval && stval != curral) {
             kopts.parentNode.removeChild(kopts);
           }
@@ -226,7 +226,8 @@ Section.prototype.splitContainer = function (atNode, storiesSection) {
       }
       var ac = newContainer.querySelector('.autocomplete');
       if(ac != null) {
-        $(ac).autocomplete();
+        //FIXME autocomplete
+        //(ac).autocomplete();
         if(ac.closest('.autocomplete-buttons') != null) {
           ac.closest('.autocomplete-buttons').addClass('hide');
         }

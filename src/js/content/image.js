@@ -297,12 +297,12 @@ Images.prototype.replaceImg = function(image_element, figure, srcToUse, callback
   if (typeof srcToUse == 'undefined' && typeof callback == 'undefined') {
     img.attr('src', image_element.attr('src') );  
     sr = image_element.attr('src');
-    var $img = image_element;
-    const fig = $img.closest('figure');
+    var imgE = image_element;
+    const fig = imgE.closest('figure');
     if(fig != null) {
       fig.parentNode.removeChild(fig);
     }
-    $img.parentNode.removeChild($img);
+    imgE.parentNode.removeChild(imgE);
     let ig = figure.querySelector('img');
     if(ig != null) {
       ig.attr('src', sr);
@@ -360,11 +360,11 @@ Images.prototype.displayAndUploadImages = function(file, cont, callback) {
 Images.prototype.viaDrop = false;
 
 Images.prototype.imageSelect = function(ev) {
-  var $selectFile, self;
-  $selectFile = Utils.generateElement('<input type="file" multiple="multiple">');
-  $selectFile.click();
+  let selectFile, self;
+  selectFile = Utils.generateElement('<input type="file" multiple="multiple">');
+  selectFile.click();
   self = this;
-  return $selectFile.addEventListener('change', function() {
+  return selectFile.addEventListener('change', function() {
     var t;
     t = this;
     self.viaDrop = false;
@@ -620,9 +620,9 @@ Images.prototype.addImagesOnScene = function () {
   }
 };
 
-Images.prototype.imageUploadCallback = function ($figure) {
+Images.prototype.imageUploadCallback = function (figure) {
   var node ,parentNode;
-  node = $figure;
+  node = figure;
   parentNode = node.parentNode;
   if(parentNode != null && parentNode.hasClass('block-grid-row')) {
     var count = parentNode.attr('data-paragraph-count'),
@@ -658,7 +658,7 @@ Images.prototype.imageUploadCallback = function ($figure) {
     }
   }else {
     this.current_editor.setupFirstAndLast();
-    this.current_editor.selectFigure($figure);
+    this.current_editor.selectFigure(figure);
   }
 };
 

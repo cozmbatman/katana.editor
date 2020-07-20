@@ -72,8 +72,9 @@ Section.prototype.handleSelf = function () {
     if (markup.storyType == 'tagged') {
       var auto = this.elNode.querySelector('.autocomplete');
       if(auto != null) {
-        var tagData = $(auto).autocomplete('read');
-        markup.storyTag = tagData;
+        //FIXME autocomplete
+        // var tagData = (auto).autocomplete('read');
+        // markup.storyTag = tagData;
       }
     }
 

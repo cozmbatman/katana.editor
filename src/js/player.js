@@ -163,27 +163,27 @@ YouTubePlayer.prototype.onYoutubePlayerReady = function (event){
     }
 
     playButton.addEventListener('click', function () {
-      const $ths = playButton;
-      if ($ths.attr('stat') == 'pause') {
+      const ths = playButton;
+      if (ths.attr('stat') == 'pause') {
         containerSection.toggleClass('video-playing').toggleClass('video-paused');
         target.pauseVideo();
-        $ths.attr('stat', 'play');
+        ths.attr('stat', 'play');
       }else {
         containerSection.toggleClass('video-playing');
         containerSection.addClass('hide-preview');
         target.playVideo();
-        $ths.attr('stat', 'pause');
+        ths.attr('stat', 'pause');
       }
     });
 
     muteButton.addEventListener('click', function () {
-      const $ths = muteButton
-      if ($ths.attr('stat') == 'unmute') {
+      const ths = muteButton
+      if (ths.attr('stat') == 'unmute') {
         target.unMute();
-        $ths.attr('stat', 'mute');
+        ths.attr('stat', 'mute');
       } else {
         target.mute();
-        $ths.attr('stat', 'unmute');
+        ths.attr('stat', 'unmute');
       }
     });
   }

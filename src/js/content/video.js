@@ -31,16 +31,16 @@ Video.prototype.isYoutubeLink = function (url) {
   }
   return false;
 }
-Video.prototype.handleEnterKey = function(ev, $node) {
-  if ($node.hasClass("is-embedable")) {
-    return this.getEmbedFromNode($node);
+Video.prototype.handleEnterKey = function(ev, node) {
+  if (node.hasClass("is-embedable")) {
+    return this.getEmbedFromNode(node);
   } else {
-    var text = $node.textContent,
+    var text = node.textContent,
     texts = text.split(' ');
     if (texts.length == 1) {
       var validLink = this.isYoutubeLink(texts[0]);
       if (validLink) {
-        return this.getEmbedFromNode($node, validLink);
+        return this.getEmbedFromNode(node, validLink);
       }
     }
   }
@@ -54,14 +54,14 @@ Video.prototype.uploadExistentIframe = function (iframe) {
   var src = iframe.attr('src')
   if (src) {
     if(Utils.urlIsFromDomain(src, 'youtube.com') || Utils.urlIsFromDomain(src, 'vimeo.com')) {
-      this.loadEmbedDetailsFromServer(src, $iframe, function (node) {
+      this.loadEmbedDetailsFromServer(src, iframe, function (node) {
 
         while (!(node.parentNode != null && node.parentNode.hasClass('block-content-inner'))) {
           node.unwrap();
         }
 
-        // while(!$node.parent().hasClass('block-content-inner')) {
-        //   $node.unwrap();
+        // while(!node.parent().hasClass('block-content-inner')) {
+        //   node.unwrap();
         // }      
       });
     }
@@ -83,13 +83,12 @@ Video.prototype.loadEmbedDetailsFromServer = function (url, current_node, callba
   url = url + '&luxe=1';
 
   this.current_editor.currentRequestCount++;
-  $.ajax({
-    url: '/embed-url',
-    method: 'post',
-    dataType: 'json',
-    data: {url : url},
-    success: (function (_this) {
-      return function (resp) {
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", '/embed-url', true);
+  xhr.onload = () => {
+    if(xhr.status == "200" && xhr.readyState == 4) {
+      try {
+        const resp = JSON.parse(xhr.responseText);
         _this.current_editor.currentRequestCount--;
         if (resp.success) {
           var dt = resp.data;
@@ -97,14 +96,15 @@ Video.prototype.loadEmbedDetailsFromServer = function (url, current_node, callba
             _this.embedFramePlaceholder(dt, current_node, callback);
           }
         }
-      };
-    })(this),
-    error: (function (_this) {
-      return function (jqxhr) {
-        _this.current_editor.currentRequestCount--;
+      }catch(e) {
+
       }
-    })(this)
-  });
+    }
+  };
+  xhr.onerror = () => {
+    _this.current_editor.currentRequestCount--;
+  }
+  xhr.send({url: url});
 };
 
 Video.prototype.embedFramePlaceholder = function (ob, current_node, callback) {
@@ -148,12 +148,12 @@ Video.prototype.embedFramePlaceholder = function (ob, current_node, callback) {
         figure.addClass('n-fullSize');
       }
 
-      var $ig = figure.querySelector('img');
-      if($ig != null) {
-        $ig.attr("src", src);
-        $ig.attr('data-frame-url', frameUrl);
-        $ig.attr('data-frame-aspect', aspectRatio);
-        $ig.attr('data-image-id', ob.embedId);
+      var ig = figure.querySelector('img');
+      if(ig != null) {
+        ig.attr("src", src);
+        ig.attr('data-frame-url', frameUrl);
+        ig.attr('data-frame-aspect', aspectRatio);
+        ig.attr('data-image-id', ob.embedId);
       }
 
       if (canGoBackground) {

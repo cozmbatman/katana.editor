@@ -503,20 +503,20 @@ const Utils = {
       return;
     }
     Utils.scrollAttached = true;
-    var $d = document,
-        $w = window,
+    var d = document,
+        w = window,
         wHeight = Utils.getWindowHeight(),
         didScroll = false,
-        $body = $d.querySelector('body'),
+        body = d.querySelector('body'),
         _this = Utils;
 
     function hasScrolled() {
-      var st = $w.scrollTop;
+      var st = d.body.scrollTop;
       var cbs = _this.scrollHandlers;
       for (var key in cbs) {
         if (cbs.hasOwnProperty(key)) {
           var fn = cbs[key];
-          fn(st, $body, $d.documentElement.scrollHeight, wHeight);
+          fn(st, body, d.documentElement.scrollHeight, wHeight);
         }
       }
       didScroll = false;
