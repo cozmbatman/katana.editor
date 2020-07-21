@@ -61,7 +61,7 @@ Tooltip.prototype.positionAt = function(ev, matched) {
   } else {
     popover.removeClass('pop-for-figure');
     top_value = target_offset.top + target_height + document.body.scrollTop;
-    left_value = target_offset.left + (target_width / 2) - (popover_width / 2);
+    left_value = target_offset.left + (target_width / 2) - popover_width;
     popover.style.top = top_value + 'px';
     popover.style.left = left_value + 'px';
   }

@@ -266,7 +266,8 @@ Editor.prototype.initialize = function () {
 
   this.notes_options = opts.notes || {};
 
-  this.paste_element_id = '#mf_paste_div';
+  this.paste_element = document.createElement('div');
+  this.elNode.closest('.editor-wrapper').appendChild(this.paste_element);
 
   //this.streamHandlers = {};
 
@@ -1307,12 +1308,12 @@ Editor.prototype.handleTextSelection = function(anchor_node) {
 
   if ( anchor_node.matches(".item-mixtapeEmbed, .item-figure") && !text.isEmpty() ) {
     this.text_toolbar.hide();
-    var sel = this.selection(), range, caption;
+    var sel = this.selection(), range, caption, eleme;
     if (sel) {
       range = sel.getRangeAt(0),
       caption,
       eleme = range.commonAncestorContainer;
-      caption = eleme.closest('.caption');
+      caption = eleme != null ? eleme.closest('.caption') : null;
       if (caption != null) {
         this.current_node = anchor_node;    
         return this.displayTextToolbar();  
@@ -1523,8 +1524,9 @@ Editor.prototype.handleUnwrappedImages = function(elements) {
             div.appendChild(it);
           }
         }
+        item.insertAdjacentElement('afterend', div);
 
-        div.insertAfter(item);
+        //div.insertAfter(item);
         _this.addClassesToElement(div);
         _this.setElementName(div);
       }
@@ -1624,7 +1626,7 @@ Editor.prototype.cleanPastedText = function (text) {
 
   ];
 
-  for (i = 0; i < regs.length; i += 1) {
+  for (var i = 0; i < regs.length; i += 1) {
       text = text.replace(regs[i][0], regs[i][1]);
   }
 
@@ -1708,12 +1710,16 @@ Editor.prototype.doPaste = function (pastedText) {
   if (pastedText.match(/<\/*[a-z][^>]+?>/gi)) {
 
     pastedText = this.cleanPastedText(pastedText);
-    const pei = document.querySelector(this.paste_element_id);
+    let pei = this.paste_element;
     if(pei != null) {
-      document.querySelector(this.paste_element_id).parentNode.removeChild(pei);
+      this.paste_element.parentNode.removeChild(pei);
     }
 
-    document.body.appendChild(Utils.generateElement(`<div id='${this.paste_element_id.replace('#', '')}' style='display:none;'></div>`));
+    pei = document.createElement('div');
+    pei.style.display = 'none';
+    this.paste_element = pei;
+    this.elNode.closest('.editor-wrapper').appendChild(pei);
+
     if(pei != null) {
       pei.innerHTML = `<span>${pastedText}</span>`;
     }
@@ -1726,7 +1732,7 @@ Editor.prototype.doPaste = function (pastedText) {
 
     this.setupElementsClasses(pei, () => {
         let last_node, new_node, nodes, num, top;
-        nodes = Utils.generateElement( document.querySelector(this.paste_element_id).innerHTML ).insertAfter(this.aa );
+        nodes = Utils.generateElement( this.paste_element.innerHTML ).insertAfter(this.aa );
 
         var aa = this.aa;
         var caption;
@@ -1770,12 +1776,13 @@ Editor.prototype.doPaste = function (pastedText) {
           aa.parentNode.removeChild(aa);
         }
 
-        var pt = document.querySelector(this.paste_element_id).querySelector('figure');
-
-        if(pt != null) {
-          const pei = document.querySelector(this.paste_element_id);
-          pei.parentNode.removeChild(pei);
+        if(this.paste_element != null) {
+          var pt = this.paste_element.querySelector('figure');
+          if(pt != null) {
+            this.paste_element.parentNode.removeChild(pei);
+          }
         }
+
 
         last_node = nodes[nodes.length - 1];
         if (last_node && last_node.length) {
@@ -3087,19 +3094,19 @@ Editor.prototype.handleLineBreakWith = function(element_type, from_element) {
   if (from_element.hasClass('block-grid-caption')) {
     var cont = from_element.closest('.block-grid');
     if(cont != null) {
-      new_paragraph.insertAfter(cont);
+      cont.insertAdjacentElement('afterend', new_paragraph);
     }
   } else if (from_element.parentNode.matches('[class^="item-"]')) {
-    new_paragraph.insertAfter(from_element.parentNode);
+    from_element.parentNode.insertAdjacentElement('afterend', new_paragraph);
   } else {
-    new_paragraph.insertAfter( from_element);
+    from_element.insertAdjacentElement('afterend', new_paragraph);
   }
   this.setRangeAt(new_paragraph);
   return this.scrollTo(new_paragraph);
 };
 
 Editor.prototype.replaceWith = function(etype, from_element) {
-  const new_paragraph = Utils.generateElement(`<${etype} class='item item-"${etype}" item-empty item-selected'><br/></${etype}>`);
+  const new_paragraph = Utils.generateElement(`<${etype} class='item item-${etype} item-empty item-selected'><br/></${etype}>`);
   from_element.replaceWith(new_paragraph);
   this.setRangeAt(new_paragraph);
   this.scrollTo(new_paragraph);
@@ -3468,11 +3475,11 @@ Editor.prototype.setupElementsClasses = function(element, cb) {
   if (!element) {
     this.element = this.elNode.querySelectorAll('.block-content-inner');
   } else {
-    this.element = element;
+    this.element = typeof element['length'] == 'undefined' ? [element] : element;
   }
   let _this = this;
   setTimeout(() => {
-      _this.cleanContents(_this.element);
+      _this.cleanContentsOld(_this.element);
       _this.wrapTextNodes(_this.element);
 
       let ecC = [];
