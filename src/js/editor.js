@@ -112,6 +112,9 @@ function Editor(opts) {
   this.handleSelectionStoryTypeChange = this.handleSelectionStoryTypeChange.bind(this);
   this.handleSelectionStoryCountChange = this.handleSelectionStoryCountChange.bind(this);
 
+  this.displayPopOver = this.displayPopOver.bind(this);
+  this.hidePopOver = this.hidePopOver.bind(this);
+
   // notes
   this.showNoteIcon = this.showNoteIcon.bind(this);
   this.smallScreen = Utils.getWindowWidth() <= 480 ? true : false;
@@ -1180,7 +1183,7 @@ Editor.prototype.scrollTo = function(node) {
   if ( node.isElementInViewport() ) {
     return;
   }
-  top = node.offsetTop;
+  //top = node.offsetTop;
   Utils.scrollToTop();
 };
 
@@ -3921,7 +3924,7 @@ Editor.prototype.relocateImageToolbar = function (position) {
 
   height = ebr.height;      
   padd = ebr.width / 2;
-  top = position.top - height;
+  top = position.top - height + document.body.scrollTop;
   left = position.left + (position.width / 2) - padd;
   scrollTop = window.pageYOffset;
 
@@ -4010,8 +4013,9 @@ Editor.prototype.handleGrafFigureTypeCaption = function(ev) {
   return;
 };
 
-Editor.prototype.handleFigureAnchorClick = function (ev) {
-  
+Editor.prototype.handleFigureAnchorClick = function (ev, matched) {
+  ev.preventDefault();
+  return false;
 };
 
 Editor.prototype.handleKeyDownOnFigure = function (ev, figure) {

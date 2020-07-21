@@ -17,6 +17,7 @@ function TextToolbar(opts) {
   this.handleKeyDown = this.handleKeyDown.bind(this);
   this.handleInputEnter = this.handleInputEnter.bind(this);
   this.shortCutKey = this.shortCutKey.bind(this);
+  this.closeInput = this.closeInput.bind(this);
   this.hide = this.hide.bind(this);
 
   this.initialize = this.initialize.bind(this);
@@ -158,7 +159,7 @@ TextToolbar.prototype.handleClick = function(ev, matched) {
     }
     
     if (/(?:createlink)/.test(action)) {
-      this.actionIsLink(ev.currentTarget);
+      this.actionIsLink(element);
     } else {
       this.menuApply(action);
     }
@@ -168,7 +169,7 @@ TextToolbar.prototype.handleClick = function(ev, matched) {
 
 TextToolbar.prototype.actionIsLink = function (target, event) {
   
-  if (target != null && target.addClass("active")) {
+  if (target != null && target.hasClass("active")) {
     this.elNode.querySelector("input.mf-menu-input").value = '';
     this.removeLink();
   } else {
@@ -265,7 +266,7 @@ TextToolbar.prototype.removeLink = function() {
   var elem;
   this.menuApply("unlink");
   elem = this.current_editor.getNode();
-  return this.current_editor.cleanContents($(elem));
+  return this.current_editor.cleanContents(elem);
 };
 
 TextToolbar.prototype.createlink = function(input) {
@@ -654,12 +655,12 @@ TextToolbar.prototype.highlight = function(tag, double) {
   if (['h4','h3','h2','h1'].indexOf(tag) != -1) {
     tag = tag.toUpperCase();
   }
-  var ic = document.querySelector(".mfi-" + tag);
+  var ic = this.elNode.querySelector(".mfi-" + tag);
   if(ic == null) {
     return;
   }
   let icl = ic.closest("li");
-  if(!double) {
+  if(double) {
     if(icl != null) {
       icl.addClass('doble');
     }

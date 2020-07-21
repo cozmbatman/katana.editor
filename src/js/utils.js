@@ -476,6 +476,22 @@ const Utils = {
     return cbtm > ebtm - LINE_HEIGHT;
   },
 
+  outerWidth: (el) => {
+    var width = el.offsetWidth;
+    var style = getComputedStyle(el);
+  
+    width += parseInt(style.marginLeft) + parseInt(style.marginRight);
+    return width;
+  },
+
+  outerHeight: (el) => {
+    var height = el.offsetHeight;
+    var style = getComputedStyle(el);
+  
+    height += parseInt(style.marginTop) + parseInt(style.marginBottom);
+    return height;
+  },
+
   registerForScroll : (key, cb) => {
     Utils.scrollHandlers[key] = cb;  
     //this.handleScroll();

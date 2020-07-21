@@ -14,7 +14,7 @@ module.exports = {
   },
   devtool: 'inline-source-map',
   devServer: {
-    contentBase: './dist',
+		contentBase: './dist',
   },
   module: {
 		rules: [
@@ -27,18 +27,18 @@ module.exports = {
 			{ 
 				test: /\.js$/, 
 				exclude: /node_modules/, 
-				loader: "babel-loader" 
+				loader: ["babel-loader", "eslint-loader"]
 			},
 			{
         test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
         use: [
           {
-            loader: 'file-loader',
+            loader: 'url-loader',
             options: {
               name: '[name].[ext]',
-              outputPath: 'fonts/icons/'
+							outputPath: 'fonts/icons/',
             }
-          }
+					}
         ]
       }
 		]

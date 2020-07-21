@@ -324,7 +324,7 @@ Images.prototype.replaceImg = function(image_element, figure, srcToUse, callback
       fig.attr("data-height", this.height);
       fig.attr("data-width", this.width);
     }
-
+    console.log(`replaceImg = this.naturalWidth ${this.naturalWidth}, width ${this.width}`);
     if (this.naturalWidth < 760) {
       figure.addClass('n-fullSize');
     } else {
@@ -396,7 +396,7 @@ Images.prototype.displayCachedImage = function(file, cont, callback) {
       _this.droppedCount--;
     }
 
-    var img, node, self;
+    var node, self;
     node = _this.viaDrop ? document.querySelector('.drop-placeholder') : _this.current_editor.getNode();
 
     self = _this;
@@ -433,8 +433,8 @@ Images.prototype.displayCachedImage = function(file, cont, callback) {
       rig.attr("data-height", this.height);
       rig.attr("data-width", this.width);
     }
-
-    if (img_tag.naturalWidth < 700) {
+    
+    if (this.naturalWidth < 700) {
       replaced_node.addClass('n-fullSize');
     } else {
       replaced_node.removeClass('n-fullSize');

@@ -3,6 +3,8 @@ import boot from './boot';
 
 function Tooltip(opts) {
   this.opts = opts;
+  this.cancelHide = this.cancelHide.bind(this);
+  this.hide = this.hide.bind(this);
   boot.it(this, opts);
 }
 
@@ -40,28 +42,29 @@ Tooltip.prototype.positionAt = function(ev, matched) {
   target = o.target;
   target_is_figure = o.figure;
   
-  target_offset = target.offset();
-  target_width = target.outerWidth();
-  target_height = target.outerHeight();
+  target_offset = target.getBoundingClientRect();
+  target_width = target_offset.width;;
+  target_height = target_offset.height;
 
   var popover = this.elNode.querySelector('.popover');
 
-  popover_width = popover.outerWidth();
-
+  
   if (target_is_figure) {
+    popover.show();
+    popover_width = popover.getBoundingClientRect().width;
+    popover_width = popover_width / 2;
     popover.addClass('pop-for-figure');
-    top_value = target_offset.top;
-    left_value = (target_offset.left + target_width) - popover_width - 15;
+    top_value = target_offset.top + document.body.scrollTop;
+    left_value = (target_offset.left + (target_width / 2)) - popover_width - 15;
     popover.style.top = top_value + 'px';
     popover.style.left = left_value + 'px';
-    popover.show();
   } else {
+    popover_width = Utils.outerWidth(popover);
     popover.removeClass('pop-for-figure');
-    top_value = target_offset.top + target_height;
+    top_value = target_offset.top + target_height + document.body.scrollTop;
     left_value = target_offset.left + (target_width / 2) - (popover_width / 2);
     popover.style.top = top_value + 'px';
     popover.style.left = left_value + 'px';
-    popover.show();
   }
   return;
 };
@@ -105,11 +108,11 @@ Tooltip.prototype.hide = function(ev) {
 };
 
 Tooltip.prototype.resolveTargetPosition = function(target) {
-  if (target.parents(".item-figure").exists()) {
-    var tg = target.parents(".item-figure");
-    return {position: tg.position(), target: tg, figure: true};
+  if (target.closest(".item-figure") != null) {
+    var tg = target.closest(".item-figure");
+    return {position: {top: tg.offsetTop, left: tg.offsetLeft}, target: tg, figure: true};
   } else {
-    return {position: target.position(), target: target, figure: false};
+    return {position: {top: target.offsetTop, left: target.offsetLeft}, target: target, figure: false};
   }
 };
 
