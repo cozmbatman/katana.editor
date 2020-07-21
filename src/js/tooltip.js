@@ -48,18 +48,17 @@ Tooltip.prototype.positionAt = function(ev, matched) {
 
   var popover = this.elNode.querySelector('.popover');
 
+  popover.show();
+  popover_width = popover.getBoundingClientRect().width;
+  popover_width = popover_width / 2;
   
   if (target_is_figure) {
-    popover.show();
-    popover_width = popover.getBoundingClientRect().width;
-    popover_width = popover_width / 2;
     popover.addClass('pop-for-figure');
     top_value = target_offset.top + document.body.scrollTop;
     left_value = (target_offset.left + (target_width / 2)) - popover_width - 15;
     popover.style.top = top_value + 'px';
     popover.style.left = left_value + 'px';
   } else {
-    popover_width = Utils.outerWidth(popover);
     popover.removeClass('pop-for-figure');
     top_value = target_offset.top + target_height + document.body.scrollTop;
     left_value = target_offset.left + (target_width / 2) - (popover_width / 2);
@@ -89,7 +88,7 @@ Tooltip.prototype.displayAt = function(ev, matched) {
   if(elNT != null) {
     elNT.style.pointerEvents = 'auto';
   }
-  return el.show();
+  return elNT.show();
 };
 
 Tooltip.prototype.cancelHide = function() {

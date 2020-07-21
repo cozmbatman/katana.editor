@@ -384,6 +384,7 @@ TextToolbar.prototype.commandCenter = function (cmd, val) {
 };
 
 TextToolbar.prototype.commandOverall = function(cmd, val) {
+  console.log(`Command is ${cmd}`);
   var n, origNode, extrakls;
   
   origNode = this.current_editor.current_node,
@@ -403,7 +404,16 @@ TextToolbar.prototype.commandOverall = function(cmd, val) {
 
   if (document.execCommand(cmd, false, val)) {
     n = this.current_editor.getNode();
+
     this.current_editor.setupLinks(n.querySelectorAll("a"));
+
+    if(cmd == "createlink" || cmd == "bold" || cmd == "italic") {
+      let nn = this.current_editor.getTextNodeParent()
+      if(nn != null) {
+        this.current_editor.addClassesToElement(nn);
+        this.current_editor.setElementName(nn);
+      }
+    }
 
     this.displayHighlights();
 
@@ -415,6 +425,8 @@ TextToolbar.prototype.commandOverall = function(cmd, val) {
         n = this.current_editor.addClassesToElement(n);  
       }
       this.current_editor.setElementName(n);
+
+
     }
 
     this.current_editor.handleTextSelection(n);

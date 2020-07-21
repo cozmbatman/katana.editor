@@ -1065,6 +1065,33 @@ Editor.prototype.focusNode = function(node, range) {
   return this.setRange(range);
 };
 
+Editor.prototype.getTextNodeParent = function() {
+  var node, range, root, selection;
+  node = void 0;
+  root = this.elNode,
+  selection = this.selection();
+
+  if (selection.rangeCount < 1) {
+    return;
+  }
+
+  range = selection.getRangeAt(0);
+
+  node = range.commonAncestorContainer;
+
+  if (!node || node === root) {
+    return null;
+  }
+  while(node.nodeType != 1) {
+    node = node.parentNode;
+  }
+  if (root && root.contains(node) && root != node) {
+    return node;
+  } else {
+    return null;
+  }
+}
+
 Editor.prototype.getNode = function() {
   var node, range, root, selection;
   node = void 0;
@@ -3313,6 +3340,7 @@ Editor.prototype.addClassesToElement = function(element, forceKlass) {
   if (n.hasClass('item-empty')) {
     hasEmpty = true;
   }
+  name = name == "a" ? "anchor" : name;
 
   switch (name) {
     case "p":
@@ -3376,6 +3404,7 @@ Editor.prototype.addClassesToElement = function(element, forceKlass) {
     case "img":
       this.image_uploader.uploadExistentImage(n);
       break;
+    case "anchor":
     case "a":
     case 'strong':
     case 'em':
@@ -3385,7 +3414,9 @@ Editor.prototype.addClassesToElement = function(element, forceKlass) {
     case 'i':
       n.removeAttribute('class');
       n.addClass('markup-' + name);
-      n.wrap(`<p class='item item-p'></p>`);
+      if(n.closest('.item') == null) {
+        n.wrap(`<p class='item item-p'></p>`);
+      }
       n = n.parentNode;
       break;  
     case "blockquote":
