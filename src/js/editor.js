@@ -9,6 +9,7 @@ import {TextToolbar, ImageToolbar} from './toolbars/index';
 import { ContentBar, ImageContentBarItem, VideoContentBarItem, SectionContentBarItem, EmbedContentBarItem } from './content/index';
 import ModelFactory from './models/factory';
 import Notes from './notes/core';
+import clean from './cleaner';
 
 const BACKSPACE = 8,
     ESCAPE = 27,
@@ -540,7 +541,7 @@ Editor.prototype.parseInitialContent = function (cb) {
   }
   let _this = this;
 
-  this.setupElementsClasses(this.elNode.querySelectorAll('.block-content-inner'), function() {
+  this.setupElementsClasses(this.elNode.querySelectorAll('.block-content-inner'), () => {
     if (_this.mode == 'write') {
       const figures = _this.elNode.querySelectorAll('.item-figure');
       figures.forEach((item) => {
@@ -1381,15 +1382,17 @@ Editor.prototype.hidePlaceholder = function (node, ev) {
 // EVENT LISTENERS //
 
 Editor.prototype.cleanupEmptyModifierTags = function (elements) {
-  elements.querySelectorAll('i, b, strong, em').forEach( item => {
-    if(item.textContent.killWhiteSpace().length == 0) {
-      var pnt = item.parentNode;
-      item.parentNode.replaceChild(document.createTextNode(''), item);
-      if(pnt != null) {
-        pnt.normalize();
+  elements.forEach(element => {
+    element.querySelectorAll('i, b, strong, em').forEach( item => {
+      if(item.textContent.killWhiteSpace().length == 0) {
+        var pnt = item.parentNode;
+        item.parentNode.replaceChild(document.createTextNode(''), item);
+        if(pnt != null) {
+          pnt.normalize();
+        }
       }
-    }
-  });
+    });
+  })
 };
 
 Editor.prototype.convertPsInnerIntoList = function (item, splittedContent, match) {
@@ -1538,9 +1541,11 @@ Editor.prototype.handleUnwrappedImages = function(elements) {
 };
 
 Editor.prototype.handleUnwrappedFrames = function (elements) {
-  elements.querySelectorAll('iframe').forEach( im => {
-    this.video_uploader.uploadExistentIframe(im);
-  });
+  elements.forEach(element => {
+    element.querySelectorAll('iframe').forEach( im => {
+      this.video_uploader.uploadExistentIframe(im);
+    });
+  })
 };
 
 Editor.prototype.handleSpanReplacements = function (element) {
@@ -1586,27 +1591,36 @@ Editor.prototype.removeUnwantedSpans = function () {
 
 Editor.prototype.cleanPastedText = function (text) {
   var regs =  [
+    // Remove anything but the contents within the BODY element
+    [new RegExp(/^[\s\S]*<body[^>]*>\s*|\s*<\/body[^>]*>[\s\S]*$/g), ''],
+
+    // cleanup comments added by Chrome when pasting html
+    [new RegExp(/<!--StartFragment-->|<!--EndFragment-->/g), ''],
+
+    // Trailing BR elements
+    [new RegExp(/<br>$/i), ''],
+
     // replace two bogus tags that begin pastes from google docs
     [new RegExp(/<[^>]*docs-internal-guid[^>]*>/gi), ''],
     [new RegExp(/<\/b>(<br[^>]*>)?$/gi), ''],
 
-      // un-html spaces and newlines inserted by OS X
+     // un-html spaces and newlines inserted by OS X
     [new RegExp(/<span class="Apple-converted-space">\s+<\/span>/g), ' '],
     [new RegExp(/<br class="Apple-interchange-newline">/g), '<br>'],
 
     // replace google docs italics+bold with a span to be replaced once the html is inserted
-    [new RegExp(/<span[^>]*(font-style:italic;font-weight:bold|font-weight:bold;font-style:italic)[^>]*>/gi), '<span class="replace-with italic bold">'],
+    [new RegExp(/<span[^>]*(font-style:italic;font-weight:(bold|700)|font-weight:(bold|700);font-style:italic)[^>]*>/gi), '<span class="replace-with italic bold">'],
 
     // replace google docs italics with a span to be replaced once the html is inserted
     [new RegExp(/<span[^>]*font-style:italic[^>]*>/gi), '<span class="replace-with italic">'],
 
     //[replace google docs bolds with a span to be replaced once the html is inserted
-    [new RegExp(/<span[^>]*font-weight:bold[^>]*>/gi), '<span class="replace-with bold">'],
+    [new RegExp(/<span[^>]*font-weight:(bold|700)[^>]*>/gi), '<span class="replace-with bold">'],
 
-      // replace manually entered b/i/a tags with real ones
+     // replace manually entered b/i/a tags with real ones
     [new RegExp(/&lt;(\/?)(i|b|a)&gt;/gi), '<$1$2>'],
 
-      // replace manually a tags with real ones, converting smart-quotes from google docs
+     // replace manually a tags with real ones, converting smart-quotes from google docs
     [new RegExp(/&lt;a(?:(?!href).)+href=(?:&quot;|&rdquo;|&ldquo;|"|“|”)(((?!&quot;|&rdquo;|&ldquo;|"|“|”).)*)(?:&quot;|&rdquo;|&ldquo;|"|“|”)(?:(?!&gt;).)*&gt;/gi), '<a href="$1">'],
 
     // Newlines between paragraphs in html have no syntactic value,
@@ -1617,12 +1631,8 @@ Editor.prototype.cleanPastedText = function (text) {
     // Microsoft Word makes these odd tags, like <o:p></o:p>
     [new RegExp(/<\/?o:[a-z]*>/gi), ''],
 
-    // deductions over, now cleanup
-    // remove all style related informations from the tags.
-    [new RegExp(/(<[^>]+) style=".*?"/gi), '$1'],
-
-    // remove multiple line breaks with one.
-    [new RegExp(/<br\s*\/?>(?:\s*<br\s*\/?>)+/gi), '<br>'],
+    // Microsoft Word adds some special elements around list items
+    [new RegExp(/<!\[if !supportLists\]>(((?!<!).)*)<!\[endif]\>/gi), '$1']
 
   ];
 
@@ -1732,7 +1742,20 @@ Editor.prototype.doPaste = function (pastedText) {
 
     this.setupElementsClasses(pei, () => {
         let last_node, new_node, nodes, num, top;
-        nodes = Utils.generateElement( this.paste_element.innerHTML ).insertAfter(this.aa );
+        nodes = Utils.generateElement(this.paste_element.innerHTML)
+        if(nodes != null && typeof nodes['length'] !== 'undefined') {
+          nodes = [...nodes]; //
+        } else if(nodes != null) { // single element
+          nodes = [nodes];
+          //this.aa.insertAdjacentElement('afterend', nodes);
+        }
+
+        let after = this.aa;
+        for(let i = 0; i < nodes.length; i++) {
+          let nd = nodes[i];
+          after.insertAdjacentElement('afterend', nd);
+          after = nd;
+        }
 
         var aa = this.aa;
         var caption;
@@ -1750,7 +1773,7 @@ Editor.prototype.doPaste = function (pastedText) {
           caption = aa;
         }
 
-        if (caption && caption.length) {
+        if (caption != null) {
           var first = nodes;
           var firstText = first.textContent;
           var leftOver = '';
@@ -1790,9 +1813,11 @@ Editor.prototype.doPaste = function (pastedText) {
         }
         num = last_node.childNodes.length;
         this.setRangeAt(last_node, num);
-        new_node = this.getNode();
-        top = new_node.offsetTop;
-        this.markAsSelected(new_node);
+        if(new_node != null) {
+          new_node = this.getNode();
+          top = new_node.offsetTop;
+          this.markAsSelected(new_node);
+        }
 
         this.displayTooltipAt(this.elNode.querySelector(".item-selected"));
 
@@ -1850,6 +1875,7 @@ Editor.prototype.doPaste = function (pastedText) {
 
 
 Editor.prototype.handlePaste = function(ev) {
+  ev.preventDefault();
   var cbd, pastedText;
   this.aa = this.getNode();
   pastedText = void 0;
@@ -1860,7 +1886,8 @@ Editor.prototype.handlePaste = function(ev) {
     cbd = ev.clipboardData;
     pastedText = cbd.getData('text/html').isEmpty() ? cbd.getData('text/plain') : cbd.getData('text/html');
   }
-  return this.doPaste(pastedText);
+  this.doPaste(pastedText);
+  return false;
 };
 
 
@@ -3479,7 +3506,7 @@ Editor.prototype.setupElementsClasses = function(element, cb) {
   }
   let _this = this;
   setTimeout(() => {
-      _this.cleanContentsOld(_this.element);
+      _this.cleanContents(_this.element);
       _this.wrapTextNodes(_this.element);
 
       let ecC = [];
@@ -3501,162 +3528,19 @@ Editor.prototype.setupElementsClasses = function(element, cb) {
 
       _this.setupLinks( allAs );
       _this.setupFirstAndLast();
-      if (Object.toString.call(cb) === '[object Function]') {
-        return cb();
-      }
+      return cb();
   }, 20);
 
 };
 
 Editor.prototype.cleanContents = function(element) {
-
-};
-
-Editor.prototype.cleanContentsOld = function(element) {
-
-  var s;
+  let elm;
   if (!element) {
-    this.element = this.elNode.querySelectorAll('.block-content-inner');
+    elm = this.elNode.querySelectorAll('.block-content-inner');
   } else {
-    this.element = element;
+    elm = typeof element['length'] == 'undefined' ? [element] : element;
   }
-
-  s = new Sanitize({
-    elements: ['strong', 'img', 'em', 'br', 'a', 'blockquote', 'b', 'u', 'i', 'pre', 'p', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li','iframe','figcaption','cite'],
-    attributes: {
-      '__ALL__': ['class','name', 'data-action', 'title'],
-      a: ['href', 'title', 'target'],
-      img: ['src','data-height','data-width','data-image-id','data-delayed-src','data-frame-url','data-frame-aspect'],
-      iframe: ['src','width','height'],
-      ol: ['type']
-    },
-    protocols: {
-      a: {
-        href: ['http', 'https', 'mailto']
-      }
-    },
-    transformers: [
-      function (input) {
-        if (input.node_name === "iframe") {
-          var src = input.node.attr('src');
-          if (Utils.urlIsFromDomain(src, 'youtube.com') || Utils.urlIsFromDomain(src, 'vimeo.com')) {
-            return {
-              whitelist_nodes: [input.node]
-            };
-          } else {
-            return null;
-          }
-        }
-      },function(input) {
-        if (input.node_name === "span" && input.node.hasClass("placeholder-text")) {
-          return {
-            whitelist_nodes: [input.node]
-          };
-        } else {
-          return null;
-        }
-      }, function(input) {
-        const kls = input.node.classList ? input.node.classList : [];
-        
-        if (input.node_name === 'div' && ( kls.contains("item-mixtapeEmbed") || kls.contains("padding-cont") || kls.contains("block-grid-row") || kls.contains("ignore-block") )) {
-          return {
-            whitelist_nodes: [input.node]
-          };
-        } else if(input.node_name == 'div' && ( kls.contains("item-controls-cont") || kls.contains("item-controls-inner") ) && input.node.closest('.item-figure') != null) {
-          return {
-            whitelist_nodes: [input.node]
-          };
-        } else if (input.node_name === 'a' && kls.contains("item-mixtapeEmbed")) {
-          return {
-            attr_whitelist: ["style"]
-          };
-        } else {
-          return null;
-        }
-      }, function(input) {
-        const kls = input.node.classList ? input.node.classList : [];
-        const prntNode = input.node.parentNode ? input.node.parentNode : false;
-        const prntKls = prntNode ? prntNode.classList : [];
-        // const prntKls = [];
-        if (input.node_name === 'figure' && kls.contains("item-iframe")) {
-          return {
-            whitelist_nodes: [input.node]
-          };
-        } else if (input.node_name === 'div' && kls.contains("iframeContainer") && prntKls.contains("item-iframe")) {
-          return {
-            whitelist_nodes: [input.node]
-          };
-        } else if (input.node_name === 'iframe' && prntKls.contains("iframeContainer")) {
-          return {
-            whitelist_nodes: [input.node]
-          };
-        } else if (input.node_name === 'figcaption' && prntKls.contains("item-iframe")) {
-          return {
-            whitelist_nodes: [input.node]
-          };
-        } else if (input.node_name === 'div' && kls.contains('item-controls') && input.node.closest('.item-figure') != null) {
-          return {
-            whitelist_nodes: [input.node]
-          };
-        } else {
-          return null;
-        }
-      }, function(input) {
-        const kls = input.node.classList ? input.node.classList : [];
-        const prntNode = input.node.parentNode ? input.node.parentNode : false;
-        const prntKls = prntNode ? prntNode.classList : [];
-        if (input.node_name === 'figure' && kls.contains("item-figure")) {
-          return {
-            whitelist_nodes: [input.node]
-          };
-        } else if (input.node_name === 'div' && (kls.contains("padding-cont") && prntKls.contains("item-figure"))) {
-          return {
-            whitelist_nodes: [input.node]
-          };
-        } else if (input.node_name === 'div' && (kls.contains("padding-box") && prntKls.contains("padding-cont"))) {
-          return {
-            whitelist_nodes: [input.node]
-          };
-        } else if (input.node_name === 'img' && input.node.closest(".item-figure") != null) {
-          return {
-            whitelist_nodes: [input.node]
-          };
-        } else if (input.node_name === 'a' && prntKls.contains("item-mixtapeEmbed")) {
-          return {
-            attr_whitelist: ["style"]
-          };
-        } else if (input.node_name === 'figcaption' && prntKls.contains("item-figure")) {
-          return {
-            whitelist_nodes: [input.node]
-          };
-        } else if (input.node_name === 'figcaption' && prntKls.contains("block-grid")) {
-          return {
-            whitelist_nodes: [input.node]
-          };
-        } else if (input.node_name === 'span' && prntKls.contains("figure-caption")) {
-          return {
-            whitelist_nodes: [input.node]
-          };
-        } else if (input.node_name === 'span' && prntKls.contains("block-grid-caption")) {
-          return {
-            whitelist_nodes: [input.node]
-          };
-        } else {
-          return null;
-        }
-      }
-    ]
-  });
-
-  if (this.element.length) {
-    for (var i = 0; i < this.element.length; i = i + 1) {
-      var el = this.element[i];
-      let cleanNode = s.clean_node( el );
-      el.innerHTML = '';
-      el.appendChild(cleanNode);
-    }
-  }
-
+  clean.it(elm);
 };
 
 Editor.prototype.wrapTextNodes = function(element) {
@@ -3692,7 +3576,11 @@ Editor.prototype.setElementName = function(element) {
   }
   if (!el.matches('[name]')) {
     if(el.tagName == 'UL') {
-      let lis = el.querySelectorAll(' > li');
+      const elChilds = Array.prototype.filter.call(el.children, e => {
+        return e.tagName === 'LI';
+      });
+
+      let lis = elChilds; //el.querySelectorAll(' > li');
       lis.forEach( item => {
         var li = item;
         if(!li.matches('[name]')) {
