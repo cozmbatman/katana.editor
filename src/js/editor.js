@@ -1748,6 +1748,9 @@ Editor.prototype.doPaste = function (pastedText) {
         } else if(nodes != null) { // single element
           nodes = [nodes];
           //this.aa.insertAdjacentElement('afterend', nodes);
+        } 
+        if(nodes == null || nodes.length == 0) {
+          return;
         }
 
         let after = this.aa;

@@ -12,7 +12,6 @@ module.exports = {
 		path: path.resolve(__dirname, 'dist', 'assets'),
 		filename: '[name].[hash].js'
   },
-  devtool: 'inline-source-map',
   devServer: {
 		contentBase: './dist',
   },
@@ -37,6 +36,7 @@ module.exports = {
             options: {
               name: '[name].[ext]',
 							outputPath: 'fonts/icons/',
+							publicPath: '../fonts/icons/'
             }
           }
         ]

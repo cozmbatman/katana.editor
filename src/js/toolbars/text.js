@@ -173,13 +173,15 @@ TextToolbar.prototype.actionIsLink = function (target, event) {
     this.elNode.querySelector("input.mf-menu-input").value = '';
     this.removeLink();
   } else {
-    this.elNode.addClass("mf-menu--linkmode");
-    var sel = Utils.saveSelection();
-    this.savedSel = sel;
-    this.elNode.querySelector("input.mf-menu-input").focus();
     if (typeof event != 'undefined') {
       event.preventDefault();
     }
+    this.elNode.addClass("mf-menu--linkmode");
+    var sel = Utils.saveSelection();
+    this.savedSel = sel;
+    setTimeout(() => {
+      this.elNode.querySelector("input.mf-menu-input").focus();
+    }, 30)
   }
 };
 

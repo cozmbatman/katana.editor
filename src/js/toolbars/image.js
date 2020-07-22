@@ -72,7 +72,7 @@ ImageToolbar.prototype.defaultConfig = function () {
 ImageToolbar.prototype.template = function () {
   if(this.config.buttons.length > 0) {
     let html = `<div class="mf-menu-linkinput">
-          <input class="mf-menu-input" placeholder="http://">
+          <input class="mf-menu-input" placeholder="https://">
           <div class="mf-menu-button mf-link-close">&#215;</div>
         </div>
         <ul class='mf-menu-buttons'>`;
@@ -127,7 +127,7 @@ ImageToolbar.prototype.handleClick = function (ev, matched) {
     action = element.attr("data-action");
     if(action) {action = action.trim();}
     if (/(?:createlink)/.test(action)) {
-      this.actionIsLink(ev.currentTarget);
+      this.actionIsLink(element, ev);
     } else {
       this.menuApply(action);
     }
@@ -170,12 +170,14 @@ ImageToolbar.prototype.actionIsLink = function (target, event) {
     this.removeLink();
   } else {
     this.elNode.addClass("mf-menu--linkmode");
-    if(this.elNode.querySelector("input.mf-menu-input") != null) {
-      this.elNode.querySelector("input.mf-menu-input").focus();
-    }
     if (typeof event != 'undefined') {
       event.preventDefault();
     }
+
+    setTimeout(() => {
+      this.elNode.querySelector("input.mf-menu-input")?.focus();
+    }, 30);
+
   }
 };
 
