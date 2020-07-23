@@ -555,13 +555,14 @@ ImageToolbar.prototype._commandGoUpInGrid = function (figure) {
 
 /** commands **/
 ImageToolbar.prototype.commandPositionSwitch = function (direction, figure) {
-  const sel = document.querySelector('.item-figure.item-selected'), toSwitchWith;
+  const sel = document.querySelector('.item-figure.item-selected');
   if (typeof figure != 'undefined') {
     sel = figure;
   }
   if(sel == null) {
     return;
   }
+  let toSwitchWith = null;
   if (sel.hasClass('figure-in-row')) {
     if (direction == 'left') {
       toSwitchWith = sel.prev('.figure-in-row');
