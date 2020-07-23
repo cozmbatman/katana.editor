@@ -21,7 +21,7 @@ if (!Element.prototype.matches) {
 
 if (!Element.prototype.closest) {
   Element.prototype.closest = function(s) {
-    var el = this;
+    let el = this;
     do {
       if (el.matches(s)) return el;
       el = el.parentElement || el.parentNode;
@@ -158,9 +158,8 @@ if(!Element.prototype.attr) {
 
 if(!Element.prototype.isElementInViewport) {
   Element.prototype.isElementInViewport = function() {
-    var rect;
     let el = this;
-    rect = el.getBoundingClientRect();
+    const rect = el.getBoundingClientRect();
     return rect.top >= 0 && rect.left >= 0 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && rect.right <= (window.innerWidth || document.documentElement.clientWidth);
   };
 }
@@ -169,15 +168,10 @@ if(!Element.prototype.isElementInViewport) {
 if(!Element.prototype.isElementVerticallyInViewPort) {
   Element.prototype.isElementVerticallyInViewPort = function() {
     let el = this;
-    var rect = el.getBoundingClientRect(),
-        wn = window,
-        dc = document,
-        ch = (wn.innerHeight || dc.documentElement.clientHeight),
-        cw = (wn.innerWidth || dc.documentElement.clientWidth),
-        vertInView;
-
-    vertInView = (rect.top <= ch) && ((rect.top + rect.height) >= 0);
-    return vertInView;
+    const rect = el.getBoundingClientRect(),
+        ch = (window.innerHeight || document.documentElement.clientHeight),
+        cw = (window.innerWidth || document.documentElement.clientWidth);
+    return (rect.top <= ch) && ((rect.top + rect.height) >= 0);
   };
 }
 
@@ -201,20 +195,19 @@ if (!Array.prototype.contains) {
 
 if(!Node.prototype.remove) {
   Node.prototype.remove = function() {
-    let el = this;
-    if(el.parentNode === null) {
+    if(this.parentNode === null) {
       return;
     }
-    el.parentNode.removeChild(el);
+    this.parentNode.removeChild(this);
   }
 }
 
 if(!Node.prototype.append) {
   Node.prototype.append = function(toAdd) {
-    let el = this;
     if(toAdd === null) {
       return;
     }
+    const el = this;
     if(toAdd instanceof NodeList) {
       Array.prototype.forEach.call(toAdd, (nd) => {
         el.appendChild(nd);
@@ -227,7 +220,7 @@ if(!Node.prototype.append) {
 
 if(!Node.prototype.prepend) {
   Node.prototype.prepend = function(el) {
-    let refNode = this;
+    const refNode = this;
     if(refNode != null && refNode.parentNode != null) {
       return refNode.parentNode.insertBefore(el, refNode.parentNode.firstElementChild);
     }
@@ -238,8 +231,7 @@ if(!Node.prototype.prepend) {
 if(!Node.prototype.unwrap) {
   Node.prototype.unwrap = (el) => {
     // get the element's parent node
-    var parent = el.parentNode;
-
+    const parent = el.parentNode;
     // move all children out of the element
     while (el.firstChild) parent.insertBefore(el.firstChild, el);
 
@@ -253,10 +245,10 @@ if(!NodeList.prototype.wrap) {
     if(this.length == 0) {
       return;
     }
-    var temp = document.createElement('div'),
+    const temp = document.createElement('div'),
         parent = this.parentNode,
-        insertWhere = this.previousSibling,
-        target;
+        insertWhere = this.previousSibling;
+    let target;
 
         if(wrapper instanceof HTMLElement) {
           target = wrapper;
@@ -285,10 +277,10 @@ if(!NodeList.prototype.wrap) {
 
 if(!Node.prototype.wrap) {
   Node.prototype.wrap = function(wrapper) {
-    var temp = document.createElement('div'),
+    const temp = document.createElement('div'),
         parent = this.parentNode,
-        insertWhere = this.previousSibling,
-        target;
+        insertWhere = this.previousSibling;
+    let target;
 
         if(wrapper instanceof HTMLElement) {
           target = wrapper;

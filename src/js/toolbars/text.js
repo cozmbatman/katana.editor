@@ -1,5 +1,6 @@
 import boot from '../boot';
 import Utils from '../utils';
+import Stream from '../stream';
 
 const NUMBER_HONE = 49, //header 1
   NUMBER_HTWO = 50, //header 2
@@ -12,6 +13,8 @@ const NUMBER_HONE = 49, //header 1
 
 function TextToolbar(opts) {
   this.opts = opts;
+
+  this.streamer = Stream;
   this.handleClick = this.handleClick.bind(this);
   this.createlink = this.createlink.bind(this);
   this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -61,7 +64,7 @@ TextToolbar.prototype.initialize = function () {
 
 TextToolbar.prototype.defaultConfig = function () {
   if(this.mode == 'write') {
-    var o = {
+    const o = {
       buttons: [
       {a:'bold',i:'bold'},
       {a:'italic',i:'italic'}, 
@@ -119,8 +122,7 @@ TextToolbar.prototype.built = false;
 TextToolbar.prototype.render = function () {
   if(!this.built) {
     this.cachedTemplate = null;
-    var html = this.template();
-    this.elNode.innerHTML = html;
+    this.elNode.innerHTML = this.template();
     this.built = true;  
   }      
   return this.show();
@@ -144,16 +146,11 @@ TextToolbar.prototype._show = function () {
 
 // click events
 TextToolbar.prototype.handleClick = function(ev, matched) {
-  var action, element;
-  if(matched) {
-    element = matched.querySelector('.mf-icon');
-  } else {
-    element = ev.currentTarget.querySelector('.mf-icon');
-  }
+  const element = matched ? matched.querySelector('.mf-icon') : ev.currentTarget.querySelector('.mf-icon');
   
   if(element != null) {
-    action = element.attr("data-action");
-    var s = Utils.saveSelection();
+    const action = element.attr("data-action");
+    const s = Utils.saveSelection();
     if(s != null) {
       this.savedSel = s;
     }
@@ -173,12 +170,9 @@ TextToolbar.prototype.actionIsLink = function (target, event) {
     this.elNode.querySelector("input.mf-menu-input").value = '';
     this.removeLink();
   } else {
-    if (typeof event != 'undefined') {
-      event.preventDefault();
-    }
+    event?.preventDefault();
     this.elNode.addClass("mf-menu--linkmode");
-    var sel = Utils.saveSelection();
-    this.savedSel = sel;
+    this.savedSel = Utils.saveSelection();
     setTimeout(() => {
       this.elNode.querySelector("input.mf-menu-input").focus();
     }, 30)
@@ -243,11 +237,8 @@ TextToolbar.prototype.closeInput = function(e) {
   return false;
 };
 
-TextToolbar.prototype.handleKeyDown = function (e) {
-  var which = e.which,
-    bd,
-    overLay;
-  if (which == 27) { 
+TextToolbar.prototype.handleKeyDown = function (e) {    
+  if (e.which == 27) { 
     this.hide();
     Utils.restoreSelection(this.savedSel);
   }
@@ -265,21 +256,17 @@ TextToolbar.prototype.handleInputEnter = function(e, matched) {
 };
 
 TextToolbar.prototype.removeLink = function() {
-  var elem;
   this.menuApply("unlink");
-  elem = this.current_editor.getNode();
-  return this.current_editor.cleanContents(elem);
+  return this.current_editor.cleanContents(this.current_editor.getNode());
 };
 
 TextToolbar.prototype.createlink = function(input) {
-  var action, inputValue;
   this.elNode.removeClass("mf-menu--linkmode");
   if (input.value) {
-    inputValue = input.value.replace(this.strReg.whiteSpace, "").replace(this.strReg.mailTo, "mailto:$1").replace(this.strReg.http, "http://$1");
+    const inputValue = input.value.replace(this.strReg.whiteSpace, "").replace(this.strReg.mailTo, "mailto:$1").replace(this.strReg.http, "http://$1");
     return this.menuApply("createlink", inputValue);
   }
-  action = "unlink";
-  return this.menuApply(action);
+  return this.menuApply("unlink");
 };
 
 TextToolbar.prototype.menuApply = function(action, value) {
@@ -304,19 +291,18 @@ TextToolbar.prototype.menuApply = function(action, value) {
 };
 
 TextToolbar.prototype.commandCite = function () {
-  var nd = Utils.getNode();
+  const nd = Utils.getNode();
   if (nd.tagName == 'CITE') {
-    var quote = nd.closest('blockquote');
-    quote.removeClass('with-cite');
-    nd.children.unwrap();
+    nd.closest('blockquote')?.removeClass('with-cite');
+    nd.children?.unwrap();
   } else {
     if (nd.hasClass('with-cite')) {
       nd.removeClass('with-cite');
     } else {
-      var sel = Utils.selection();
+      const sel = Utils.selection();
       if (sel.rangeCount) {
-        var range = sel.getRangeAt(0).cloneRange();
-        var ele = document.createElement('cite');
+        const range = sel.getRangeAt(0).cloneRange();
+        const ele = document.createElement('cite');
         range.surroundContents(ele);
         sel.removeAllRanges();
         sel.addRange(range);
@@ -328,8 +314,8 @@ TextToolbar.prototype.commandCite = function () {
 
 
 TextToolbar.prototype.commandButton = function(action) {
-  var nd = Utils.getNode();
-  if (nd.length && nd.tagName.toLowerCase() == 'a') {
+  const nd = Utils.getNode();
+  if (nd != null && nd.tagName.toLowerCase() == 'a') {
     if (action == 'buttonprimary') {
       if (nd.hasClass('trans')) {
         nd.removeClass('trans')
@@ -350,21 +336,17 @@ TextToolbar.prototype.commandButton = function(action) {
 };
 
 TextToolbar.prototype.readModeItemClick = function(action) {
-  var sel = document.querySelector('.item-selected');
+  const sel = document.querySelector('.item-selected');
   if (action == 'comment') {
-    let evnt = new CustomEvent('Katana.Event.Nodes', {
-      type: 'Katana.Event.Notes',
+    this.streamer.notifySubscribers('Katana.Event.Nodes', {
       selectedText: this.current_editor.getSelectedText(),
       node: sel
     });
-    this.current_editor.elNode.dispatchEvent(evnt);
   } else if (action == 'share') {
-    let evnt = new CustomEvent('Katana.Event.Share', {
-      type: 'Katana.Event.Share',
+    this.streamer.notifySubscribers('Katana.Event.Share', {
       selectedText: this.current_editor.getSelectedText(),
       node: sel
     });
-    this.current_editor.elNode.dispatchEvent(evnt);
   }
 };
 
@@ -374,8 +356,7 @@ TextToolbar.prototype.refreshMenuState = function () {
 };
 
 TextToolbar.prototype.commandCenter = function (cmd, val) {
-  var node;
-  node = this.current_editor.current_node;
+  const node = this.current_editor.current_node;
   if (!node) {
     return;
   }
@@ -386,11 +367,8 @@ TextToolbar.prototype.commandCenter = function (cmd, val) {
 };
 
 TextToolbar.prototype.commandOverall = function(cmd, val) {
-  console.log(`Command is ${cmd}`);
-  var n, origNode, extrakls;
-  
-  origNode = this.current_editor.current_node,
-  extrakls = false;
+  const origNode = this.current_editor.current_node;
+  let n , extrakls = false;
 
   if ( origNode.hasClass('text-center') ) {
     extrakls = 'text-center';
@@ -410,7 +388,7 @@ TextToolbar.prototype.commandOverall = function(cmd, val) {
     this.current_editor.setupLinks(n.querySelectorAll("a"));
 
     if(cmd == "createlink" || cmd == "bold" || cmd == "italic") {
-      let nn = this.current_editor.getTextNodeParent()
+      const nn = this.current_editor.getTextNodeParent()
       if(nn != null) {
         this.current_editor.addClassesToElement(nn);
         this.current_editor.setElementName(nn);
@@ -427,8 +405,6 @@ TextToolbar.prototype.commandOverall = function(cmd, val) {
         n = this.current_editor.addClassesToElement(n);  
       }
       this.current_editor.setElementName(n);
-
-
     }
 
     this.current_editor.handleTextSelection(n);
@@ -436,8 +412,7 @@ TextToolbar.prototype.commandOverall = function(cmd, val) {
 };
 
 TextToolbar.prototype.commandInsert = function(name) {
-  var node;
-  node = this.current_editor.current_node;
+  const node = this.current_editor.current_node;
   if (!node) {
     return;
   }
@@ -447,9 +422,11 @@ TextToolbar.prototype.commandInsert = function(name) {
 };
 
 TextToolbar.prototype.commandBlock = function(name) {
-  var list, node;
-  node = this.current_editor.current_node;
-  list = this.effectNode(this.current_editor.getNode(node), true);
+  const node = this.current_editor.current_node;
+  if(!node) {
+    return;
+  }
+  const list = this.effectNode(this.current_editor.getNode(node), true);
 
   if(node.tagName == 'BLOCKQUOTE' && !node.hasClass('pullquote')) {
     // leave it.. as it is 
@@ -463,15 +440,12 @@ TextToolbar.prototype.commandBlock = function(name) {
 };
 
 TextToolbar.prototype.commandWrap = function(tag) {
-  var node, val;
-  node = this.current_editor.current_node;
-  val = "<" + tag + ">" + Utils.selection() + "</" + tag + ">";
+  const val = "<" + tag + ">" + Utils.selection() + "</" + tag + ">";
   return this.commandOverall("insertHTML", val);
 };
 
 TextToolbar.prototype.effectNode = function(el, returnAsNodeName) {
-  var nodes;
-  nodes = [];
+  const nodes = [];
   el = el || this.current_editor.elNode;
   while (!el.hasClass('block-content-inner')) {
     if (el.nodeName.match(this.effectNodeReg)) {
@@ -482,13 +456,12 @@ TextToolbar.prototype.effectNode = function(el, returnAsNodeName) {
   return nodes;
 };
 
-  TextToolbar.prototype.displayHighlights = function() {
-  var nodes, active = this.elNode.querySelector('.active');
-  if(active != null) {
-    active.removeClass("active");
-  }
+TextToolbar.prototype.displayHighlights = function() {
+  const active = this.elNode.querySelector('.active');
+  active?.removeClass("active");
   this.refresh();
-  nodes = this.effectNode(Utils.getNode());
+
+  const nodes = this.effectNode(Utils.getNode());
 
   this.elNode.querySelectorAll(".mfi-button, .mfi-button-trans, .mfi-cite").forEach(el => {
     let li = el.closest('li');
@@ -496,9 +469,9 @@ TextToolbar.prototype.effectNode = function(el, returnAsNodeName) {
       li.addClass('hide');
     }
   });
-  let _this = this;
+
   nodes.forEach( (node) => {
-      var tag = node.nodeName.toLowerCase(),
+      const tag = node.nodeName.toLowerCase(),
       _thisEl = this.elNode;
       switch (tag) {
         case "a":
@@ -531,129 +504,85 @@ TextToolbar.prototype.effectNode = function(el, returnAsNodeName) {
       }
 
       if (tag.match(/(?:h[1-6])/i)) {
-        _thisEl.querySelectorAll(".mfi-bold, .mfi-italic, .mfi-quote").forEach( el => {
-          const li = el.closest('li');
-          if(li != null) {
-            li.addClass('hide');
-          }
-        });
+        _thisEl.querySelectorAll(".mfi-bold, .mfi-italic, .mfi-quote").forEach( el => 
+          el.closest('li')?.addClass('hide')
+        );
       } else if (tag === "indent") {
-        _thisEl.querySelectorAll(".mfi-H2, .mfi-H3, .mfi-H4, .mfi-quote").forEach( el => {
-          const li = el.closest('li');
-          if(li != null) {
-            li.addClass('hide');
-          }
-        });
+        _thisEl.querySelectorAll(".mfi-H2, .mfi-H3, .mfi-H4, .mfi-quote").forEach( el => 
+          el.closest('li')?.addClass('hide')
+        );
       } else if(tag == 'figcaption' || tag == 'label') {
-        _thisEl.querySelectorAll(".mfi-H2, .mfi-H3, .mfi-H4, .mfi-quote, .mfi-text-center").forEach( el => {
-          const li = el.closest('li');
-          if(li != null) {
-            li.addClass('hide');
-          }
-        });
+        _thisEl.querySelectorAll(".mfi-H2, .mfi-H3, .mfi-H4, .mfi-quote, .mfi-text-center").forEach( el => 
+          el.closest('li')?.addClass('hide')
+        );
       } else if(tag == 'blockquote') {
-        _thisEl.querySelectorAll(".mfi-H2, .mfi-H3, .mfi-H4").forEach( el => {
-          const li = el.closest('li');
-          if(li != null) {
-            li.addClass('hide');
-          }
-        });
+        _thisEl.querySelectorAll(".mfi-H2, .mfi-H3, .mfi-H4").forEach( el => 
+          el.closest('li')?.addClass('hide')
+        );
       }
 
       if (tag == 'link') {
-      
-        _thisEl.querySelectorAll(".mfi-button, .mfi-button-trans").forEach( el => {
-          const li = el.closest('li');
-          if(li != null) {
-            li.removeClass('hide');
-          }
-        });
+        _thisEl.querySelectorAll(".mfi-button, .mfi-button-trans").forEach( el => 
+          el.closest('li')?.removeClass('hide')
+        );
         if (node.hasClass('btn') & !node.hasClass('trans')) {
           _this.highlight('button');
-          _thisEl.querySelectorAll('.mfi-button-trans').forEach( el => {
-            const li = el.closest('li');
-            if(li != null) {
-              li.removeClass('active');
-            }
-          });
+          _thisEl.querySelectorAll('.mfi-button-trans').forEach( el => 
+            el.closest('li')?.removeClass('active')
+          );
         } else if(node.hasClass('trans')) {
-          _thisEl.querySelectorAll('.mfi-button').forEach( el => {
-            const li = el.closest('li');
-            if(li != null) {
-              li.removeClass('active');
-            }
-          });
+          _thisEl.querySelectorAll('.mfi-button').forEach( el => el.closest('li')?.removeClass('active')
+          );
           _this.highlight('button-trans');
         }
       } 
 
-      var prev = node.previousElementSibling,
-        hasH2 = prev != null ? prev.hasClass('item-h2') : false,
-        hasH3 = prev != null ? prev.hasClass('item-h3') : false,
-        hasH4 = prev != null ? prev.hasClass('item-h4') : false;
+      const prev = node.previousElementSibling,
+        hasH2 = prev?.hasClass('item-h2'),
+        hasH3 = prev?.hasClass('item-h3'),
+        hasH4 = prev?.hasClass('item-h4');
 
       if(hasH2) {
-        _thisEl.querySelectorAll(".mfi-H2, .mfi-quote").forEach( el => {
-          const li = el.closest('li');
-          if(li != null) {
-            li.addClass('hide');
-          }
-        });;
+        _thisEl.querySelectorAll(".mfi-H2, .mfi-quote").forEach( el => 
+          el.closest('li')?.addClass('hide')
+        );
       }else if(hasH3) {
-        _thisEl.querySelectorAll(".mfi-H3, .mfi-H2, .mfi-quote").forEach( el => {
-          const li = el.closest('li');
-          if(li != null) {
-            li.addClass('hide');
-          }
-        });;
+        _thisEl.querySelectorAll(".mfi-H3, .mfi-H2, .mfi-quote").forEach( el => 
+          el.closest('li')?.addClass('hide')
+        );
       }else if (hasH4) {
-        _thisEl.querySelectorAll('.mfi-H2, .mfi-H3, .mfi-H4, .mfi-quote').forEach( el => {
-          const li = el.closest('li');
-          if(li != null) {
-            li.addClass('hide');
-          }
-        });;
+        _thisEl.querySelectorAll('.mfi-H2, .mfi-H3, .mfi-H4, .mfi-quote').forEach( el => 
+          el.closest('li')?.addClass('hide')
+        );
       }
 
       if(node.hasClass('text-center')) {
-        _this.highlight('text-center');
+        this.highlight('text-center');
       }
       if (node.hasClass('pullquote')) {
-        _this.highlight('quote', true);
+        this.highlight('quote', true);
       }
 
       if (node.hasClass('pullquote')) {
-        _this.highlight('quote', true);
-        _thisEl.querySelectorAll('.mfi-italic, .mfi-text-center').forEach( el => {
-          const li = el.closest('li');
-          if(li != null) {
-            li.addClass('hide');
-          }
-        });
+        this.highlight('quote', true);
+        _thisEl.querySelectorAll('.mfi-italic, .mfi-text-center').forEach( el =>
+          el.closest('li')?.addClass('hide')
+        );
 
         if (Utils.editableCaretAtEnd(node)) {
-          _thisEl.querySelectorAll('.mfi-cite').forEach( el => {
-          const li = el.closest('li');
-          if(li != null) {
-            li.removeClass('hide');
-          }
-        });
+          _thisEl.querySelectorAll('.mfi-cite').forEach( el => 
+            el.closest('li')?.removeClass('hide')
+          );
         } 
       } 
 
       if (tag == 'cite') {
-        _thisEl.querySelectorAll('.mfi-italic, .mfi-text-center, .mfi-bold').forEach( el => {
-          const li = el.closest('li');
-          if(li != null) {
-            li.addClass('hide');
-          }
-        });
-        _thisEl.querySelectorAll('.mfi-cite').forEach( el => {
-          const li = el.closest('li');
-          if(li != null) {
-            li.removeClass('hide');
-          }
-        });
+        _thisEl.querySelectorAll('.mfi-italic, .mfi-text-center, .mfi-bold').forEach( el => 
+          el.closest('li')?.addClass('hide')
+        );
+        _thisEl.querySelectorAll('.mfi-cite').forEach( el => 
+          el.closest('li')?.removeClass('hide')
+        );
         tag = 'cite';
       }
 
@@ -661,7 +590,7 @@ TextToolbar.prototype.effectNode = function(el, returnAsNodeName) {
         tag = 'quote';
       }
       
-      return _this.highlight(tag);
+      this.highlight(tag);
   });
 };
 
@@ -669,19 +598,11 @@ TextToolbar.prototype.highlight = function(tag, double) {
   if (['h4','h3','h2','h1'].indexOf(tag) != -1) {
     tag = tag.toUpperCase();
   }
-  var ic = this.elNode.querySelector(".mfi-" + tag);
-  if(ic == null) {
-    return;
-  }
-  let icl = ic.closest("li");
+  const icl = this.elNode.querySelector(".mfi-" + tag)?.closest("li")
   if(double) {
-    if(icl != null) {
-      icl.addClass('doble');
-    }
+    icl?.addClass('doble');
   }
-  if(icl != null) {
-    return icl.addClass("active");
-  }
+  icl?.addClass('active');
 };
 
 export default TextToolbar;

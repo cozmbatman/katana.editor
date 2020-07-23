@@ -1,15 +1,13 @@
-const LINE_HEIGHT = 20;
+'use strict';
 const is_caret_at_start_of_node = (node, range) => {
-  var pre_range;
-  pre_range = document.createRange();
+  const pre_range = document.createRange();
   pre_range.selectNodeContents(node);
   pre_range.setEnd(range.startContainer, range.startOffset);
   return pre_range.toString().trim().length === 0;
 };
 
 const is_caret_at_end_of_node = (node, range) => {
-  var post_range;
-  post_range = document.createRange();
+  const post_range = document.createRange();
   post_range.selectNodeContents(node);
   post_range.setStart(range.endContainer, range.endOffset);
   return post_range.toString().trim().length === 0;
@@ -20,8 +18,7 @@ const editableIsCaret = () => {
 };
 
 const editableRange = () => {
-  var sel;
-  sel = window.getSelection();
+  const sel = window.getSelection();
   if (!(sel.rangeCount > 0)) {
     return;
   }
@@ -36,8 +33,7 @@ const editableCaretRange = () => {
 };
 
 const editableSetRange = (range) => {
-  var sel;
-  sel = window.getSelection();
+  const sel = window.getSelection();
   if (sel.rangeCount > 0) {
     sel.removeAllRanges();
   }
@@ -47,42 +43,11 @@ const editableSetRange = (range) => {
 const Utils = {
   scrollHandlers: {},
   scrollAttached: false,
+  LINE_HEIGHT: 20,
   onIOS: () => {
-    var standalone = window.navigator.standalone,
-      userAgent = window.navigator.userAgent.toLowerCase(),
-      safari = /safari/.test( userAgent ),
+    const userAgent = window.navigator.userAgent.toLowerCase(),
       ios = /iphone|ipod|ipad/.test( userAgent );
       return ios;
-  },
-
-  __result: (object, prop, fallback) => {
-    var value = object == null ? void 0 : object[prop];
-    if (value === void 0) {
-      value = fallback;
-    }
-    return value && Object.prototype.toString.call(value) == '[object Function]' ? value.call(object) : value;
-  },
-
-  __bind: (fn, me) => { 
-    return function() {
-      return fn.apply(me, arguments); 
-    }; 
-  },
-
-  __hasProp: {}.hasOwnProperty,
-
-  __extends: (child, parent) => { 
-    for (let key in parent) { 
-      if (__hasProp.call(parent, key)) { 
-        child[key] = parent[key]; 
-      }
-    } 
-    const ctor = function() {
-      this.constructor = child; 
-    } 
-    ctor.prototype = parent.prototype; 
-    child.prototype = new ctor(); 
-    child.__super__ = parent.prototype; 
   },
 
   log: (message, force) => {
@@ -113,14 +78,12 @@ const Utils = {
   },
 
   getBase64Image : (img) => {
-    var canvas, ctx, dataURL;
-    canvas = document.createElement("canvas");
+    const canvas = document.createElement("canvas");
     canvas.width = img.width;
     canvas.height = img.height;
-    ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0);
-    dataURL = canvas.toDataURL("image/png");
-    return dataURL;
+    return canvas.toDataURL("image/png");
   },
 
   generateId : () => {
@@ -128,7 +91,7 @@ const Utils = {
   },
 
   saveSelection : () => {
-    var i, len, ranges, sel;
+    let i, len, ranges, sel;
     if (window.getSelection) {
       sel = window.getSelection();
       if (sel.getRangeAt && sel.rangeCount) {
@@ -150,7 +113,7 @@ const Utils = {
   },
 
   restoreSelection : (savedSel) => {
-    var i, len, sel;
+    let i, len, sel;
     if (savedSel) {
       if (window.getSelection) {
         sel = window.getSelection();
@@ -170,7 +133,7 @@ const Utils = {
   },
 
   getNode : () => {
-    var container, range, sel;
+    let container, range, sel;
     range = void 0;
     sel = void 0;
     container = void 0;
@@ -204,13 +167,9 @@ const Utils = {
   },
 
   getSelectionDimensions : () => {
-    var height, left, range, rect, sel, top, width;
-    sel = document.selection;
-    range = void 0;
-    width = 0;
-    height = 0;
-    left = 0;
-    top = 0;
+    let height = 0, width = 0, range = void 0,
+      sel = document.selection, rect;
+    
     if (sel) {
       if (sel.type !== "Control") {
         range = sel.createRange();
@@ -254,11 +213,9 @@ const Utils = {
   },
 
   getCaretPosition : (editableDiv) => {
-    var caretPos, range, sel, tempEl, tempRange;
-    caretPos = 0;
-    containerEl = null;
-    sel = void 0;
-    range = void 0;
+    let caretPos = 0 ,
+    range = void 0, sel = void 0, tempEl, tempRange;
+    
     if (window.getSelection) {
       sel = window.getSelection();
       if (sel.rangeCount) {
@@ -290,11 +247,11 @@ const Utils = {
   },
 
   elementsHaveSameClasses : (first, second) => {
-    var arr1 = [...first.classList],
+    let arr1 = [...first.classList],
         arr2 = [...second.classList];
-        if(arr1.length != arr2.length) {
-          return false;
-        }
+    if(arr1.length != arr2.length) {
+      return false;
+    }
     arr1.sort();
     arr2.sort();
     for(let i = 0; i < arr1.length; i++) {
@@ -306,7 +263,7 @@ const Utils = {
   },
   
   urlIsFromDomain : (url, domain) => {
-    var a = document.createElement('a');
+    let a = document.createElement('a');
     a.href = url;
     if (typeof a.hostname != 'undefined' && a.hostname.indexOf(domain) != -1) {
       return true;
@@ -315,7 +272,7 @@ const Utils = {
   },
 
   urlIsForImage : (url) => {
-    var a = document.createElement('a');
+    let a = document.createElement('a');
     a.href = url,
     path = a.pathname;
     if (path.indexOf('.jpeg') != -1) {
@@ -383,9 +340,9 @@ const Utils = {
   },
 
   scrollToTop : (position) => {
-    let pos = typeof position == 'undefined' ? 0 : position;
-    let scrollDuration = 1000;
-    var scrollStep = -window.scrollY / (scrollDuration / 15),
+    const pos = typeof position == 'undefined' ? 0 : position;
+    const scrollDuration = 1000;
+    const scrollStep = -window.scrollY / (scrollDuration / 15),
     scrollInterval = setInterval(() => {
       if ( window.scrollY != 0 ) {
         window.scrollBy( pos, scrollStep );
@@ -395,7 +352,7 @@ const Utils = {
   },
 
   isEqual : (obj1, obj2) => {
-    for (var p in obj1) {
+    for (let p in obj1) {
       if (obj1.hasOwnProperty(p) !== obj2.hasOwnProperty(p)) return false;
       switch (typeof (obj1[p])) {
         case 'object':
@@ -409,7 +366,7 @@ const Utils = {
       }
     }
    
-    for (var p in obj2) {
+    for (let p in obj2) {
       if (typeof (obj1[p]) == 'undefined') return false;
     }
     return true;
@@ -419,22 +376,21 @@ const Utils = {
     if(el && el.style && el.style[prop] != '') {
       return el.style[prop];
     }
-    const cssProp = prop.toDashedProperty();
-    return getComputedStyle(el).getPropertyValue(cssProp);
+    return getComputedStyle(el).getPropertyValue(prop.toDashedProperty());
   },
 
   setCaretAtPosition : (element, position) => {
     if (element == null) {
       return;
     }
-    var pos = typeof position == 'undefined' ? 0 : position,
+    let pos = typeof position == 'undefined' ? 0 : position,
         range = document.createRange(),
         sel = window.getSelection();
 
     if (element.childNodes && element.childNodes.length > 0) {
-      range.setStart(element.childNodes[0], position);
+      range.setStart(element.childNodes[0], pos);
     }else {
-      range.setStart(element, position);
+      range.setStart(element, pos);
     }
     range.collapse(true);
     sel.removeAllRanges();
@@ -442,7 +398,7 @@ const Utils = {
   },
 
   editableFocus: (el, at_start) => {
-    var range, sel;
+    let range, sel;
     if (at_start == null) {
       at_start = true;
     }
@@ -460,33 +416,32 @@ const Utils = {
   },
 
   editableCaretOnLastLine: (el) => {
-    var cbtm, ebtm, range;
-    range = editableRange();
+    let cbtm, ebtm, range = editableRange();
     if (!range) {
       return false;
     }
     if (is_caret_at_end_of_node(el, range)) {
       return true;
     } else if (is_caret_at_start_of_node(el, range)) {
-      cbtm = el.getBoundingClientRect().top + LINE_HEIGHT;
+      cbtm = el.getBoundingClientRect().top + Utils.LINE_HEIGHT;
     } else {
       cbtm = range.getClientRects()[0].bottom;
     }
     ebtm = el.getBoundingClientRect().bottom;
-    return cbtm > ebtm - LINE_HEIGHT;
+    return cbtm > ebtm - Utils.LINE_HEIGHT;
   },
 
   outerWidth: (el) => {
-    var width = el.offsetWidth;
-    var style = getComputedStyle(el);
+    let width = el.offsetWidth;
+    const style = getComputedStyle(el);
   
     width += parseInt(style.marginLeft) + parseInt(style.marginRight);
     return width;
   },
 
   outerHeight: (el) => {
-    var height = el.offsetHeight;
-    var style = getComputedStyle(el);
+    let height = el.offsetHeight;
+    const style = getComputedStyle(el);
   
     height += parseInt(style.marginTop) + parseInt(style.marginBottom);
     return height;
@@ -494,7 +449,6 @@ const Utils = {
 
   registerForScroll : (key, cb) => {
     Utils.scrollHandlers[key] = cb;  
-    //this.handleScroll();
   },
 
   unregisterFromScroll : (key) => {
@@ -519,7 +473,7 @@ const Utils = {
       return;
     }
     Utils.scrollAttached = true;
-    var d = document,
+    let d = document,
         w = window,
         wHeight = Utils.getWindowHeight(),
         didScroll = false,
@@ -527,11 +481,11 @@ const Utils = {
         _this = Utils;
 
     function hasScrolled() {
-      var st = d.body.scrollTop;
-      var cbs = _this.scrollHandlers;
-      for (var key in cbs) {
+      const st = d.body.scrollTop;
+      const cbs = _this.scrollHandlers;
+      for (let key in cbs) {
         if (cbs.hasOwnProperty(key)) {
-          var fn = cbs[key];
+          const fn = cbs[key];
           fn(st, body, d.documentElement.scrollHeight, wHeight);
         }
       }
@@ -544,12 +498,12 @@ const Utils = {
         animationFrame(hasScrolled);
       }
     }
+    //TODO pipe debounce
     window.addEventListener('scroll', checkScroll);
   },
 
   editableCaretAtStart: (el) =>  {
-    var range;
-    range = editableRange();
+    const range = editableRange();
     if (!range) {
       return false;
     }
@@ -557,8 +511,7 @@ const Utils = {
   },
   
   editableCaretAtEnd: (el) =>  {
-    var range;
-    range = editableRange();
+    const range = editableRange();
     if (!range) {
       return false;
     }
@@ -566,20 +519,19 @@ const Utils = {
   },
   
   editableCaretOnFirstLine : (el) => {
-    var ctop, etop, range;
-    range = editableRange();
+    let ctop, etop, range = editableRange();
     if (!range) {
       return false;
     }
     if (is_caret_at_start_of_node(el, range)) {
       return true;
     } else if (is_caret_at_end_of_node(el, range)) {
-      ctop = el.getBoundingClientRect().bottom - LINE_HEIGHT;
+      ctop = el.getBoundingClientRect().bottom - Utils.LINE_HEIGHT;
     } else {
       ctop = range.getClientRects()[0].top;
     }
     etop = el.getBoundingClientRect().top;
-    return ctop < etop + LINE_HEIGHT;
+    return ctop < etop + Utils.LINE_HEIGHT;
   }
 };
 

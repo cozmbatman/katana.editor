@@ -20,7 +20,7 @@ function clean() {
       transformers: [
         function (input) {
           if (input.node_name === "iframe") {
-            var src = input.node.attr('src');
+            const src = input.node.attr('src');
             if (Utils.urlIsFromDomain(src, 'youtube.com') || Utils.urlIsFromDomain(src, 'vimeo.com')) {
               return {
                 whitelist_nodes: [input.node]
@@ -132,7 +132,7 @@ function clean() {
   
     if (element.length) {
       for (let i = 0; i < element.length; i = i + 1) {
-        var el = element[i];
+        const el = element[i];
         let cleanNode = s.clean_node( el );
         el.innerHTML = '';
         el.appendChild(cleanNode);

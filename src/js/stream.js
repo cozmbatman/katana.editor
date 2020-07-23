@@ -14,7 +14,7 @@ _SubWrap.prototype.release = function() {
 function Stream() {
   const streamHandlers = {};
   
-  this.subscribe = function(name, cb) {
+  this.subscribe = (name, cb) => {
     if(typeof streamHandlers[name] === 'undefined') {
       streamHandlers[name] = new Set();
     }
@@ -23,7 +23,7 @@ function Stream() {
     return sub;
   };
 
-  this.notifySubscribers = function(name, ev) {
+  this.notifySubscribers = (name, ev) => {
     if(typeof streamHandlers[name] === 'undefined') {
       return;
     }

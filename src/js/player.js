@@ -16,11 +16,9 @@ YouTubePlayer.prototype.init = function() {
 
 
 YouTubePlayer.prototype.parse = function () {
-  var a = document.createElement('a');
+  const a = document.createElement('a');
   a.href = this._url;
-  var path = a.pathname;
-  var videoId = path.replace('/embed/','');
-  this.videoId = videoId;
+  this.videoId = a.pathname.replace('/embed/','');
   return this;
 };
 
@@ -81,7 +79,6 @@ YouTubePlayer.prototype.initPlayer = function (container) {
     return;
   }
   let containerId = containerWrapper.attr('id'),
-    width,
     height,
     playerOptions = {
       autohide: true,
@@ -97,12 +94,7 @@ YouTubePlayer.prototype.initPlayer = function (container) {
 
   containerWrapper = container.closest('.block-background');
 
-  if (containerWrapper != null) {
-    const wrapperRect = containerWrapper.getBoundingClientRect();
-    width = wrapperRect.right - wrapperRect.left;
-    const wH = wrapperRect.bottom - wrapperRect.top;
-    height = wH < Utils.getWindowHeight() ? wH : Utils.getWindowHeight();
-  }else {
+  if (containerWrapper == null) {
     playerOptions.controls = 1;
   }
   

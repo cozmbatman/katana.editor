@@ -14,7 +14,6 @@ Tooltip.prototype.events = {
 };
 
 Tooltip.prototype.initialize = function() {
-  console.log('Tooltip : initialize');
   this.editor = this.opts.editor;
   this.hideTimeout;
   return this.settings = {
@@ -31,13 +30,13 @@ Tooltip.prototype.template = function() {
 };
 
 Tooltip.prototype.positionAt = function(ev, matched) {
-  var left_value, popover_width, 
+  let left_value, popover_width, 
     target, target_height, target_offset, target_positions, 
     target_width, top_value, target_is_figure;
 
   target = matched ? matched : ev.currentTarget;
 
-  var o = this.resolveTargetPosition(target);
+  const o = this.resolveTargetPosition(target);
   target_positions = o.position;
   target = o.target;
   target_is_figure = o.figure;
@@ -46,7 +45,7 @@ Tooltip.prototype.positionAt = function(ev, matched) {
   target_width = target_offset.width;;
   target_height = target_offset.height;
 
-  var popover = this.elNode.querySelector('.popover');
+  const popover = this.elNode.querySelector('.popover');
 
   popover.show();
   popover_width = popover.getBoundingClientRect().width;
@@ -69,13 +68,8 @@ Tooltip.prototype.positionAt = function(ev, matched) {
 };
 
 Tooltip.prototype.displayAt = function(ev, matched) {
-  var target;
   this.cancelHide();
-  if(matched) {
-    target = matched;
-  } else {
-    target = ev.currentTarget;
-  }
+  const  target = matched ? matched : ev.currentTarget;
   const el = this.elNode;
   const an = el.querySelector(".popover-inner a");
   if(an != null) {
@@ -108,7 +102,7 @@ Tooltip.prototype.hide = function(ev) {
 
 Tooltip.prototype.resolveTargetPosition = function(target) {
   if (target.closest(".item-figure") != null) {
-    var tg = target.closest(".item-figure");
+    const tg = target.closest(".item-figure");
     return {position: {top: tg.offsetTop, left: tg.offsetLeft}, target: tg, figure: true};
   } else {
     return {position: {top: target.offsetTop, left: target.offsetLeft}, target: target, figure: false};
