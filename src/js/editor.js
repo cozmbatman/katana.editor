@@ -3690,8 +3690,10 @@ Editor.prototype.handleListLineBreak = function(li, e) {
   if(li != null) {
     this.setElementName(li);
     li.innerHTML = content;
-    if(li.children != null) {
+    if(li.children != null && li.children.length > 0) {
       li.children.wrap(list);
+    } else {
+      li.wrap(list);
     }
     if (li.querySelectorAll("br").length === 0) {
       li.appendChild(document.createElement("br"));

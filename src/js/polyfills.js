@@ -258,17 +258,28 @@ if(!NodeList.prototype.wrap) {
         insertWhere = this.previousSibling,
         target;
 
-    temp.innerHTML = wrapper; 
-    target = temp.firstChild;
+        if(wrapper instanceof HTMLElement) {
+          target = wrapper;
+          while (target.firstChild) {
+            target = target.firstChild;
+          }
+          this.insertAdjacentElement('beforebegin', wrapper);
+          Array.prototype.forEach.call(this, (a) => {
+              target.appendChild(a);
+          });
+        } else {
+          temp.innerHTML = wrapper; 
+          target = temp.firstChild;
+          while (target.firstChild) {
+              target = target.firstChild;
+          }
+      
+          Array.prototype.forEach.call(this, (a) => {
+              target.appendChild(a);
+          });
+          return parent.insertBefore(temp.firstChild, (insertWhere ? insertWhere.nextSibling : parent.firstChild));
+        }
 
-    while (target.firstChild) {
-        target = target.firstChild;
-    }
-
-    Array.prototype.forEach.call(this, (a) => {
-        target.appendChild(a);
-    });
-    return parent.insertBefore(temp.firstChild, (insertWhere ? insertWhere.nextSibling : parent.firstChild));
   };
 }
 
@@ -279,16 +290,24 @@ if(!Node.prototype.wrap) {
         insertWhere = this.previousSibling,
         target;
 
-    temp.innerHTML = wrapper;
-    target = temp.firstChild;
+        if(wrapper instanceof HTMLElement) {
+          target = wrapper;
+          while (target.firstChild) {
+              target = target.firstChild;
+          }
+          this.insertAdjacentElement('beforebegin', wrapper);
+          target.appendChild(this);
 
-    while (target.firstChild) {
-        target = target.firstChild;
-    }
+        } else {
+          temp.innerHTML = wrapper;
+          target = temp.firstChild;
+          while (target.firstChild) {
+              target = target.firstChild;
+          }
+          target.appendChild(this);
 
-    target.appendChild(this);
-
-    return parent.insertBefore(temp.firstChild, (insertWhere ? insertWhere.nextSibling : parent.firstChild));
+          return parent.insertBefore(temp.firstChild, (insertWhere ? insertWhere.nextSibling : parent.firstChild));
+        }
   }
 }
 const Poly = {};
