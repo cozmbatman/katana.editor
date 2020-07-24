@@ -4,9 +4,12 @@ import Stream from '../stream';
 
 function Video(opts) {
   this.opts = opts;
+  this.streamer = Stream;
+
   this.handleClick = this.handleClick.bind(this);
   this.initialize = this.initialize.bind(this);
   this.getEmbedFromNode = this.getEmbedFromNode.bind(this);
+
   boot.it(this, opts);
 }
 
@@ -23,22 +26,24 @@ Video.prototype.contentId = 'VIDEO';
 Video.prototype.handleClick = function (ev) {
   return this.displayEmbedPlaceHolder(ev);
 };
+
 Video.prototype.isYoutubeLink = function (url) {
-  var p = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
-  var m = url.match(p);
+  const p = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
+  const m = url.match(p);
   if (url.match(p)) {
     return m[0]
   }
   return false;
 }
+
 Video.prototype.handleEnterKey = function(ev, node) {
   if (node.hasClass("is-embedable")) {
     return this.getEmbedFromNode(node);
   } else {
-    var text = node.textContent,
+    const text = node.textContent,
     texts = text.split(' ');
     if (texts.length == 1) {
-      var validLink = this.isYoutubeLink(texts[0]);
+      const validLink = this.isYoutubeLink(texts[0]);
       if (validLink) {
         return this.getEmbedFromNode(node, validLink);
       }
@@ -51,18 +56,14 @@ Video.prototype.hide = function () {
 };  
 
 Video.prototype.uploadExistentIframe = function (iframe) {
-  var src = iframe.attr('src')
+  const src = iframe.attr('src');
+
   if (src) {
     if(Utils.urlIsFromDomain(src, 'youtube.com') || Utils.urlIsFromDomain(src, 'vimeo.com')) {
-      this.loadEmbedDetailsFromServer(src, iframe, function (node) {
-
+      this.loadEmbedDetailsFromServer(src, iframe, (node) => {
         while (!(node.parentNode != null && node.parentNode.hasClass('block-content-inner'))) {
           node.unwrap();
         }
-
-        // while(!node.parent().hasClass('block-content-inner')) {
-        //   node.unwrap();
-        // }      
       });
     }
   }
@@ -79,36 +80,38 @@ Video.prototype.displayEmbedPlaceHolder = function() {
 };
 
 Video.prototype.loadEmbedDetailsFromServer = function (url, current_node, callback) {
-  url = encodeURIComponent(url);
-  url = url + '&luxe=1';
-
+  if(!this.current_editor.video_options || !this.current_editor.video_options.upload) {
+    return;
+  }
+  const urll = encodeURIComponent(url) + '&luxe=1';
+  
   this.current_editor.currentRequestCount++;
   const xhr = new XMLHttpRequest();
-  xhr.open("POST", '/embed-url', true);
+  xhr.open("POST", this.current_editor.video_options.url, true);
   xhr.onload = () => {
     if(xhr.status == "200" && xhr.readyState == 4) {
+      _this.current_editor.currentRequestCount--;
       try {
         const resp = JSON.parse(xhr.responseText);
-        _this.current_editor.currentRequestCount--;
-        if (resp.success) {
-          var dt = resp.data;
+        if (resp && resp.success) {
+          const dt = resp.data;
           if (dt.video) {
             _this.embedFramePlaceholder(dt, current_node, callback);
           }
         }
-      }catch(e) {
-
+      } catch(e) {
+        this.streamer.notifySubscribers('Katana.Error', e);
       }
     }
   };
   xhr.onerror = () => {
     _this.current_editor.currentRequestCount--;
   }
-  xhr.send({url: url});
+  xhr.send({url: urll});
 };
 
 Video.prototype.embedFramePlaceholder = function (ob, current_node, callback) {
-  var thumb = ob.thumbUrl,
+  const thumb = ob.thumbUrl,
       frameUrl = ob.frameUrl,
       captionTitle = ob.captionTitle,
       captionHref = ob.captionHref,
@@ -116,39 +119,39 @@ Video.prototype.embedFramePlaceholder = function (ob, current_node, callback) {
       canGoBackground = ob.fs;
 
   if (thumb != '') {
-    var figure = Utils.generateElement(this.current_editor.getFrameTemplate()),
+    const figure = Utils.generateElement(this.current_editor.getFrameTemplate()),
         _this = this,
         src = thumb,
         img = new Image();
+
     img.src = src;
+
     img.onload = function() {
-      var ar;
-      ar = _this.getAspectRatio(this.width, this.height);
+      const ar = _this.getAspectRatio(this.width, this.height);
       const pdc = figure.querySelector('.padding-cont'),
             fim = figure.querySelector('.item-image'),
             fpb = figure.querySelector('.padding-box');
 
       if(pdc != null) {
-        pdc.css({
-          'max-width': ar.width,
-          'max-height': ar.height
-        });
+        const pdcStyle = pdc.style;
+        pdcStyle.maxWidth = ar.width + 'px';
+        pdcStyle.maxHeight = ar.height + 'px';
       }
+
       if(fim != null) {
         fim.attr("data-height", this.height);
         fim.attr("data-width", this.width);
       }
       
-      const fpdb = figure.querySelector('.padding-box');
-      if(fpdb != null) {
-        fpdb.style.paddingBotom = ar.ratio + "%"
+      if(fpb != null) {
+        fpb.style.paddingBotom = ar.ratio + '%';
       }
-    
+      
       if (this.width < 700) {
         figure.addClass('n-fullSize');
       }
 
-      var ig = figure.querySelector('img');
+      const ig = figure.querySelector('img');
       if(ig != null) {
         ig.attr("src", src);
         ig.attr('data-frame-url', frameUrl);
@@ -164,11 +167,10 @@ Video.prototype.embedFramePlaceholder = function (ob, current_node, callback) {
       current_node.parentNode.removeChild(current_node);
       // current_node.replaceWith(figure);
 
-      var caption = figure.querySelector('figcaption');
+      let caption = figure.querySelector('figcaption');
       if (caption != null) {
-        var capth = ' <a rel="nofollow" class="markup--anchor markup--figure-anchor" data-href="' + captionHref + '" href="' + captionHref + '" target="_blank">Watch Video here.</a>',
-            lastChar;
-        if (captionTitle != '') {
+        let capth = `<a rel="nofollow" class="markup--anchor markup--figure-anchor" data-href="${captionHref}" href="${captionHref}" target="_blank">Watch Video here.</a>`, lastChar;
+        if (captionTitle) {
           captionTitle = captionTitle.trim();
           lastChar = captionTitle.charAt(captionTitle.length -1);
           if (lastChar != '.') {
@@ -180,7 +182,7 @@ Video.prototype.embedFramePlaceholder = function (ob, current_node, callback) {
         figure.removeClass('item-text-default');
       }
 
-      if (typeof callback != 'undefined') {
+      if (callback) {
         callback(figure);
       }
 
@@ -196,7 +198,7 @@ Video.prototype.getEmbedFromNode = function(node, extractedUrl) {
   this.node.attr('contenteditable','false');
   this.node.appendChild(Utils.generateElement('<i class="loader small dark"></i>'));
 
-  var url = typeof extractedUrl != 'undefined' ? extractedUrl : this.node.textContent, 
+  let url = typeof extractedUrl != 'undefined' ? extractedUrl : this.node.textContent, 
       canGoBackground = false;
 
   if (url.indexOf('vimeo') != -1) {
@@ -212,8 +214,8 @@ Video.prototype.getEmbedFromNode = function(node, extractedUrl) {
 };
 
 
-Video.prototype.getAspectRatio = function (w, h) {
-  var fill_ratio, height, maxHeight, maxWidth, ratio, result, width;
+Video.prototype.getAspectRatio = (w, h) => {
+  let fill_ratio, height, maxHeight, maxWidth, ratio, result, width;
   maxWidth = 760;
   maxHeight = 700;
   ratio = 0;
@@ -222,7 +224,7 @@ Video.prototype.getAspectRatio = function (w, h) {
 
   if (w < maxWidth) {
     width = maxWidth;
-    var fr = w/h;
+    const fr = w/h;
     height = width / fr;
   }
 
