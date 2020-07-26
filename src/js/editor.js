@@ -4420,9 +4420,9 @@ Editor.prototype.addImageToCanvas = function (draf, image, pos) {
 };
 
 /** notes related **/
-Editor.prototype.showNoteIcon = function (ev) {
+Editor.prototype.showNoteIcon = function (ev, matched) {
   if (this.notesManager) {
-    this.notesManager.showNote(ev);
+    this.notesManager.showNote(ev, matched);
   }
 };
 /** notes related ends **/

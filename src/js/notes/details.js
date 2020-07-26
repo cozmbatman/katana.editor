@@ -5,18 +5,17 @@ import Stream from '../stream';
 function Details(opts) {
   this.opts = opts;
   this.streamer = Stream;
+
   this.handleSaveClick = this.handleSaveClick.bind(this);
   this.handleCancelClick = this.handleCancelClick.bind(this);
   this.showDetailsFor = this.showDetailsFor.bind(this);
+
   boot.it(this, opts);
 }
 
 Details.prototype.initialize = function () {
   const opts = this.opts;
-  if(opts.notes == null) {
-    opts.notes = {};
-  }
-
+  
   this.current_editor = opts.editor;
   this.existing_notes = opts.notes || [];
   this.iconHandler = opts.icon;
@@ -80,7 +79,7 @@ Details.prototype.replyFormTemplate = function () {
   </div>`;
 };
 
-Details.prototype.containerTemplate = function (name) {
+Details.prototype.containerTemplate = (name) => {
   return `<div class="notes-list-wrapper" data-cont-for="${name}">
     <div class="loading-notes"> <span class="loader dark small ib"></span>loading..</div>
     <ul class="notes-list no-margin"></ul>
@@ -96,7 +95,7 @@ Details.prototype.getForm = function (mode) {
     if(textArea != null) {
       textArea.value = '';
     }
-    //var ta = this.replyForm.find('.notes-textarea').autogrow();
+    //let ta = this.replyForm.find('.notes-textarea').autogrow();
   }
 
   this.replyForm.removeClass('for-editing');
@@ -144,43 +143,35 @@ Details.prototype.updateButtonClasses = function(form) {
       }
       return this;
     }
-    return {element, add, remove};
+    return { element, add, remove };
   }
   return new handler();
 }
 
 Details.prototype.getNotesList = function (notes) {
-  var ht = '';
-  for ( var i = 0; i < notes.length; i = i + 1) {
-    var html = this.getSingleNoteTemplate(notes[i]);
-    ht += html;
+  let ht = '';
+  for ( let i = 0; i < notes.length; i = i + 1) {
+    ht += this.getSingleNoteTemplate(notes[i]);
   }
   return ht;
 };
 
 Details.prototype.createContainer = function (name, notes) {
-  var wrap = Utils.generateElement(this.containerTemplate(name)),
-      eNotes = '';
+  const wrap = Utils.generateElement(this.containerTemplate(name));
   if (notes.length) {
-    eNotes = this.getNotesList(notes);
-    let notesList = wrap.querySelector('.notes-list');
-    if(notesList != null) {
-      notesList.append(Utils.generateElement(eNotes));
-    }
+    const eNotes = this.getNotesList(notes);
+    wrap.querySelector('.notes-list')?.append(Utils.generateElement(eNotes));
   } else {
-    let notesList = wrap.querySelector('.notes-list');
-    if(notesList != null) {
-      notesList.addClass('notes-list-empty');
-    }
+    wrap.querySelector('.notes-list')?.addClass('notes-list-empty');
   }
   this.elNode.append(wrap);
   return wrap;
 };
 
 Details.prototype.getContainer = function (name) {
-  var cont = this.elNode.querySelector('[data-cont-for="' + name + '"]');
+  let cont = this.elNode.querySelector('[data-cont-for="' + name + '"]');
   if (cont != null) {
-    var notes = typeof this.existing_notes[name] == 'undefined' ? [] : this.existing_notes[name];
+    const notes = typeof this.existing_notes[name] == 'undefined' ? [] : this.existing_notes[name];
     cont = this.createContainer(name, notes);
   }
   return cont;
@@ -209,7 +200,7 @@ Details.prototype.getSingleNoteTemplate = function (ob) {
     }
   } else if (ob.edit && typeof ob.changeTo == 'undefined') {
     ht += `<div><a class="note-edit text-small" data-note-id="${ob.noteId}" tabindex="0">Edit</a></div>`;
-  }else if(ob.edit && typeof ob.changeTo != 'undefined') {
+  } else if(ob.edit && typeof ob.changeTo != 'undefined') {
     ht += `<div data-editor-actions data-note="${ob.noteId}" data-change-visibility="${ob.changeTo}"><a class="note-edit-editor" data-edit-btn  tabindex="0">Edit</a></div>`;
   }
   ht += `</div></li>`;
@@ -217,15 +208,15 @@ Details.prototype.getSingleNoteTemplate = function (ob) {
 };
 
 Details.prototype.handleUpdateClick = function (ev, matched) {
-  var form = matched ? matched.closest('.notes-form') : ev.currentTarget.closest('.notes-form');
+  const form = matched ? matched.closest('.notes-form') : ev.currentTarget.closest('.notes-form');
   if (form != null) {
     const textArea = form.querySelector('textarea');
     let text = "";
     if(textArea != null) {
       text = textArea.value;
     }
-    let _this = this;
-    var deleting = false;
+
+    let deleting = false;
     if (!text || text.trim().length == 0) {
       //this.removeNote();
       deleting = true;
@@ -235,52 +226,49 @@ Details.prototype.handleUpdateClick = function (ev, matched) {
     let container = form.closest('.notes-list-wrapper');
     let list = container.querySelector('.notes-list');
     let note = list != null ? list.querySelector('.post-note-item[data-note-id="' + noteId + '"]') : null;
-    var piece = container.attr('data-cont-for');
+    let piece = container.attr('data-cont-for');
     if (deleting) {          
       form.attr('disabled','disabled');
-      this.makeRequest(this.delete_url + '/' + noteId, 'DELETE', {}, function (sresp) {
+      this.makeRequest(this.delete_url + '/' + noteId, 'DELETE', {}, (sresp) => {
         if (sresp && sresp.success) {
-          _this.iconHandler.decrementCounter(piece);
+          this.iconHandler.decrementCounter(piece);
           form.unwrap();
-          if( note!=null ) {
+          if( note != null ) {
             note.remove();
           }
-          const nFormContainer = container.querySelector('.notes-form-container');
-          if(nFormContainer != null) {
-            nFormContainer.append(_this.getForm('new'));
-          }
-        } else {
-          form.removeAttribute('disabled')
-        }
-      }, function () {
-        form.removeAttribute('disabled')
-      });
-      // update 
-    } else {
-      var sob = {};
-      sob.noteId = noteId;
-      sob.note = text;
-      sob.piece = piece;
-      sob.post = this.story.id;
-      sob.draft = this.story.type == 'story' ? false : true;
-      form.attr('disabled','disabled');
-
-      this.makeRequest(this.edit_url , 'POST', sob, function (sresp) {
-        if (sresp && sresp.success) {
-          const pnoteContent = note.querySelector('.post-note-content');
-          if(pnoteContent != null) {
-            pnoteContent.innerHTML = text;  
-          }
-          note.show();
-          form.unwrap();
-          const nFormContainer = container.querySelector('.notes-form-container');
-          if(nFormContainer != null) {
-            nFormContainer.append(_this.getForm('new'));  
-          }
+          container.querySelector('.notes-form-container')?.append( this.getForm('new') );
         } else {
           form.removeAttribute('disabled');
         }
-      }, function () { // error callback
+      }, () => {
+        form.removeAttribute('disabled');
+      });
+      // update 
+    } else {
+      const sob = {
+        noteId,
+        note : text,
+        piece,
+        post : this.story.id,
+        draft : this.story.type == 'story' ? false : true
+      };
+      
+      form.attr('disabled' , 'disabled');
+
+      this.makeRequest(this.edit_url , 'POST', sob, (sresp) => {
+        if (sresp && sresp.success) {
+          const pnc = note.querySelector('.post-note-content');
+          if(pnc != null) {
+            pnc.innerHTML = text;
+          }
+          note.show();
+          form.unwrap();
+
+          container.querySelector('.notes-form-container')?.append( this.getForm('new') );
+        } else {
+          form.removeAttribute('disabled');
+        }
+      }, () => { // error callback
         form.removeAttribute('disabled');
       });
     }
@@ -292,17 +280,16 @@ Details.prototype.handleUpdateClick = function (ev, matched) {
 };
 
 Details.prototype.handleEditorEditClick = function (ev, matched) {
-  var tg = matched ? matched : ev.currentTarget;
+  const tg = matched ? matched : ev.currentTarget;
   if (tg != null && tg.matches.call(tg, '[data-edit-btn]')) {
-    var actionWrap  = tg.closest('[data-editor-actions]'),
+    const actionWrap  = tg.closest('[data-editor-actions]'),
         noteId = actionWrap.attr('data-note');
-    if (actionWrap != null) {
-      var currentHTML = actionWrap.innerHTML;
-      currentHTML = '<div class="hide">' + currentHTML + '</div>';
 
-      var changeToVisibilty = actionWrap.attr('data-change-visibility');
-      var visibilityChangeText = changeToVisibilty == 'public' ? 'Make Public' : 'Make Private';
-      var links = `<a class="note-visibility-change " data-changeTo="${changeToVisibilty}" tabindex="0">${visibilityChangeText}</a> &nbsp;<a class="note-delete-editor-link danger"  data-progress="Deleting.." tabindex="0">Delete</a> &nbsp;
+    if (actionWrap != null) {
+      const currentHTML = '<div class="hide">' + actionWrap.innerHTML + '</div>';
+      const changeToVisibilty = actionWrap.attr('data-change-visibility');
+      const visibilityChangeText = changeToVisibilty == 'public' ? 'Make Public' : 'Make Private';
+      let links = `<a class="note-visibility-change " data-changeTo="${changeToVisibilty}" tabindex="0">${visibilityChangeText}</a> &nbsp;<a class="note-delete-editor-link danger"  data-progress="Deleting.." tabindex="0">Delete</a> &nbsp;
       <a class="note-cancel-editor-link plain"  tabindex="0">Cancel</a> &nbsp;`;
       links += currentHTML;
       actionWrap.innerHTML = links;
@@ -312,20 +299,21 @@ Details.prototype.handleEditorEditClick = function (ev, matched) {
 };
 
 Details.prototype.handleEditClick = function (ev, matched) {
-  var tg = matched ? matched : ev.currentTarget;
-  if (tg.length && tg.matches.call(tg, '[data-note-id]')) {
-    var alreadyOpen = document.querySelector('.notes-form.for-editing');
+  const tg = matched ? matched : ev.currentTarget;
+  if (tg != null && tg.matches.call(tg, '[data-note-id]')) {
+    const alreadyOpen = document.querySelector('.notes-form.for-editing');
     if (alreadyOpen != null) {
-      var ta = alreadyOpen.querySelector('textarea');
+      const ta = alreadyOpen.querySelector('textarea');
       ta.focus();
       ta.addClass('blinkOnce');
     } else {
-      var noteId = tg.attr('data-note-id'),
+      const noteId = tg.attr('data-note-id'),
         li = tg.closest('.post-note-item[data-note-id="' + noteId + '"]'),
         form = this.getForm('edit');
 
       form.addClass('for-editing');
       form.attr('data-note-id', noteId);
+
       let pNoteContent = li.querySelector('.post-note-content');
       const textArea = form.querySelector('textarea');
       if(pNoteContent != null && textArea != null) {
@@ -333,11 +321,12 @@ Details.prototype.handleEditClick = function (ev, matched) {
       } else if(textArea != null) {
         textArea.value = '';
       }
+
       if(li != null) {
         li.insertBefore(form, li.firstChild);
-        //form.insertBefore(li);
         li.hide();  
       }
+
       form.wrap(Utils.generateElement('<li class="has-form"></li>'));
       textArea.focus();
     }        
@@ -346,54 +335,48 @@ Details.prototype.handleEditClick = function (ev, matched) {
 };
 
 Details.prototype.handleSaveClick = function (ev, matched) {
-  var form = matched ? matched.closest('.notes-form') : ev.currentTarget.closest('.notes-form');
+  const form = matched ? matched.closest('.notes-form') : ev.currentTarget.closest('.notes-form');
   if (form != null) {
-    let textArea = form.querySelector('textarea');
-    var text = "";
+    let textArea = form.querySelector('textarea'), text = "";
     if(textArea != null) {
       text = textArea.value;
     }
-    var _this = this;
-
+    
     if (!text || text.trim().length == 0) {
       return false;
     }
 
-    var tmplOb = {};
+    const tmplOb = {
+      noteId : Utils.generateId(),
+      authorName : this.story.user_name,
+      authorUrl : this.story.user_link,
+      avatarUrl : this.story.pic,
+      content : text,
+      edit : true
+    };
     
-    tmplOb.noteId = Utils.generateId();
-    tmplOb.authorName = this.story.user_name;
-    tmplOb.authorUrl = this.story.user_link;
-    tmplOb.avatarUrl = this.story.pic;
-    tmplOb.content = text;
-    tmplOb.edit = true;
-
-    var note = Utils.generateElement(this.getSingleNoteTemplate(tmplOb)),
-        sob = {},
-        container = form.closest('.notes-list-wrapper');
-
-    sob.noteId = tmplOb.noteId;
-    sob.note = text;
-    sob.piece = container.attr('data-cont-for');
-    sob.post = this.story.id;
-    sob.draft = this.story.type == 'story' ? false : true;
+    const note = Utils.generateElement(this.getSingleNoteTemplate(tmplOb)),
+    container = form.closest('.notes-list-wrapper');
+    
+    const sob = {
+      noteId : tmplOb.noteId,
+      note : text,
+      piece : container.attr('data-cont-for'),
+      post : this.story.id,
+      draft : this.story.type == 'story' ? false : true
+    };
     form.attr('disabled','disabled');
 
-    this.saveRequest(sob, function (sresp) {
+    this.saveRequest(sob, (sresp) => {
       if (sresp && sresp.success)  {
-        var list = container.querySelector('.notes-list');
+        const list = container.querySelector('.notes-list');
         if(list != null) {
           list.append(note);
           list.removeClass('notes-list-empty');
-          _this.iconHandler.incrementCounter(sob.piece);
-          var ta = form.querySelector('textarea');
-          if(ta != null) {
-            ta.focus();
-          }
-          const rnote = _this.elNode.find('[data-note-id="' + sresp.data.replace_note + '"]');
-          if(rnote != null) {
-            rnote.attr('data-note-id', sresp.data.note_id);
-          }
+          this.iconHandler.incrementCounter(sob.piece);
+
+          form.querySelector('textarea')?.focus();
+          this.elNode.find('[data-note-id="' + sresp.data.replace_note + '"]')?.attr('data-note-id', sresp.data.note_id);
           form.removeAttribute('disabled');
         }
       } else {
@@ -414,33 +397,32 @@ Details.prototype.saveRequest = function (ob, successCallback, errorCallback) {
     if(xhr.status == "200" && xhr.readyState == 4) {
       try {
         let response = JSON.parse(xhr.responseText);
-        successCallback(response);
+        if(successCallback) {
+          successCallback(response);
+        }
       } catch(e) {
         console.error(e);
+        this.streamer.notifySubscribers('Katana.Error', e);
       }
     }
   }
+
   xhr.send(ob);
 };
 
 Details.prototype.handleCancelClick = function (ev, matched) {
-  var tg = matched ? matched : ev.currentTarget,
-      dontClose = false;
+  const tg = matched ? matched : ev.currentTarget;
+  let dontClose = false;
+
   if (tg != null) {
-    var form = tg.closest('.for-editing');
+    const form = tg.closest('.for-editing');
     if (form != null) {
-      var noteId = form.attr('data-note-id'),
+      const noteId = form.attr('data-note-id'),
           container = form.closest('.notes-list-wrapper');
       form.unwrap();
       if(container != null) {
-        let nfc = container.querySelector('.notes-form-container');
-        if(nfc != null) {
-          nfc.append(this.getForm('new'));
-        }
-        let pnfc = container.querySelector('.post-note-item[data-note-id="' + noteId + '"]');
-        if(pnfc != null) {
-          pnfc.show();
-        }
+        container.querySelector('.notes-form-container')?.append(this.getForm('new'));
+        container.querySelector('.post-note-item[data-note-id="' + noteId + '"]')?.show();
       }
       dontClose = true;
     }else {
@@ -455,14 +437,13 @@ Details.prototype.handleCancelClick = function (ev, matched) {
 };
 
 Details.prototype.handleEditorCancelClick = function (ev, matched) {
-  var tg = matched ? matched : ev.currentTarget;
+  const tg = matched ? matched : ev.currentTarget;
   if (tg != null) {
-    var actionWrap  = tg.closest('[data-editor-actions]');
+    const actionWrap  = tg.closest('[data-editor-actions]');
     if(actionWrap != null) {
-      //var noteId = actionWrap.attr('data-note');
-      var hidenE = actionWrap.querySelector('.hide');
-      if(hidenE != null) {
-        actionWrap.innerHTML = hidenE.innerHTML;
+      const ach = actionWrap.querySelector('.hide');
+      if(ach != null) {
+        ach.innerHTML = hidenE.innerHTML;
       }
     }
   }
@@ -470,10 +451,10 @@ Details.prototype.handleEditorCancelClick = function (ev, matched) {
 };
 
 Details.prototype.handleVisibilityChangeClick = function (ev, matched) {
-  var tg = matched ? matched : ev.currentTarget,
+  const tg = matched ? matched : ev.currentTarget,
   actionWrap = tg.closest('[data-editor-actions]');
   if(actionWrap != null) {
-    var noteId = actionWrap.attr('data-note'),
+    const noteId = actionWrap.attr('data-note'),
     changeTo = tg.attr('data-changeTo'),
     futureIfSuccess = changeTo == 'public' ? 'private' : 'public',
     futureTextIfSuccess = changeTo == 'public' ? 'Make Private' : 'Make Public';
@@ -491,6 +472,7 @@ Details.prototype.handleVisibilityChangeClick = function (ev, matched) {
           }
         }catch(e) {
           console.error(e);
+          this.streamer.notifySubscribers('Katana.Error', e);
         }
       }
     };
@@ -500,78 +482,59 @@ Details.prototype.handleVisibilityChangeClick = function (ev, matched) {
 };
 
 Details.prototype.handleEditorDeleteClick = function (ev, matched) {
-  var tg = matched ? matched : ev.currentTarget,
+  const tg = matched ? matched : ev.currentTarget,
       actionWrap = tg.closest('[data-editor-actions]');
+
   if (actionWrap != null) {
     let noteId = actionWrap.attr('data-note'),
         container = actionWrap.closest('.notes-list-wrapper'),
         piece = container.attr('data-cont-for'),
-        noteItem = tg.closest('.post-note-item'),
-        _this = this;
+        noteItem = tg.closest('.post-note-item');
 
       noteItem.attr('disabled','disabled');
               
-      this.deleteRequest(noteId, function () {
+      this.deleteRequest(noteId, () => {
 
         if (container.querySelectorAll('.post-note-item').length == 0) {
-          let noteslist = container.querySelector('.notes-list');
-          if(noteslist != null) {
-            noteslist.addClass('notes-list-empty');
-          }
-        }
-        let notesFormContainer = container.querySelector('.notes-form-container');
-        if(notesFormContainer != null) {
-          notesFormContainer.append(_this.getForm('new'));  
-        }
-        let postNotesItem = container.querySelector('.post-note-item[data-note-id="' + noteId + '"]');
-        if(postNotesItem != null) {
-          postNotesItem.remove();
-        }
-        var ta = container.querySelector('.notes-form-container textarea');
-        if(ta != null) {
-          ta.focus();
+          container.querySelector('.notes-list')?.addClass('notes-list-empty');
         }
 
-        _this.iconHandler.decrementCounter(piece);
-      }, function () {
+        container.querySelector('.notes-form-container')?.append( this.getForm('new') );
+        container.querySelector('.post-note-item[data-note-id="' + noteId + '"]')?.remove();
+        container.querySelector('.notes-form-container textarea')?.focus();
+        
+        this.iconHandler.decrementCounter(piece);
+      }, () => {
         noteItem.removeAttribute('disabled');
       });
   }
 };
 
 Details.prototype.handleDeleteClick = function (ev, matched) {
-  var tg = matched ? matched : ev.currentTarget,
+  const tg = matched ? matched : ev.currentTarget,
       editMode = tg.closest('.for-editing');
 
     if (editMode != null) {
-      var noteId = editMode.attr('data-note-id'),
+      const noteId = editMode.attr('data-note-id'),
           container = editMode.closest('.notes-list-wrapper'),
-          piece = container.attr('data-cont-for'),
-          _this = this;
+          piece = container.attr('data-cont-for');
 
       editMode.attr('disabled', 'disabled');
 
-      this.deleteRequest(noteId, function () {
+      this.deleteRequest(noteId, () => {
         editMode.unwrap();
-        const postNote = container.querySelector('.post-note-item[data-note-id="' + noteId + '"]');
-        if(postNote != null) {
-          postNote.remove();
-        }
-        _this.iconHandler.decrementCounter(piece);
+
+        container.querySelector('.post-note-item[data-note-id="' + noteId + '"]')?.remove();
+        this.iconHandler.decrementCounter(piece);
 
         if (container.querySelectorAll('.post-note-item').length == 0) {
-          const notesList = container.querySelector('.notes-list');
-          if(notesList != null) {
-            notesList.addClass('notes-list-empty'); 
-          }
+          container.querySelector('.notes-list')?.addClass('notes-list-empty')
         }
-        const notesFormContainer = container.querySelector('.notes-form-container');
-        if(notesFormContainer != null) {
-          notesFormContainer.append(_this.getForm('new'));
-        }
-        var ta = container.find('.notes-form-container textarea');
-        ta.focus();
-      }, function () {
+
+        container.querySelector('.notes-form-container')?.append(_this.getForm('new'));
+        container.querySelector('.notes-form-container textarea')?.focus();
+        
+      }, () => {
         editMode.removeAttribute('disabled');
       });
     }
@@ -595,7 +558,7 @@ Details.prototype.deleteRequest = function (noteId, successCallback, errorCallba
         } else {
           errorCallback();
         }
-      }catch(e) {
+      } catch(e) {
         errorCallback();
       }
     }
@@ -611,10 +574,7 @@ Details.prototype.handleReplyClick = function (ev, matched) {
 };
 
 Details.prototype.closePreviousBox = function () {
-  const copened = this.elNode.querySelector('.opened');
-  if(copened != null) {
-    copened.removeClass('opened');
-  }
+  this.elNode.querySelector('.opened')?.removeClass('opened');
   this._currentlyOpen = null;
 };
 
@@ -630,36 +590,32 @@ Details.prototype.showDetailsFor = function(name, icon) {
   }
 };
 
-Details.prototype.getSignInLink = function () {
+Details.prototype.getSignInLink = () => {
   return '<a href="javascript::;" class="note-login-btn">Login to leave a note</a><a class="note-close-btn">Close</a>';
 };
 
 Details.prototype.loadPreviousNotes = function(ev, matched) {
-  let tg = matched ? matched : ev.currentTarget;
-  var url = tg.attr('href');
-  var container = tg.closest('.notes-list-wrapper');
-  var name = container.attr('data-cont-for');
-  var icon = document.querySelector('[note-for="' +name+ '"]');
+  const tg = matched ? matched : ev.currentTarget;
+  const container = tg.closest('.notes-list-wrapper');
+  const name = container.attr('data-cont-for');
+  const icon = document.querySelector('[note-for="' + name + '"]');
   tg.innerHTML = '<span class="loader ib small dark"></span> Loading..';
-  this.loadNotesDetails(name, icon, container, url);
+  this.loadNotesDetails(name, icon, container, tg.attr('href'));
   return false;
 };
 
 
 Details.prototype.loadNotesDetails = function(name, icon, container, loadUrl) {
-  var url = this.read_url + '/' + this.story.id + '/' + name,
-  _this = this,
-  mergeUserObject;
-
-  if( typeof loadUrl != 'undefined') {
-    url = loadUrl;
-  }
-
-  mergeUserObject = function (note, user) {
+  let url = this.read_url + '/' + this.story.id + '/' + name,
+  mergeUserObject = (note, user) => {
     note.authorName = user.name;
     note.authorUrl = user.link;
     note.avatarUrl = user.avatarUrl;
   };
+
+  if( typeof loadUrl != 'undefined') {
+    url = loadUrl;
+  }
 
   const getPreviousUrl = function (page) {
     return `${_this.read_url}/${_this.story.id}/${name}?page=${page}`;
@@ -677,27 +633,25 @@ Details.prototype.loadNotesDetails = function(name, icon, container, loadUrl) {
 
         const response = JSON.parse(xhr.responseText);
         if (response && response.success) {
-          var dt = response.data;
+          const dt = response.data;
           if (dt.notes && dt.users) {
-            var notes = dt.notes;
+            const notes = dt.notes;
 
-            for (var i = 0; i < notes.length; i = i + 1) {
-              var user = notes[i].user;
+            for (let i = 0; i < notes.length; i = i + 1) {
+              const user = notes[i].user;
               if (dt.users[user]) {
                 mergeUserObject(notes[i], dt.users[user]);
               }
             }
 
             if (notes.length) {
-              var ht = _this.getNotesList(notes);
+              const ht = _this.getNotesList(notes);
               container.querySelectorAll('.read-prev-notes').forEach( el => el.remove() );
 
-              var li = container.querySelector('.notes-list');
+              const li = container.querySelector('.notes-list');
               if (dt.page) {
-                var page = Utils.generateElement(`<a href="${getPreviousUrl(dt.page)}" class="read-prev-notes">Read previous</a>`);
-
-                li.parentNode.insertBefore(page, li);
-                //(page).insertBefore(li);
+                const page = Utils.generateElement(`<a href="${getPreviousUrl(dt.page)}" class="read-prev-notes">Read previous</a>`);
+                li.insertAdjacentElement('beforebegin', page);
               }
 
               li.removeClass('notes-list-empty');
@@ -708,6 +662,7 @@ Details.prototype.loadNotesDetails = function(name, icon, container, loadUrl) {
 
       } catch(e) {
         console.error(e);
+        this.streamer.notifySubscribers('Katana.Error', e);
       }
     }
   }
@@ -719,14 +674,14 @@ Details.prototype.loadNotesDetails = function(name, icon, container, loadUrl) {
 };
 
 Details.prototype.openFor = function (name, icon) {
-  var container = this.getContainer(name),
+  const container = this.getContainer(name),
       isLoggedIn = this.isLoggedIn(),
       form = isLoggedIn ? this.getForm('new') : Utils.generateElement(this.getSignInLink());
 
   if(!icon.hasClass('notes-loaded')) {
     const notesCounter = icon.querySelector('.notes-counter');
     if(notesCounter != null) {
-      var count = notesCounter.attr('data-note-count');
+      let count = notesCounter.attr('data-note-count');
       count = parseInt(count);
       if(!isNaN(count) && count > 0) {
         this.loadNotesDetails(name, icon, container);
@@ -747,15 +702,13 @@ Details.prototype.openFor = function (name, icon) {
   if(lb != null) {
     lb.remove();
   }
-  let lc = container.find('.note-close-btn');
+  let lc = container.querySelector('.note-close-btn');
   if(lc != null) {
     lc.remove();
   }
 
-  const notesFormContainer = container.querySelector('.notes-form-container');
-  if(notesFormContainer != null) {
-    notesFormContainer.append(form);
-  }
+  container.querySelector('.notes-form-container')?.append(form);
+  
   this.positionContainer(container, name);
 
   if (form && form.querySelector('textarea') != null) {
@@ -764,19 +717,19 @@ Details.prototype.openFor = function (name, icon) {
 };
 
 Details.prototype.positionContainer = function (container, name) {
-  var against = document.querySelector('[name="' + name + '"]');
+  const against = document.querySelector('[name="' + name + '"]');
   if (against != null) {
     if (this.smallScreen) {
 
     } else {
-      var rect = against.getBoundingClientRect();
-      var offset = {
+      const rect = against.getBoundingClientRect();
+      const offset = {
         top: rect.top + document.body.scrollTop,
         left: rect.left + document.body.scrollLeft
       };
       const st = container.style;
       const agwidth = parseFloat(getComputedStyle(against, null).width.replace("px", ""));
-      st.left = offset.left + gwidth + 50 + 'px';
+      st.left = offset.left + agwidth + 50 + 'px';
       st.top = offset.top + 'px';
       st.position = 'absolute';
     }
@@ -795,8 +748,9 @@ Details.prototype.makeRequest = function (url, method, params, scallback, ecallb
         if (typeof scallback != 'undefined') {
           scallback(response);
         }
-      }catch(e) {
+      } catch(e) {
         console.error(e);
+        this.streamer.notifySubscribers('Katana.Error', e);
       }
     }
   };
