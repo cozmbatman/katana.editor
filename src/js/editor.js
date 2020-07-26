@@ -124,14 +124,15 @@ function Editor(opts) {
 
   this.isTouch = 'ontouchstart' in window || 'msmaxtouchpoints' in window.navigator;
   this.isIOS = Utils.onIOS();
+
   boot.it(this, opts);
 
 };
 
 
 Editor.prototype.segregateEvents = function () {
-  var mode = this.opts.mode || 'read';
-  var publication = this.opts.editorType == 'publication' ? true : false;
+  const mode = this.opts.mode || 'read';
+  const publication = this.opts.editorType == 'publication' ? true : false;
   
   if (mode == 'read' || mode == 'edit') {
     this.events = {
@@ -184,7 +185,7 @@ Editor.prototype.segregateEvents = function () {
     };
 
     if (publication) {
-      var o = {
+      const o = {
         'click .main-controls [data-action]' : 'handleSectionToolbarItemClicked',
         'dblclick .main-controls' : 'handleSectionToolbarItemDblclick',
         'mouseup .main-controls' : 'handleSectionToolbarItemMouseUp',
@@ -213,7 +214,7 @@ Editor.prototype.subscribe = function(name, cb) {
 Editor.prototype.__selectionChangeFired = false;
 
 Editor.prototype.handleSelectionChange = function(ev) {
-  var sel = document.getSelection();
+  const sel = document.getSelection();
   if (sel.type == 'Range') {
     ev.preventDefault();
     if (!this.__selectionChangeFired) {
@@ -249,9 +250,9 @@ Editor.prototype.initialize = function () {
   this.embed_options = opts.embed ? opts.embed : { enabled: false };
   this.json_quack = opts.json_quack;
 
-  let embedPlcStr = opts.placeholders && opts.placeholders.embed ? opts.placeholders.embed : 'Paste a YouTube video link, and press Enter';
-  let titlePlcStr = opts.placeholders && opts.placeholders.title ? opts.placeholders.title : 'Title here';
-  let subTitlePlcStr = opts.placeholders && opts.placeholders.subtitle ? opts.placeholders.subtitle : 'Start with introduction ..';
+  const embedPlcStr = opts.placeholders && opts.placeholders.embed ? opts.placeholders.embed : 'Paste a YouTube video link, and press Enter';
+  const titlePlcStr = opts.placeholders && opts.placeholders.title ? opts.placeholders.title : 'Title here';
+  const subTitlePlcStr = opts.placeholders && opts.placeholders.subtitle ? opts.placeholders.subtitle : 'Start with introduction ..';
   
   this.embed_placeholder = `<span class='placeholder-text placeholder-text--root'>${embedPlcStr}</span><br>`;
   //this.oembed_url = `http://iframe.ly/api/iframely?api_key=4afb3d8a83ee3fdb9ecf73&url=`;
@@ -267,10 +268,8 @@ Editor.prototype.initialize = function () {
 
   this.notes_options = opts.notes || {};
 
-  this.paste_element = document.createElement('div');
-  this.elNode.closest('.editor-wrapper').appendChild(this.paste_element);
-
-  //this.streamHandlers = {};
+  //this.paste_element = document.createElement('div');
+  //this.elNode.closest('.editor-wrapper').appendChild(this.paste_element);
 
   return this;
 };
@@ -325,9 +324,9 @@ Editor.prototype.init = function(cb) {
   }
 
   if (this.mode == 'write') {
-    setTimeout( () => {
+    //setTimeout( () => {
       //this.mutationHandler = new MutationOb
-    }, 300);
+    //}, 300);
   }
 
   setTimeout( () => {
@@ -342,8 +341,7 @@ Editor.prototype.init = function(cb) {
 };
 
 Editor.prototype.addBlanktoTargets = function() {
-  var anchors = this.elNode.querySelectorAll('a');
-  anchors.forEach( (item) => {
+  this.elNode.querySelectorAll('a').forEach( (item) => {
     if(!item.hasAttribute('target')) {
       item.attr('target', '_blank');
     }
@@ -354,11 +352,12 @@ Editor.prototype.addEmptyClass = function() {
 };
 
 Editor.prototype.setInitialFocus = function () {
-  var items = this.elNode.querySelectorAll('.item');
+  const items = this.elNode.querySelectorAll('.item');
   if (items.length >= 2) {
-    var first = items[0],
-        sec = items[1],
-        toFocus = false,
+    const first = items[0],
+        sec = items[1];
+
+    let toFocus = false,
         toolTip = false;
     if ( first.querySelectorAll('.placeholder-text').length && sec.querySelectorAll('.placeholder-text').length ) {
       toFocus = items[1];
@@ -368,23 +367,22 @@ Editor.prototype.setInitialFocus = function () {
     }
 
     if (toFocus) {
-      var _this = this;
-      _this.markAsSelected(toFocus);
-      _this.setRangeAt(toFocus);
+      this.markAsSelected(toFocus);
+      this.setRangeAt(toFocus);
       if (toolTip) {
-        _this.displayTooltipAt(toFocus);
+        this.displayTooltipAt(toFocus);
       }
     }
   }
 };
 
 Editor.prototype.appendParallax = function () {
-  var art = this.elNode.closest('body');
+  const art = this.elNode.closest('body');
   if (art != null) {
     if (document.querySelector('.parallax') != null) {
       return;
     }
-    var cv = Utils.generateElement(`<canvas class="parallax"></canvas>`),
+    let cv = Utils.generateElement(`<canvas class="parallax"></canvas>`),
         handled = false,
         resizeHandler;
 
@@ -392,7 +390,7 @@ Editor.prototype.appendParallax = function () {
     cv.attr('height', Utils.getWindowHeight());
 
     art.insertBefore(cv, art.firstElementChild);
-    let _this = this;
+    const _this = this;
     resizeHandler = function() {
       if (!handled){
         setTimeout(function() {
@@ -453,10 +451,10 @@ Editor.prototype.initTextToolbar = function () {
 };
 
 Editor.prototype.initContentOptions = function () {
-  var base_options = this.base_content_options;
+  const base_options = this.base_content_options;
   const editorWrapper = this.elNode.closest('.editor-wrapper');
   
-  if (base_options.indexOf("image") >= 0) {         
+  if (base_options.indexOf("image") >= 0) {
     let toolbarNode = editorWrapper.querySelector('.mf-toolbar-base-image');
     if (toolbarNode == null) {
       const igTb = `<div class='mf-menu mf-toolbar-base mf-toolbar-base-image mf-toolbar hide'></div>`;
@@ -479,21 +477,19 @@ Editor.prototype.initContentOptions = function () {
   }
   
   if (base_options.indexOf("video") >= 0) { 
-    var opt = new VideoContentBarItem({editor: this});
+    const opt = new VideoContentBarItem({editor: this});
     this.content_options.push(opt); 
     this.video_uploader = opt;
   }
   
   if (base_options.indexOf("section") >= 0) { 
-    var opt = new SectionContentBarItem({editor: this,
-      mode: this.mode, editorType: this.editorType});
+    const opt = new SectionContentBarItem({editor: this, mode: this.mode, editorType: this.editorType});
     this.content_options.push(opt);
     this.section_options = opt;
   }
   
   if (base_options.indexOf("embed") >= 0) { 
-    var opt = new EmbedContentBarItem({editor: this,
-      mode: this.mode});
+    const opt = new EmbedContentBarItem({editor: this, mode: this.mode});
     this.embed_options = opt;
     this.content_options.push(opt);
   }
@@ -513,12 +509,12 @@ Editor.prototype.render = function (cb) {
   if (this.elNode.innerHTML.trim() == '') {
     this.elNode.appendChild( Utils.generateElement(this.template()) );
     if (this.publicationMode) {
-      var bd = this.elNode.querySelector('.block-stories .main-body');
+      const bd = this.elNode.querySelector('.block-stories .main-body');
       //TODO add autocomplete dependency
       //$(this.elNode.querySelector('.autocomplete')).autocomplete();
 
       this.fillStoryPreview(bd, 6);
-      var lsect = this.elNode.querySelector('section:last-child .main-body');
+      const lsect = this.elNode.querySelector('section:last-child .main-body');
       if(lsect != null) {
         lsect.appendChild(Utils.generateElement(`<div class="block-content-inner center-column"><p class="item item-p" name="${Utils.generateId()}"><br /></p></div>`));
       }
@@ -544,12 +540,13 @@ Editor.prototype.parseInitialContent = function (cb) {
   this.setupElementsClasses(this.elNode.querySelectorAll('.block-content-inner'), () => {
     if (_this.mode == 'write') {
       const figures = _this.elNode.querySelectorAll('.item-figure');
+
       figures.forEach((item) => {
         if (item.hasClass('figure-in-row')) {
-          var cont = item.closest('.block-grid');
-          var caption = cont.querySelector('.block-grid-caption');
+          const cont = item.closest('.block-grid');
+          let caption = cont.querySelector('.block-grid-caption');
           if (caption == null) {
-            var t = Utils.generateElement(_this.figureCaptionTemplate(true));
+            const t = Utils.generateElement(_this.figureCaptionTemplate(true));
             t.removeClass('figure-caption');
             t.addClass('block-grid-caption');
             cont.appendChild(t);
@@ -557,7 +554,7 @@ Editor.prototype.parseInitialContent = function (cb) {
           }
           caption.attr('contenteditable', true);
         } else {
-          var caption = item.querySelector('figcaption');
+          let caption = item.querySelector('figcaption');
           if (caption == null) {
             item.appendChild(Utils.generateElement(_this.figureCaptionTemplate()));
             caption = item.querySelector('figcaption');
@@ -566,7 +563,7 @@ Editor.prototype.parseInitialContent = function (cb) {
           caption.attr('contenteditable', true);
 
           if ( caption.textContent.killWhiteSpace().length == 0 ) {
-            var txt = 'Type caption for image(Optional)';
+            const txt = 'Type caption for image(Optional)';
             const sp = document.createElement('span');
             sp.addClass('placeholder-text');
             sp.attr('data-placeholder-value', txt);
@@ -603,21 +600,21 @@ Editor.prototype.setUpStoriesToolbar = function () {
   if (!this.publicationMode) {
     return;
   }
-  var sects = this.elNode.querySelectorAll('section');
+  const sects = this.elNode.querySelectorAll('section');
   if (sects.length) {
-    for (var i = 0; i < sects.length; i = i + 1) {
-      var section = sects[i];
-      var body = section.querySelector('.main-body');
-      var toolbar;
+    for (let i = 0; i < sects.length; i = i + 1) {
+      const section = sects[i];
+      const body = section.querySelector('.main-body');
       if (!section.hasClass('block-add-width') && !section.hasClass('block-full-width')) {
         section.addClass('block-center-width');
       }
+      let toolbar;
       if (section.hasClass('block-stories')) {
         toolbar = Utils.generateElement(this.getStoriesSectionMenu(true));
-        var name = section.attr('name');
-        var obName = window['ST_' + name];
+        const name = section.attr('name');
+        const obName = window['ST_' + name];
         
-        var count = 6, stType = 'featured', tagValue = '';
+        const count = 6, stType = 'featured', tagValue = '';
 
         if (obName) {
           count = obName.storyCount;
@@ -638,10 +635,11 @@ Editor.prototype.setUpStoriesToolbar = function () {
           tStType.value = stType;
         }
 
-        var auto = toolbar.querySelector('.autocomplete');
-        auto.autocomplete({threshold:2, behave: 'buttons', type: 'tag'});
+        //FIXME autocomplete issue
+        //var auto = toolbar.querySelector('.autocomplete');
+        //auto.autocomplete({threshold:2, behave: 'buttons', type: 'tag'});
 
-        var tagInpt = toolbar.querySelector('[data-for="tagname"]');
+        const tagInpt = toolbar.querySelector('[data-for="tagname"]');
         if (stType == 'tagged') {
           tagInpt.closest('.autocomplete-buttons').removeClass('hide');
           auto.autocomplete({action:'set', data: JSON.parse(tagValue)});
@@ -658,32 +656,25 @@ Editor.prototype.setUpStoriesToolbar = function () {
 };
 
 Editor.prototype.addFigureControls = function () {
-  var imageFigures = document.querySelectorAll('.item-figure:not(.item-iframe)');
-  imageFigures.forEach( item => {
-    var temp = Utils.generateElement(this.getImageFigureControlTemplate());
-    var img = item.querySelector('img');
-    if(img != null) {
-      img.insertAfter(temp);
-    }
+
+  this.elNode.querySelectorAll('.item-figure:not(.item-iframe)').forEach( item => {
+    const temp = Utils.generateElement(this.getImageFigureControlTemplate());
+    item.querySelector('img')?.insertAdjacentElement('afterend', temp);
   });
 
 };
 
 Editor.prototype.addPlaceholdersForBackgrounds = function () {
-  var backgrounds = this.elNode.querySelectorAll('.with-background');
+  const backgrounds = this.elNode.querySelectorAll('.with-background');
   if (backgrounds.length) {
 
   }
 };
 
-Editor.prototype.backgroundSectionPlaceholder = function () {
-  var ht = '<h';
-};
 
 Editor.prototype.getPlaceholders = function () {
-  var ht = `<h3 class="item item-h3 item-first" name="${Utils.generateId()}">${this.title_placeholder}</h3>
+  return `<h3 class="item item-h3 item-first" name="${Utils.generateId()}">${this.title_placeholder}</h3>
   <p class="item item-p item-last" name="${Utils.generateId()}">${this.subtitle_placeholder}</p>`;
-  return ht;
 };
 
 Editor.prototype.getSingleLayoutTempalte = function () {
@@ -691,24 +682,23 @@ Editor.prototype.getSingleLayoutTempalte = function () {
 };
 
 Editor.prototype.getSingleSectionTemplate = function () {
-  var ht = `<section class="block-content" name="${Utils.generateId()}">
+  return `<section class="block-content" name="${Utils.generateId()}">
     <div class="main-divider" contenteditable="false"><hr class="divider-line" tabindex="-1"></div>
     <div class="main-body">
     </div>
     </section>`;
-  return ht;
 };
 
 Editor.prototype.getSingleStorySectionTemplate = function () {
-  var existingSects = this.elNode.querySelectorAll('.block-stories'),
+  const existingSects = this.elNode.querySelectorAll('.block-stories'),
   excludes = [];
 
   if (existingSects.length) {
-    for (var i = 0;i < existingSects.length; i = i + 1) {
-      var sec = existingSects[i];
-      var select = sec.querySelector('[data-for="storytype"]');
+    for (let i = 0;i < existingSects.length; i = i + 1) {
+      const sec = existingSects[i];
+      let select = sec.querySelector('[data-for="storytype"]');
       if(select != null) {
-        var val = select.value;
+        const val = select.value;
         if (val != 'tagged') {
           excludes.push(val);
         }
@@ -716,28 +706,26 @@ Editor.prototype.getSingleStorySectionTemplate = function () {
     }
   }
 
-  var ht = `<section class="block-stories block-add-width as-image-list" name="${Utils.generateId()}" data-story-count="6">
+  return `<section class="block-stories block-add-width as-image-list" name="${Utils.generateId()}" data-story-count="6">
       <div class="main-divider" contenteditable="false"><hr class="divider-line" tabindex="-1"></div>
       ${this.getStoriesSectionMenu(true, excludes)}
       <div class="main-body">
       </div>
       </section>`;
-  return ht;
 };
 
 Editor.prototype.getStoryPreviewTemplate = function () {
-  var ht = `<div class="st-pre" >
+  return `<div class="st-pre" >
       <div class="st-img"></div>
       <div class="st-title"></div>
       <div class="st-sub"></div>
       <div class="st-sub2"></div>
       </div>`;
-  return ht;
 };
 
 Editor.prototype.fillStoryPreview = function (container, count) {
   count = typeof count == 'undefined' || isNaN(count) ? 6 : count;
-  var ht = `<div class="center-column" contenteditable="false">`;
+  let ht = `<div class="center-column" contenteditable="false">`;
   for (var i = 0; i < count; i = i + 1) {
     ht += this.getStoryPreviewTemplate();
   }
@@ -748,16 +736,16 @@ Editor.prototype.fillStoryPreview = function (container, count) {
 Editor.prototype.menuOpts = [['featured','Featured'],['latest','Latest'],['tagged','Tagged as']];
 
 Editor.prototype.getStoriesSectionMenu = function (forStories, exclude) {
-  var fs = typeof forStories == 'undefined' ? true : forStories,
-    ht = `<div class="main-controls '${fs ? `story-mode` : `plain-mode`}" contenteditable="false">
+  const fs = typeof forStories == 'undefined' ? true : forStories;
+  let ht = `<div class="main-controls '${fs ? `story-mode` : `plain-mode`}" contenteditable="false">
         <div class="main-controls-inner center-column">
         <select data-for="storytype">`;
 
-  var opts = '';
-  var excludeOpts = typeof exclude != 'undefined' ? exclude : [];
+  let opts = '';
+  const excludeOpts = typeof exclude != 'undefined' ? exclude : [];
 
-  for (var i = 0; i < this.menuOpts.length; i = i + 1) {
-    var menu = this.menuOpts[i];
+  for (let i = 0; i < this.menuOpts.length; i = i + 1) {
+    const menu = this.menuOpts[i];
     if (excludeOpts.indexOf(menu[0]) == -1) {
       opts += `<option value="${menu[0]}">${menu[1]}</option>`;
     }
@@ -790,8 +778,7 @@ Editor.prototype.getStoriesSectionMenu = function (forStories, exclude) {
 };
 
 Editor.prototype.getImageFigureControlTemplate = function () {
-  const ht =
-  `<div class='item-controls-cont'>
+  return  `<div class='item-controls-cont'>
   <div class='item-controls-inner'>
   <i class='mfi-arrow-up action' data-action='goup' title='Move image up'></i>
   <i class='mfi-arrow-left action' data-action='goleft' title='Move image to left'></i>
@@ -802,12 +789,10 @@ Editor.prototype.getImageFigureControlTemplate = function () {
   <div class='extend-button action' data-action='stretch' title='Stretch to full width'><i class='mfi-extend-in-row'></i></div>
   </div>
   </div>`;
-  return ht;
 };
 
 Editor.prototype.getFigureTemplate = function () {
-  var ht = 
-  `<figure contenteditable='false' class='item item-figure item-text-default' name='${Utils.generateId()}' tabindex='0'>
+  return  `<figure contenteditable='false' class='item item-figure item-text-default' name='${Utils.generateId()}' tabindex='0'>
   <div style='' class='padding-cont'> 
   <div style='padding-bottom: 100%;' class='padding-box'></div> 
   <img src='' data-height='' data-width='' data-image-id='' class='item-image' data-delayed-src='' /> 
@@ -817,20 +802,17 @@ Editor.prototype.getFigureTemplate = function () {
   <span class='placeholder-text'>Type caption for image (optional)</span> <br> 
   </figcaption> 
   </figure>`;
-  return ht;
 };
 
 Editor.prototype.figureCaptionTemplate = function (multiple) {
-  var plc = typeof multiple != 'undefined' ? `Type caption for images(optional)` : `Type caption for image(optional)`;
-  var ht = `<figcaption contenteditable='true' data-placeholder-value='${plc}' class='figure-caption caption'>
+  const plc = typeof multiple != 'undefined' ? `Type caption for images(optional)` : `Type caption for image(optional)`;
+  return `<figcaption contenteditable='true' data-placeholder-value='${plc}' class='figure-caption caption'>
     <span class="placeholder-text">${plc}<span> <br />
     </figcaption>`;
-  return ht;
 };
 
 Editor.prototype.getFrameTemplate = function () {
-  var ht = 
-  `<figure contenteditable='false' class='item item-figure item-iframe item-first item-text-default' name='${Utils.generateId()}' tabindex='0'>
+  return `<figure contenteditable='false' class='item item-figure item-iframe item-first item-text-default' name='${Utils.generateId()}' tabindex='0'>
   <div class='iframeContainer'>
   <div style='' class='padding-cont'> 
   <div style='padding-bottom: 100%;' class='padding-box'>
@@ -845,12 +827,12 @@ Editor.prototype.getFrameTemplate = function () {
   <span class='placeholder-text'>Type caption for video (optional)</span>"
   </figcaption> 
   </figure>`;
-  return ht;
 };
+
 
 Editor.prototype.template = function() {
   if (this.publicationMode) {
-    var ht = `<section class='block-content block-first block-last block-center-width' name='${Utils.generateId()}'>
+    return `<section class='block-content block-first block-last block-center-width' name='${Utils.generateId()}'>
           <div class='main-divider' contenteditable='false'>
             <hr class='divider-line' tabindex='-1'/>
           </div> 
@@ -859,10 +841,9 @@ Editor.prototype.template = function() {
         <div class='block-content-inner center-column'>${this.getPlaceholders()}</div> </div> </section>
         ${this.getSingleStorySectionTemplate()}
         ${this.getSingleSectionTemplate()}`;
-    return ht;
   }
 
-  var ht = `<section class='block-content block-first block-last' name='${Utils.generateId()}'>
+  return `<section class='block-content block-first block-last' name='${Utils.generateId()}'>
     <div class='main-divider' contenteditable='false'>
       <hr class='divider-line' tabindex='-1'/>
     </div>
@@ -870,12 +851,10 @@ Editor.prototype.template = function() {
       <div class='block-content-inner center-column'>${this.getPlaceholders()}</div>
     </div>
     </section>`;
-  
-  return ht;
 };
 
 Editor.prototype.templateBackgroundSectionForImage = function () {
-  var ht = `<section name="${Utils.generateId()}" class="block-content block-image image-in-background with-background">
+  return `<section name="${Utils.generateId()}" class="block-content block-image image-in-background with-background">
   <div class="block-background" data-scroll="aspect-ratio-viewport" contenteditable="false" data-image-id="" data-width="" data-height="">
   <div class="block-background-image" style="display:none;"></div>
   </div>
@@ -894,11 +873,10 @@ Editor.prototype.templateBackgroundSectionForImage = function () {
   </label>
   </div>
   </section>`;
-  return ht;
 };
 
 Editor.prototype.templateBackgroundSectionForVideo = function () {
-  var ht = `<section name="${Utils.generateId()}" class="block-content video-in-background block-image image-in-background with-background">
+  return `<section name="${Utils.generateId()}" class="block-content video-in-background block-image image-in-background with-background">
   <div class="block-background" data-scroll="aspect-ratio-viewport" contenteditable="false" data-image-id="" data-width="" data-height="">
   <div class="block-background-image" style="display:none;"></div>
   </div>
@@ -917,7 +895,6 @@ Editor.prototype.templateBackgroundSectionForVideo = function () {
   </label>
   </div>
   </section>`;
-  return ht;
 };
 
 Editor.prototype.baseParagraphTmpl = function() {
@@ -938,7 +915,7 @@ Editor.prototype.hideContentBar = function() {
 
 // DOM related methods //
 Editor.prototype.getSelectedText = function() {
-  var text = "";
+  let text = "";
   if (typeof window.getSelection !== "undefined") {
     text = window.getSelection().toString();
   } else if (typeof document.selection !== "undefined" && document.selection.type === "Text") {
@@ -956,8 +933,7 @@ Editor.prototype.selection = function() {
 };
 
 Editor.prototype.getRange = function() {
-  var editor, range;
-  editor = this.elNode;
+  let editor = this.elNode, 
   range = this.selection && this.selection.rangeCount && this.selection.getRangeAt(0);
   if (!range) {
     range = document.createRange();
@@ -981,12 +957,12 @@ Editor.prototype.setRange = function(range) {
 };
 
 Editor.prototype.getCharacterPrecedingCaret = function() {
-  var precedingChar, precedingRange, range, sel;
-  precedingChar = "";
-  sel = void 0;
-  range = void 0;
-  precedingRange = void 0;
-  var node = this.getNode();
+  let precedingChar = "",
+      sel = void 0,
+      range = void 0,
+      precedingRange = void 0;
+
+  const node = this.getNode();
   if (node) {
     if (window.getSelection) {
       sel = window.getSelection();
@@ -1016,19 +992,17 @@ Editor.prototype.isFirstChar = function() {
 };
 
 Editor.prototype.isSelectingAll = function(element) {
-  var a, b;
-  a = this.getSelectedText().killWhiteSpace().length;
-  b = element.textContent.killWhiteSpace().length;
+  const a = this.getSelectedText().killWhiteSpace().length;
+  const b = element.textContent.killWhiteSpace().length;
   return a === b;
 };
 
 Editor.prototype.setRangeAt = function(element, int) {
-  var range, sel;
   if (int == null) {
     int = 0;
   }
-  range = document.createRange();
-  sel = window.getSelection();
+  const range = document.createRange();
+  const sel = window.getSelection();
   range.setStart(element, int);
   range.collapse(true);
   sel.removeAllRanges();
@@ -1037,13 +1011,12 @@ Editor.prototype.setRangeAt = function(element, int) {
 };
 
 Editor.prototype.setRangeAtText = function(element, int) {
-  var node, range, sel;
   if (int == null) {
     int = 0;
   }
-  range = document.createRange();
-  sel = window.getSelection();
-  node = element.firstChild;
+  const range = document.createRange();
+  const sel = window.getSelection();
+  const node = element.firstChild;
   range.setStart(node, 0);
   range.setEnd(node, 0);
   range.collapse(true);
@@ -1068,7 +1041,7 @@ Editor.prototype.focusNode = function(node, range) {
 };
 
 Editor.prototype.getTextNodeParent = function() {
-  var node, range, root, selection;
+  let node, range, root, selection;
   node = void 0;
   root = this.elNode,
   selection = this.selection();
@@ -1095,7 +1068,7 @@ Editor.prototype.getTextNodeParent = function() {
 }
 
 Editor.prototype.getNode = function() {
-  var node, range, root, selection;
+  let node, range, root, selection;
   node = void 0;
   root = this.elNode,
   selection = this.selection();
@@ -1111,18 +1084,19 @@ Editor.prototype.getNode = function() {
   if (!node || node === root) {
     return null;
   }
+
   while(node.nodeType != 1) {
     node = node.parentNode;
   }
   
-  var pt = node.closest('.block-content-inner') != null ? node.closest('.block-content-inner') : root;
+  const pt = node.closest('.block-content-inner') != null ? node.closest('.block-content-inner') : root;
   
   while (node && (node.nodeType !== 1 || !node.hasClass("item")) && (node.parentNode !== pt)) {
     node = node.parentNode;
   }
 
   if (node != null && !node.hasClass("item-li") && !node.hasClass('figure-in-row')) {
-    var elementRoot = node.closest('.block-content-inner');
+    let elementRoot = node.closest('.block-content-inner');
     while (node && (node.parentNode !== elementRoot) && node != root) {
       node = node.parentNode;
     }
@@ -1145,15 +1119,13 @@ Editor.prototype.markAsSelected = function(element) {
     el.removeClass("figure-focused"); 
     el.removeClass("item-selected");
   });
+
   this.elNode.querySelectorAll(".figure-focused").forEach(el => el.removeClass("figure-focused"));
 
   document.querySelectorAll('.grid-focused').forEach(el => el.removeClass('grid-focused'));
 
   if (element.hasClass('block-grid-caption')) {
-    const bg = element.closest('.block-grid');
-    if(bg) {
-      bg.addClass('grid-focused');
-    }
+    element.closest('.block-grid')?.addClass('grid-focused');
   }
 
   element.addClass("item-selected"); 
@@ -1178,10 +1150,7 @@ Editor.prototype.markAsSelected = function(element) {
 
 Editor.prototype.activateBlock = function (elem) {
   this.elNode.querySelectorAll('.block-selected').forEach(el => el.removeClass('block-selected'));
-  const bdc = elem.closest('.block-content');
-  if(bdc != null) {
-    bdc.addClass('block-selected');
-  }
+  elem.closest('.block-content')?.addClass('block-selected');
 };
 
 Editor.prototype.setupFirstAndLast = function() {
@@ -1225,7 +1194,7 @@ Editor.prototype.setupLinks = function(elems) {
 };
 
 Editor.prototype.setupLink = function(n) {
-  var href, parent_name;
+  let href, parent_name;
   parent_name = n.parentNode.tagName.toLowerCase();
   n.addClass("markup-" + parent_name);
   href = n.attr("href");
@@ -1266,11 +1235,8 @@ Editor.prototype.displayTooltipAt = function(element) {
     this.positions.top += 5;
   }
 
-  var pl = document.querySelector('.hide-placeholder');
-  if (pl != null) {
-    pl.removeClass('hide-placeholder');
-  }
-
+  document.querySelector('.hide-placeholder')?.removeClass('hide-placeholder');
+  
   if (element.querySelectorAll('.placeholder-text').length) {
     element.addClass('hide-placeholder');
   }else {
@@ -1283,8 +1249,7 @@ Editor.prototype.displayTooltipAt = function(element) {
 
 Editor.prototype.displayTextToolbar = function(sel) {
   return setTimeout(() => {
-      var pos;
-      pos = Utils.getSelectionDimensions();
+      const pos = Utils.getSelectionDimensions();
       this.text_toolbar.render();        
       this.relocateTextToolbar(pos);
       this.toolbar = this.text_toolbar;
@@ -1296,7 +1261,7 @@ Editor.prototype.handleTextSelection = function(anchor_node) {
   if(!anchor_node) {
     return;
   }
-  var text = this.getSelectedText();
+  let text = this.getSelectedText();
 
   if (this.mode == 'read' && text && (text.length < 10 || text.length > 160)) {
     this.text_toolbar.hide();
@@ -1309,7 +1274,7 @@ Editor.prototype.handleTextSelection = function(anchor_node) {
 
   if ( anchor_node.matches(".item-mixtapeEmbed, .item-figure") && !text.isEmpty() ) {
     this.text_toolbar.hide();
-    var sel = this.selection(), range, caption, eleme;
+    let sel = this.selection(), range, caption, eleme;
     if (sel) {
       range = sel.getRangeAt(0),
       caption,
@@ -1333,8 +1298,8 @@ Editor.prototype.handleTextSelection = function(anchor_node) {
 
 
 Editor.prototype.relocateTextToolbar = function(position) {
-  var height, left, padd, top;
-  let elRect = this.toolbar.elNode.getBoundingClientRect();
+  let height, left, padd, top;
+  const elRect = this.toolbar.elNode.getBoundingClientRect();
   height = elRect.height;
   padd = elRect.width / 2;
   
@@ -1396,7 +1361,7 @@ Editor.prototype.cleanupEmptyModifierTags = function (elements) {
 };
 
 Editor.prototype.convertPsInnerIntoList = function (item, splittedContent, match) {
-  var split = splittedContent,
+  let split = splittedContent,
       ht = '',
       k = 0,
       counter = match.matched[0].charAt(0);
@@ -1408,13 +1373,12 @@ Editor.prototype.convertPsInnerIntoList = function (item, splittedContent, match
     return;
   }
 
-  var count = isNaN(parseInt(counter)) ? counter: parseInt(counter) ;
+  let count = isNaN(parseInt(counter)) ? counter: parseInt(counter) ;
 
   while (k < split.length) {
-    
-    var sf = '\\s*' + count +'(.|\\))\\s';
-    var exp = new RegExp(sf);
-    var sp = split[k].replace(exp, '');
+    const sf = '\\s*' + count +'(.|\\))\\s';
+    const exp = new RegExp(sf);
+    let sp = split[k].replace(exp, '');
     ht += '<li>' + sp + '</li>';
     k++;
     count = Utils.incrementCounter(count);
@@ -1434,7 +1398,7 @@ Editor.prototype.convertPsInnerIntoList = function (item, splittedContent, match
 };
 
 Editor.prototype.doesTwoItemsMakeAList = function (first, second) {
-  var f = first,
+  let f = first,
       s = second,
       firstMatch = f.match(/\s*[1aA](\.|\))\s*/),
       secondMatch = s.match(/\s*[2bB](\.|\))\s*/);
@@ -1455,7 +1419,6 @@ Editor.prototype.doesTwoItemsMakeAList = function (first, second) {
 
 
 Editor.prototype.handleUnwrappedLists = function (elements) {
-  let _this = this;
   elements.forEach( item => {
       if (item.hasClass('item-figure')) {
         return;
@@ -1463,14 +1426,14 @@ Editor.prototype.handleUnwrappedLists = function (elements) {
       const html = item.innerHTML;
       if ( html.trim().length !== 0 ) {
         // first case
-        var split = html.split('<br>');
+        let split = html.split('<br>');
 
         if (split.length >= 2 && split[1] != '') {
-          var match = _this.doesTwoItemsMakeAList(split[0], split[1]);
+          let match = this.doesTwoItemsMakeAList(split[0], split[1]);
           match.matched = false;
 
           if (match.matched) {
-            _this.convertPsInnerIntoList(item, split, match);
+            this.convertPsInnerIntoList(item, split, match);
           }  
         }
       }
@@ -1480,13 +1443,13 @@ Editor.prototype.handleUnwrappedLists = function (elements) {
 
 Editor.prototype.handleUnwrapParagraphs = function(elements) {
   elements.forEach( item => {
-    var p = item.querySelectorAll('p');
+    const p = item.querySelectorAll('p');
     if (p.length) {
-      var currNodeName = item.tagName.toLowerCase();
+      const currNodeName = item.tagName.toLowerCase();
       if (currNodeName == 'blockquote') {
-        var d = document.createElement('div');
+        const d = document.createElement('div');
 
-        for (var i = 0; i < p.length; i = i + 1) {
+        for (let i = 0; i < p.length; i = i + 1) {
           let len = p.children.length;
           for(let j = 0; j < len; j++) {
             d.appendChild(p.children[j]);
@@ -1494,7 +1457,7 @@ Editor.prototype.handleUnwrapParagraphs = function(elements) {
           p.parentNode.removeChild(p);
         }
 
-        let len = d.children.length;
+        const len = d.children.length;
         for(let i = 0; i < len; i++) {
           item.appendChild(d.children[i]);
         }
@@ -1506,21 +1469,19 @@ Editor.prototype.handleUnwrapParagraphs = function(elements) {
 
 
 Editor.prototype.handleUnwrappedImages = function(elements) {
-  let _this = this;
   elements.forEach(item => {
     if (item.hasClass('ignore-block') && item.hasClass('item-uploading')) {
       return;
     }
-    var img = item.querySelectorAll('img');
+    const img = item.querySelectorAll('img');
     if (img.length) {
-
       item.attr('data-pending', true);
       
       if (item && item.children) {
         const children = item.children;
-        var div = document.createElement('p');
+        const div = document.createElement('p');
         for (let i = 0; i < children.length; i++) {
-          var it = children[i];
+          const it = children[i];
           if (it == img[0]) {
             continue;
           } else {
@@ -1530,11 +1491,11 @@ Editor.prototype.handleUnwrappedImages = function(elements) {
         item.insertAdjacentElement('afterend', div);
 
         //div.insertAfter(item);
-        _this.addClassesToElement(div);
-        _this.setElementName(div);
+        this.addClassesToElement(div);
+        this.setElementName(div);
       }
 
-      return _this.image_uploader.uploadExistentImage(img);
+      this.image_uploader.uploadExistentImage(img);
     }
   });
 
@@ -1552,7 +1513,7 @@ Editor.prototype.handleSpanReplacements = function (element) {
   const replaceWith = element.querySelectorAll('.replace-with');
 
   replaceWith.forEach( node => {
-    var hasBold = node.hasClass('bold'),
+    const hasBold = node.hasClass('bold'),
       hasItalic = node.hasClass('italic');
 
     if (hasBold && hasItalic) {
@@ -1568,7 +1529,7 @@ Editor.prototype.handleSpanReplacements = function (element) {
 
 Editor.prototype.removeUnwantedSpans = function () {
   this.elNode.addEventListener('DOMNodeInserted', (ev) => {
-    var node = ev.target;
+    const node = ev.target;
     if(node.nodeType == 1 && node.nodeName == 'SPAN') {
       if(!node.hasClass('placeholder-text')) {
         const pn = node.parentNode;
@@ -1590,7 +1551,7 @@ Editor.prototype.removeUnwantedSpans = function () {
 };
 
 Editor.prototype.cleanPastedText = function (text) {
-  var regs =  [
+  const regs =  [
     // Remove anything but the contents within the BODY element
     [new RegExp(/^[\s\S]*<body[^>]*>\s*|\s*<\/body[^>]*>[\s\S]*$/g), ''],
 
@@ -1636,7 +1597,7 @@ Editor.prototype.cleanPastedText = function (text) {
 
   ];
 
-  for (var i = 0; i < regs.length; i += 1) {
+  for (let i = 0; i < regs.length; i += 1) {
       text = text.replace(regs[i][0], regs[i][1]);
   }
 
@@ -1645,19 +1606,20 @@ Editor.prototype.cleanPastedText = function (text) {
 
 Editor.prototype.insertTextAtCaretPosition = function (textToInsert, haveMoreNodes) {
   if (document.getSelection && document.getSelection().getRangeAt) {
-    var sel = document.getSelection();
-    var range = sel.getRangeAt(0);
-    var ca = range.commonAncestorContainer;
-    var caption = ca.closest('figcaption');
-    var getBlockContainer = (node) => {
+    const sel = document.getSelection();
+    const range = sel.getRangeAt(0);
+    const ca = range.commonAncestorContainer;
+    
+    const getBlockContainer = (node) => {
       while (node) {
         if (node.nodeType == 1 && node.nodeName == 'FIGCAPTION') {
           return node;
         }
         node = node.parentNode;
       }
-    }
-    var generateRightParts = (node) => {
+    };
+
+    const generateRightParts = (node) => {
       if (sel.rangeCount > 0) {
         var blockEl = getBlockContainer(range.endContainer);
         if (blockEl) {
@@ -1669,7 +1631,7 @@ Editor.prototype.insertTextAtCaretPosition = function (textToInsert, haveMoreNod
       }
     };
 
-    var generateLeftParts = (node) => {
+    const generateLeftParts = (node) => {
       if (sel.rangeCount > 0) {
         var blockEl = getBlockContainer(range.startContainer);
         if (blockEl) {
@@ -1683,8 +1645,7 @@ Editor.prototype.insertTextAtCaretPosition = function (textToInsert, haveMoreNod
 
     if (sel.type == 'Caret') {
       off = range.endOffset;
-      var rest = '';
-      rest = generateRightParts();
+      const rest = generateRightParts();
 
       if (ca.nodeType == 3) {
         ca = ca.parentNode;
@@ -1696,9 +1657,8 @@ Editor.prototype.insertTextAtCaretPosition = function (textToInsert, haveMoreNod
       return rest;
     }
     if (sel.type == 'Range') {
-      var left = '';
-      var right = '';
-      left = generateLeftParts();
+      const left = generateLeftParts();
+      let right = '';
       if (haveMoreNodes) {
         right = generateRightParts();
       }
@@ -1738,7 +1698,6 @@ Editor.prototype.doPaste = function (pastedText) {
     this.handleSpanReplacements(pei);
 
     this.pastingContent = true;
-    let _this = this;
 
     this.setupElementsClasses(pei, () => {
         let last_node, new_node, nodes, num, top;
@@ -1760,12 +1719,12 @@ Editor.prototype.doPaste = function (pastedText) {
           after = nd;
         }
 
-        var aa = this.aa;
-        var caption;
+        const aa = this.aa;
+        let caption;
 
         if (aa.hasClass('item-figure')) {
           if (aa.hasClass('figure-in-row')) {
-            var grid = aa.closest('.block-grid');
+            const grid = aa.closest('.block-grid');
             if(grid != null) {
               caption = grid.querySelector('.block-grid-caption');
             }
@@ -1777,9 +1736,9 @@ Editor.prototype.doPaste = function (pastedText) {
         }
 
         if (caption != null) {
-          var first = nodes;
-          var firstText = first.textContent;
-          var leftOver = '';
+          let first = nodes;
+          let firstText = first.textContent;
+          let leftOver = '';
           if (aa.hasClass('item-text-default')) {
             caption.innerHTML = firstText;
           } else {
@@ -1803,12 +1762,11 @@ Editor.prototype.doPaste = function (pastedText) {
         }
 
         if(this.paste_element != null) {
-          var pt = this.paste_element.querySelector('figure');
+          const pt = this.paste_element.querySelector('figure');
           if(pt != null) {
             this.paste_element.parentNode.removeChild(pei);
           }
         }
-
 
         last_node = nodes[nodes.length - 1];
         if (last_node && last_node.length) {
@@ -1836,16 +1794,14 @@ Editor.prototype.doPaste = function (pastedText) {
         // unwrap p's which might be inside other elements
         this.handleUnwrapParagraphs(nodes);
 
-        var figs = this.elNode.querySelectorAll('figure');
-        figs.forEach( (ite) => {
+        this.elNode.querySelectorAll('figure').forEach( (ite) => {
           let it = ite;
           if (it.querySelectorAll('img').length == 0) {
             it.parentNode.removeChild(it);
           }
         });
 
-        var captions = this.elNode.querySelectorAll('figcaption');
-        captions.forEach((ite) => {
+        this.elNode.querySelectorAll('figcaption').forEach((ite) => {
           let it = ite.closest('.item');
           if (it != null && it.querySelectorAll('img').length == 0) {
             it.parentNode.removeChild(it);
@@ -1859,11 +1815,11 @@ Editor.prototype.doPaste = function (pastedText) {
     return false;
   } else {
     //its plain text
-    let node = this.aa;
+    const node = this.aa;
     if (node.hasClass('item-figure') ) {
-      var caption;
+      let caption;
       if (node.hasClass('figure-in-row')) {
-        var grid = node.closest('.block-grid');
+        let grid = node.closest('.block-grid');
         caption = grid != null ? grid.querySelector('.block-grid-caption') : null;
       } else {
         caption = node.querySelector('figcaption');
@@ -1879,7 +1835,7 @@ Editor.prototype.doPaste = function (pastedText) {
 
 Editor.prototype.handlePaste = function(ev) {
   ev.preventDefault();
-  var cbd, pastedText;
+  let cbd, pastedText;
   this.aa = this.getNode();
   pastedText = void 0;
 
@@ -1895,12 +1851,11 @@ Editor.prototype.handlePaste = function(ev) {
 
 
 Editor.prototype.handleDblclick = function(e) {
-  var node;
-  var tg = e.target.closest('.main-controls');
+  let tg = e.target.closest('.main-controls');
   if (tg != null) {
     return false;
   }
-  node = this.getNode();
+  const node = this.getNode();
   if (!node) {
     this.setRangeAt(this.prev_current_node);
   }
@@ -1908,7 +1863,7 @@ Editor.prototype.handleDblclick = function(e) {
 };
 
 Editor.prototype.handleMouseDown = function (e) {
-  var node, anchor_node,
+  let node, anchor_node,
     el = e.toElement;
 
   if (el.hasClass('placeholder-text') || el.querySelectorAll('.placeholder-text').length) {
@@ -1916,35 +1871,31 @@ Editor.prototype.handleMouseDown = function (e) {
     if(node != null) {
       e.preventDefault();
       Utils.setCaretAtPosition(node, 0);
-    }else {
+    } else {
       node =  el.closest('.item');
       if(node != null) {
         e.preventDefault();
         Utils.setCaretAtPosition(node, 0);
       }  
     }
-  }else if(el.hasClass('block-background') || el.hasClass('table-view') || el.hasClass('table-cell-view')) {
-    var section = el.closest('section');
+  } else if(el.hasClass('block-background') || el.hasClass('table-view') || el.hasClass('table-cell-view')) {
+    const section = el.closest('section');
     if(section != null) {
       this.selectFigure(section);
     }
   } else if(el.hasClass('block-grid-caption')) {
-    let bg = el.closest('.block-grid');
-    if(bg != null) {
-      bg.addClass('grid-focused');
-    }
+    el.closest('.block-grid')?.addClass('grid-focused');
   }
 
 };
 
 // NOTE don't use the event, as its just dummy, function gets called from selection change also
 Editor.prototype.handleMouseUp = function () {
-
-  var anchor_node,
+  let anchor_node,
       selection = this.selection();
   
   if (!selection && selection.anchorNode.hasClass('main-divider')) {
-    var new_anchor = selection.anchorNode,
+    let new_anchor = selection.anchorNode,
         focusTo = new_anchor.nextElementSibling.querySelector('.block-content-inner:first-child .item:first-child');
       if (focusTo != null) {
         this.setRangeAt(focusTo);
@@ -1971,8 +1922,7 @@ Editor.prototype.handleMouseUp = function () {
 };
 
 Editor.prototype.handleArrow = function(ev) {
-  var current_node;
-  current_node = this.getNode();
+  const current_node = this.getNode();
   if (current_node != null) {
     this.markAsSelected(current_node);
     return this.displayTooltipAt(current_node);
@@ -1981,22 +1931,22 @@ Editor.prototype.handleArrow = function(ev) {
 
 
 Editor.prototype.handleTab = function(anchor_node, event) {
-  var nextTabable = function (node) {
-    var next = node.next('.item');
+  const nextTabable = function (node) {
+    let next = node.next('.item');
     if (next != null) {
       return next;
     }
-    var cont = node.closest('.block-content-inner');
+    let cont = node.closest('.block-content-inner');
     next = cont != null ? cont.nextElementSibling : null;
     if (next != null) {
       return next;
     }
-    var sec = node.closest('.block-content');
+    let sec = node.closest('.block-content');
     next = sec != null ? sec.next() : null;
     if (next != null) {
-      var block = next.querySelector('.block-content-inner:last-child');
+      let block = next.querySelector('.block-content-inner:last-child');
       if (block != null) {
-        var item = block.querySelector('.item:last-child');
+        let item = block.querySelector('.item:last-child');
         if (item != null) {
           return item;
         } else {
@@ -2009,31 +1959,31 @@ Editor.prototype.handleTab = function(anchor_node, event) {
     return false;
   };
 
-  var prevTabable = function (node) {
-    var prev = node.prev('.item');
+  const prevTabable = function (node) {
+    let prev = node.prev('.item');
     if (prev != null) {
       return prev;
     }
-    var cont = node.closest('.block-content-inner');
+    let cont = node.closest('.block-content-inner');
     cont = cont != null ? cont.previousElementSibling : null;
 
     if (cont != null && (cont.hasClass('block-grid') || cont.hasClass('full-width-column')) ) {
       return cont;
     } else if(cont.length && cont.hasClass('center-column')) {
-      var i = cont.querySelector('.item:last-child');
+      let i = cont.querySelector('.item:last-child');
       if (i != null) {
         return i;
       }
     }
 
-    var sec = node.closest('.block-content');
+    let sec = node.closest('.block-content');
     prev = sec.previousElementSibling;
     if (prev != null) {
-      var last = prev.querySelector('.block-content-inner:last-child');
+      const last = prev.querySelector('.block-content-inner:last-child');
       if (last != null && last.hasClass('block-grid')) {
         return last;
       } else if(last != null && last.hasClass('center-column')) {
-        var i = last.querySelector('.item:last-child');
+        const i = last.querySelector('.item:last-child');
         if (i != null) {
           return i;
         }
@@ -2041,7 +1991,8 @@ Editor.prototype.handleTab = function(anchor_node, event) {
     }
     return false;
   };
-  var next;
+
+  let next;
   if (!anchor_node) {
     anchor_node = document.querySelector('.item-selected');
     if (!anchor_node) {
@@ -2058,28 +2009,28 @@ Editor.prototype.handleTab = function(anchor_node, event) {
   }
   if (next) {
     if (next.hasClass('block-grid')) {
-      var cap = next.querySelector('.block-grid-caption');
+      const cap = next.querySelector('.block-grid-caption');
       if (cap != null) {
         this.setRangeAt(cap);
       }
       next.addClass('grid-focused');
     } else if(next.hasClass('full-width-column')) {
-      var fig = next.querySelector('.item-figure');
+      const fig = next.querySelector('.item-figure');
       if (fig != null) {
-        var cap = fig.querySelector('figcaption');
-        if (cap.length) {
+        const cap = fig.querySelector('figcaption');
+        if (cap != null) {
           this.setRangeAt(cap);
         }
         this.selectFigure(fig);
       }
     } else if(next.hasClass('item-figure')) {
-      var cap = next.querySelector('figcaption');
+      const cap = next.querySelector('figcaption');
       if (cap != null) {
         this.setRangeAt(cap);
       }
       this.selectFigure(next);
     } else if(next.hasClass('with-background')) {
-      var items = next.querySelector('.item:first-child');
+      const items = next.querySelector('.item:first-child');
       if (items != null) {
         this.setRangeAt(items[0]);
       }
@@ -2135,9 +2086,9 @@ Editor.prototype.handleArrowForKeyDown = function(ev) {
       if (current_node.hasClass('item-figure') && !ev.target.hasClass('figure-caption')) {
         // we move to caption unles its a partialwidth
         if (current_node.hasClass('figure-in-row') && next_node && !next_node.hasClass('figure-in-row')) {
-          var cont = current_node.closest('.block-content-inner');
+          const cont = current_node.closest('.block-content-inner');
           if (cont != null) {
-            var last = cont.querySelector('.item-figure:last-child');
+            const last = cont.querySelector('.item-figure:last-child');
             if (last != null && last.attr('name') == current_node.attr('name')) {
               next_node = cont.closest('.block-grid').querySelector('.block-grid-caption');
             }
@@ -2149,8 +2100,8 @@ Editor.prototype.handleArrowForKeyDown = function(ev) {
         if (current_node.hasClass('figure-in-row')) {
           current_node.closest('.block-content-inner').removeClass('figure-focused');
         } 
-        if(!next_node.length) { // we don't have a next node
-          var cont = current_node.closest('.block-content-inner').nextElementSibling;
+        if(!next_node) { // we don't have a next node
+          const cont = current_node.closest('.block-content-inner').nextElementSibling;
           if (cont != null) {
             next_node = cont.querySelector('.item:first-child');
           }
@@ -2171,7 +2122,7 @@ Editor.prototype.handleArrowForKeyDown = function(ev) {
       }
 
       if (next_node.hasClass('figure-caption') || next_node.hasClass('block-grid-caption')) {
-        var figure = next_node.closest('.item-figure');
+        const figure = next_node.closest('.item-figure');
         if (figure != null || current_node.hasClass('figure-in-row')) {
           this.hideImageToolbar();
           this.markAsSelected(figure);
@@ -2218,7 +2169,7 @@ Editor.prototype.handleArrowForKeyDown = function(ev) {
           Utils.setCaretAtPosition(next_node,0);
           ev.preventDefault();
           return false;
-        }else {
+        } else {
           this.markAsSelected(next_node);
           this.setRangeAt(next_node);  
           ev.preventDefault();
@@ -2268,7 +2219,7 @@ Editor.prototype.handleArrowForKeyDown = function(ev) {
       }
 
       if (current_node.hasClass('block-grid-caption')) {
-        var lastRow = current_node.closest('.block-grid').querySelector('.block-grid-row');
+        const lastRow = current_node.closest('.block-grid').querySelector('.block-grid-row');
         if (lastRow != null) {
           prev_node = lastRow.querySelector('.item-figure:last-child');
         }
@@ -2280,14 +2231,13 @@ Editor.prototype.handleArrowForKeyDown = function(ev) {
       } else {
         if (prev_node.hasClass('item-figure') && !ev.target.hasClass('figure-caption')) {
           if (prev_node.hasClass('figure-in-row')) {
-            var cont = prev_node.closest('.block-content-inner'),
+            const cont = prev_node.closest('.block-content-inner'),
             lastGraf = cont ? cont.querySelector('.item-figure:last-child') : null;
             if (cont != null && lastGraf != null && lastGraf.attr('name') == prev_node.attr('name')) {
               prev_node = prev_node.querySelector('.figure-caption');
             }
-          }else {
-            var caption = prev_node.querySelector('.figure-caption');
-            prev_node = caption;
+          } else {
+            prev_node = prev_node.querySelector('.figure-caption');
           }
         } else if (current_node.hasClass('item-figure') && ev.target.hasClass('figure-caption')) {
           if (current_node.hasClass('figure-in-row')) {
@@ -2307,12 +2257,11 @@ Editor.prototype.handleArrowForKeyDown = function(ev) {
       }
 
       if (prev_node.hasClass('block-grid-caption')) {
-        var grid = prev_node.closest('.block-grid');
-        grid.addClass('grid-focused');
+        prev_node.closest('.block-grid')?.addClass('grid-focused');
       }
 
       if (prev_node.hasClass('figure-caption')) {
-        var figure = prev_node.closest('.item-figure');
+        const figure = prev_node.closest('.item-figure');
         this.hideImageToolbar();
         this.markAsSelected(figure);
         this.setRangeAt(prev_node);
@@ -2388,14 +2337,14 @@ Editor.prototype.handleArrowForKeyDown = function(ev) {
 
 Editor.prototype.insertFancyChar = function (event, text) {
   Utils.stopEvent(event);
-  var node = this.getNode(),
+  let node = this.getNode(),
       textVal,
       range = this.selection().getRangeAt(0);
 
     range.deleteContents();
   if(text == 'single' || text == 'double') {
     textVal = node.textContent;
-    var leftQuote = false, rightQuote = false;
+    let leftQuote = false, rightQuote = false;
 
     if((text == null || (text != null && text.trim().length == 0)) || this.isFirstChar() || /\s/.test(textVal.charAt(textVal.length - 1)) ) {
       leftQuote = true;
@@ -2414,11 +2363,11 @@ Editor.prototype.insertFancyChar = function (event, text) {
         text = DOUBLEQUOTE_RIGHT_UNICODE;
       }
     }
-  }else if(text == 'dash') {
+  } else if(text == 'dash') {
     text = DASH_UNICODE;
   }
 
-  var appended = false;
+  let appended = false;
   if (node.hasClass('pullquote') && !node.hasClass('with-cite') && (text == DOUBLEQUOTE_RIGHT_UNICODE || text == DASH_UNICODE)) {
     if (Utils.editableCaretAtEnd(node)) {
       let cite = ('<cite class="item-cite">' + DASH_UNICODE + ' </cite>');
@@ -2430,12 +2379,11 @@ Editor.prototype.insertFancyChar = function (event, text) {
   } 
 
   if (!appended) {
-    var textNode, range, sel, doc = document;
-    textNode = doc.createTextNode(text);
+    const textNode = document.createTextNode(text);
+    const range = document.createRange();
     range.insertNode(textNode);
 
-    range = doc.createRange();
-    sel = this.selection();
+    const sel = this.selection();
 
     range.setStart(textNode, 1);
     range.collapse(true);
@@ -2446,9 +2394,8 @@ Editor.prototype.insertFancyChar = function (event, text) {
 };
 
 // TODO for special chars insertion, keydown code is not differentiable
-Editor.prototype.handleKeyPress = function(e) { 
-  var which = e.which;
-
+Editor.prototype.handleKeyPress = function({which}) { 
+  
   switch(which) {
     case SINGLE_QUOTE_WHICH:
       this.insertFancyChar(e, 'single');
@@ -2462,8 +2409,7 @@ Editor.prototype.handleKeyPress = function(e) {
   }
 };
 
-Editor.prototype.handleShortCutKeys = function (e) {
-  var which = e.which;
+Editor.prototype.handleShortCutKeys = function ({which}) {
   
   this.current_node = this.getNode();
   var node = this.current_node;
@@ -2485,7 +2431,7 @@ Editor.prototype.handleShortCutKeys = function (e) {
 };
 
 Editor.prototype.handleKeyDown = function(e) {
-  var tg = e.target;
+  const tg = e.target;
   if (tg.hasClass('.autocomplete')) {
     this.skip_keyup = true;
     return;
@@ -2503,7 +2449,7 @@ Editor.prototype.handleKeyDown = function(e) {
     return false;
   }
 
-  var anchor_node,
+  let anchor_node,
       eventHandled, li, parent, utils_anchor_node;
 
   anchor_node = this.getNode();
@@ -2535,8 +2481,8 @@ Editor.prototype.handleKeyDown = function(e) {
 
   if (e.ctrlKey && !e.shiftKey && e.which == 67 && (!anchor_node || anchor_node.length == 0) && document.querySelector('.figure-focused') != null) {
     if (document.createRange) {
-      var range = document.createRange();
-      var figure = document.querySelector('.figure-focused .item-image');
+      const range = document.createRange();
+      const figure = document.querySelector('.figure-focused .item-image');
       this.skip_keyup = true;
       if (figure != null) {
         var sel = this.selection();
@@ -2550,7 +2496,7 @@ Editor.prototype.handleKeyDown = function(e) {
   if (e.which == DELETE) {
 
     if (this.reachedTop && this.isFirstChar() && anchor_node.next('.item') == null) {
-      var sec = anchor_node.closest('.block-content');
+      const sec = anchor_node.closest('.block-content');
 
       if (sec != null && sec.next('.block-content') != null) {
         this.content_options.forEach( w => {
@@ -2560,7 +2506,7 @@ Editor.prototype.handleKeyDown = function(e) {
         });
       }
 
-      var df = anchor_node.querySelector('.placeholder-text');
+      const df = anchor_node.querySelector('.placeholder-text');
       const intt = anchor_node.next('.item');
       if (df != null && intt != null && intt.querySelectorAll('.placeholder-text').length)  {
         intt.parentNode.removeChild(intt);
@@ -2591,14 +2537,15 @@ Editor.prototype.handleKeyDown = function(e) {
 
 
   if (e.which === ENTER) {
-    var sel = this.elNode.querySelector('.item-selected'),
-        placeholderText = sel != null ? sel.querySelector('.placeholder-text') : null;
+    const sel = this.elNode.querySelector('.item-selected'),
+        placeholderText = sel?.querySelector('.placeholder-text');
 
     if (sel != null && !sel.hasClass('item-figure') && placeholderText != null) {
       sel.innerHTML = '<br />';
       sel.addClass('item-empty');
       placeholderText.parentNode.removeChild(placeholderText);
     }
+
     if(sel != null) {
       sel.removeClass("item-selected");
     }
@@ -2659,9 +2606,9 @@ Editor.prototype.handleKeyDown = function(e) {
         this.handleLineBreakWith("p", parent);
       }
     }
-    let _this = this;
+    const _this = this;
     setTimeout(function() {
-      var node = _this.getNode();
+      const node = _this.getNode();
 
       if ( !node ) {
         return;
@@ -2674,7 +2621,7 @@ Editor.prototype.handleKeyDown = function(e) {
       if (node.nodeName.toLowerCase() === "div") {
         node = _this.replaceWith("p", node);
       }
-      let pctAll = node && node.nodeType == 1 ? node.children : null;
+      const pctAll = node && node.nodeType == 1 ? node.children : null;
       if(pctAll != null && pctAll.length) {
         Array.from(pctAll).forEach(pa => {
           if(pa.matches('.placeholder-text')) {
@@ -2709,7 +2656,7 @@ Editor.prototype.handleKeyDown = function(e) {
     this.toolbar.hide();
     anchor_node = this.getNode();
 
-    var sel_anchor = this.selection().anchorNode;
+    const sel_anchor = this.selection().anchorNode;
 
     if (this.reachedTop) {
 
@@ -2743,7 +2690,7 @@ Editor.prototype.handleKeyDown = function(e) {
     }
 
     // Undo to normal quotes and dash if user immediately pressed backspace
-    var existingText = this.getCharacterPrecedingCaret(), 
+    let existingText = this.getCharacterPrecedingCaret(), 
         existingTextLength = existingText.length,
         charAtEnd = existingText.charAt(existingText.length - 1);
 
@@ -2801,9 +2748,9 @@ Editor.prototype.handleKeyDown = function(e) {
       }
     }
 
-    var _this = this;
+    const _this = this;
     setTimeout(function () {
-      var backspacedTo = window.getSelection();
+      const backspacedTo = window.getSelection();
       if (backspacedTo.type == 'Caret') {
         _this.markAsSelected(backspacedTo.anchorNode);
       }
@@ -2833,15 +2780,15 @@ Editor.prototype.handleKeyDown = function(e) {
 
 
 Editor.prototype.handleSpecialCharsBackspace = function (charAtEnd) {
-  var anchor_node = '';
+  let anchor_node = '';
   if (window.getSelection) {
-    var sel = window.getSelection();
+    const sel = window.getSelection();
     if (sel.type != 'Caret') { return; }
-    var range = sel.getRangeAt(0);
-    var commonAn = range.commonAncestorContainer;
+    const range = sel.getRangeAt(0);
+    const commonAn = range.commonAncestorContainer;
     if (commonAn.nodeType == 3) { // its a text node
-      var nv = commonAn.nodeValue;
-      var toReplaceWith = '';
+      let nv = commonAn.nodeValue;
+      let toReplaceWith = '';
       if (charAtEnd == QUOTE_LEFT_UNICODE || charAtEnd == QUOTE_RIGHT_UNICODE) {
         toReplaceWith = "'";
       } else if (charAtEnd == DOUBLEQUOTE_LEFT_UNICODE || charAtEnd == DOUBLEQUOTE_RIGHT_UNICODE) {
@@ -2849,21 +2796,21 @@ Editor.prototype.handleSpecialCharsBackspace = function (charAtEnd) {
       } else if(charAtEnd == DASH_UNICODE) {
         toReplaceWith = "-";
       }
-      var position = range.startOffset;
+      let position = range.startOffset;
       if (nv.length == 1) {
         commonAn.nodeValue = toReplaceWith;
-        var nrange = document.createRange();
-        var sele = sel;
+        const nrange = document.createRange();
+        const sele = sel;
         
         nrange.setStart(commonAn, 1);
         nrange.collapse(true);
         sele.removeAllRanges();
         sele.addRange(nrange);  
       } else {
-        var newNodeValue = nv.substr(0, position - 1) + toReplaceWith + nv.substr(position);
+        const newNodeValue = nv.substr(0, position - 1) + toReplaceWith + nv.substr(position);
         commonAn.nodeValue = newNodeValue;
-        var nrange = document.createRange();
-        var sele = sel;
+        let nrange = document.createRange();
+        let sele = sel;
 
         nrange.setStart(commonAn, position);
         nrange.collapse(true);
@@ -2875,8 +2822,9 @@ Editor.prototype.handleSpecialCharsBackspace = function (charAtEnd) {
 
 };
 
+
 Editor.prototype.handleKeyUp = function(e, node) {
-  var anchor_node, next_item, utils_anchor_node;
+  let anchor_node, next_item, utils_anchor_node;
   if (this.skip_keyup) {
     this.skip_keyup = null;
     return false;
@@ -2917,10 +2865,10 @@ Editor.prototype.handleKeyUp = function(e, node) {
           utils_anchor_node.parentNode.removeChild(utils_anchor_node);
           this.setupFirstAndLast();
         } else {
-          var cont = utils_anchor_node.closest('.with-background');
+          const cont = utils_anchor_node.closest('.with-background');
           if (cont != null && cont.next('.block-content') != null) {
-            var nxtSection = cont.next('.block-content');
-            var item = nxtSection != null ? nxtSection.querySelector('.item') : null;
+            const nxtSection = cont.next('.block-content');
+            const item = nxtSection != null ? nxtSection.querySelector('.item') : null;
             if (item != null) {
               this.setRangeAt(item);
             }
@@ -2928,11 +2876,11 @@ Editor.prototype.handleKeyUp = function(e, node) {
             this.fixSectionClasses();
             this.setupFirstAndLast();
           } else if(cont != null && cont.next('.block-content') != null) {
-            var havePrev = cont.prev('.block-content');
+            const havePrev = cont.prev('.block-content');
             if (havePrev != null) {
-              var items = nxtSection.querySelectorAll('.item');
+              const items = nxtSection.querySelectorAll('.item');
               if (items.length) {
-                var item = items[items.length - 1];
+                const item = items[items.length - 1];
                 if (item) {
                   this.setRangeAt(item);
                 }  
@@ -2989,29 +2937,21 @@ Editor.prototype.handleKeyUp = function(e, node) {
   if (tg.nodeName && tg.nodeName.toLowerCase() == 'figcaption') {
     if ( tg.textContent.isEmpty() ) {
       if (tg.hasClass('block-grid-caption')) {
-        if(tg.closest('.block-grid') != null) {
-          tg.closest('.block-grid').addClass('item-text-default');
-        }
+        tg.closest('.block-grid')?.addClass('item-text-default');
       } else {
-        if(tg.closest('.item-figure') != null) {
-          tg.closest('.item-figure').addClass('item-text-default');
-        }
+          tg.closest('.item-figure')?.addClass('item-text-default');
       }
     } else {
       if (tg.hasClass('block-grid-caption')) {
-        if(tg.closest('.block-grid') != null) {
-          tg.closest('.block-grid').removeClass('item-text-default');
-        }
+        tg.closest('.block-grid')?.removeClass('item-text-default');
       } else {
-        if(tg.closest('.item-figure') != null) {
-          tg.closest('.item-figure').removeClass('item-text-default');
-        }
+        tg.closest('.item-figure')?.removeClass('item-text-default');
       }
     }
   }
 
   if (e.which == BACKSPACE && tg.hasClass('figure-caption')) {
-    var caption = e.target, text = caption.textContent;
+    const caption = e.target, text = caption.textContent;
     if( text.killWhiteSpace().isEmpty() || (text.length == 1 && text == " ")) {
       if (!caption.attr('data-placeholder-value')) {
         caption.attr('data-placeholder-value', 'Type caption for image(Optional)');
@@ -3028,11 +2968,11 @@ Editor.prototype.handleKeyUp = function(e, node) {
 Editor.prototype.__positionsCache = [];
 Editor.prototype.createElementPositionsCache = function () {
   if (this.__positionsCache.length == 0) {
-    var nodes = this.elNode.querySelectorAll('.item');
-    var cache = [];
-    for (var i = 0; i < nodes.length; i = i + 1) {
-      var it = nodes[i];
-      var o = it.getBoundingClientRect();
+    const nodes = this.elNode.querySelectorAll('.item');
+    const cache = [];
+    for (let i = 0; i < nodes.length; i = i + 1) {
+      const it = nodes[i];
+      const o = it.getBoundingClientRect();
       cache.push([it.attr('name') ,o.top + it.height, o.left]);
     }
     cache.sort(function(a, b) {return a[1] - b[1]})
@@ -3041,19 +2981,19 @@ Editor.prototype.createElementPositionsCache = function () {
 };
 
 Editor.prototype.generatePlaceholderForDrop = function(position) {
-  var i = 0, cache = this.__positionsCache, len = cache.length;
+  let i = 0, cache = this.__positionsCache, len = cache.length;
   for (; i < len; i = i + 1) {
     if (cache[i][1] > position) {
       break;
     }
   }
-  var item = i > 0 ? cache[i - 1] : cache[0];
+  let item = i > 0 ? cache[i - 1] : cache[0];
   if(item) {
-    var already = document.querySelector('#drag_pc_' + item);
+    let already = document.querySelector('#drag_pc_' + item);
     if (!already) {
       const dp = document.querySelector('.drop-placeholder');
       dp.parentNode.remove(dp);
-      var o = `<div class="drop-placeholder" id="drag_pc_${item}"></div>`;
+      const o = `<div class="drop-placeholder" id="drag_pc_${item}"></div>`;
       Utils.generateElement(o).insertAfter( document.querySelector('[name="' + item + '"]'));
     }  
   }
@@ -3077,24 +3017,24 @@ Editor.prototype.handleDragEnd = function (e) {
 Editor.prototype.handleDrag = function (e) {
   e.stopPropagation();
   e.preventDefault();
-  var o = e.pageY;
-  this.generatePlaceholderForDrop(o);
+  this.generatePlaceholderForDrop(e.pageY);
 };
 
 Editor.prototype.handleDrop = function (e) {
   e.stopPropagation();
   e.preventDefault();
-  var dragItem = e.dataTransfer;
-  var files = dragItem.files;
-  var haveUploads = false;
+  let dragItem = e.dataTransfer;
+  let files = dragItem.files;
+  let haveUploads = false;
   if (!files || files.length == 0) {
     this.image_uploader.uploadFiles(files, true);
     haveUploads = true;
   } else {
-    var html = dragItem.getData('text/html');
+    const html = dragItem.getData('text/html');
     if (html != '') {
-      var placeholder = this.elNode.querySelector('.drop-placeholder');
-      var m = placeholder.next('.item');
+      const placeholder = this.elNode.querySelector('.drop-placeholder');
+      const m = placeholder.next('.item');
+      //FIXME check for isngle item
       if (m.length) {
         this.aa = m;
       } else {
@@ -3108,24 +3048,21 @@ Editor.prototype.handleDrop = function (e) {
       this.doPaste(html);
     }
   }
+
   if (haveUploads) {
-    document.querySelector('.drop-placeholder').hide();  
+    this.elNode.querySelector('.drop-placeholder').hide();  
   } else {
-    document.querySelector('.drop-placeholder').remove();
+    this.elNode.querySelector('.drop-placeholder').remove();
   }
   
   return false;
 };
 
-Editor.prototype.handleLineBreakWith = function(element_type, from_element) {
-  var new_paragraph;
-  new_paragraph = Utils.generateElement("<" + element_type + " class='item item-" + element_type + " item-empty item-selected'><br/></" + element_type + ">");
+Editor.prototype.handleLineBreakWith = function(etype, from_element) {
+  let new_paragraph = Utils.generateElement(`<${etype} class='item item-${etype} item-empty item-selected'><br/></${etype}>`);
 
   if (from_element.hasClass('block-grid-caption')) {
-    var cont = from_element.closest('.block-grid');
-    if(cont != null) {
-      cont.insertAdjacentElement('afterend', new_paragraph);
-    }
+    from_element.closest('.block-grid')?.insertAdjacentElement('afterend', new_paragraph)
   } else if (from_element.parentNode.matches('[class^="item-"]')) {
     from_element.parentNode.insertAdjacentElement('afterend', new_paragraph);
   } else {
@@ -3146,11 +3083,11 @@ Editor.prototype.replaceWith = function(etype, from_element) {
 // EVENT LISTENERS END //
 
 Editor.prototype.findNextFocusableElement = function (current_node) {
-  var inner, cont, crossing_section = false,
+  let inner, cont, crossing_section = false,
     next_node;
   
   if (current_node.hasClass('item-li')) {
-    var list = current_node.closest('.postList');
+    let list = current_node.closest('.postList');
     if (list.nextElementSibling != null) {
       next_node = list.nextElementSibling;
     }
@@ -3158,13 +3095,13 @@ Editor.prototype.findNextFocusableElement = function (current_node) {
 
   if (!next_node) {
     if (current_node.hasClass('figure-in-row')) {
-        var row = current_node.closest('.block-grid-row');
-        var nextRow = row != null ? row.nextElementSibling : null;
+        let row = current_node.closest('.block-grid-row');
+        let nextRow = row != null ? row.nextElementSibling : null;
 
         if (nextRow != null && !nextRow.hasClass('block-grid-caption')) {
           next_node = nextRow.querySelector('.item-figure:first-child');
         } else if (nextRow != null && nextRow.hasClass('block-grid-caption')) {
-        next_node = nextRow;
+          next_node = nextRow;
         }
 
     } else {
@@ -3174,8 +3111,8 @@ Editor.prototype.findNextFocusableElement = function (current_node) {
         next_node = cont.querySelector('.block-grid-row:first-child .item:first-child');
       } else if (cont != null) {
         next_node = cont.querySelector('.item:first-child');
-      }else { // probably a new section below then
-        var section = inner.closest('section'),
+      } else { // probably a new section below then
+        let section = inner.closest('section'),
             next_section = section != null ? section.nextElementSibling : null;
         if (next_section != null) {
           cont = next_section.querySelector('.main-body .block-content-inner:first-child');
@@ -3197,15 +3134,15 @@ Editor.prototype.findPreviousFocusableElement = function(current_node) {
   let prev_node, crossing_section = false;
 
   if (current_node.hasClass('figure-in-row')) {
-    var cr = current_node.closest('.block-grid');
-    var first = cr != null ? cr.querySelector('.block-grid-row:first-child .figure-in-row:first-child') : null;
+    let cr = current_node.closest('.block-grid');
+    let first = cr != null ? cr.querySelector('.block-grid-row:first-child .figure-in-row:first-child') : null;
 
     if (first != null && first == current_node) {
-      var pr = cr.previousElementSibling;
+      let pr = cr.previousElementSibling;
       if (pr != null && !pr.hasClass('block-grid')) {
         prev_node = pr.querySelector('> .item:last-child');
       } else if(pr && pr.hasClass('block-grid')) {
-        var lastCap = pr.querySelector('.block-grid-caption');
+        let lastCap = pr.querySelector('.block-grid-caption');
         prev_node = lastCap;
       }
     }
@@ -3213,13 +3150,13 @@ Editor.prototype.findPreviousFocusableElement = function(current_node) {
 
   if (!prev_node) {
     if (cont.length && cont.hasClass('block-grid')) {
-      var caption = cont.querySelector('.block-grid-caption');
+      let caption = cont.querySelector('.block-grid-caption');
       prev_node = caption;
     } else {
       if (cont != null) {
         prev_node = cont.querySelector('.item:last-child');
       } else {
-        var section = current_node.closest('section'), 
+        let section = current_node.closest('section'), 
           prev_section = section != null ? section.previousElementSibling : null;
 
         if (prev_section != null) {
@@ -3237,8 +3174,8 @@ Editor.prototype.findPreviousFocusableElement = function(current_node) {
 
 
 Editor.prototype.moveFigureUp = function (figure) {
-  var prev = figure.previousElementSibling;
-  var toGrid = false;
+  let prev = figure.previousElementSibling;
+  let toGrid = false;
 
   if (prev != null) {
     if (prev.hasClass('item')) {
@@ -3247,8 +3184,8 @@ Editor.prototype.moveFigureUp = function (figure) {
   } else if(figure.hasClass('figure-full-width')) {
 
   } else {
-    var column = figure.closest('.block-content-inner');
-    var prevColumn = column.prev('.block-content-inner');
+    const column = figure.closest('.block-content-inner');
+    const prevColumn = column.prev('.block-content-inner');
     if (prevColumn != null) {
       if (prevColumn.hasClass('block-grid')) {
         this.moveFigureInsideGrid(figure, nextColumn, false);
@@ -3256,7 +3193,7 @@ Editor.prototype.moveFigureUp = function (figure) {
       } else if (prevColumn.hasClass('center-column')) {
         prevColumn.appendChild(figure);
       } else if (prevColumn.hasClass('full-width-column')) {
-        var prevBeforeFW = prevColumn.previousElementSibling;
+        let prevBeforeFW = prevColumn.previousElementSibling;
         if (prevBeforeFW != null) {
           if (prevBeforeFW.hasClass('center-column')) {
             prevBeforeFW.appendChild(figure);
@@ -3270,15 +3207,13 @@ Editor.prototype.moveFigureUp = function (figure) {
   }
 
   if (!toGrid) {
-    const fc = figure.classList;
-    //TODO
-    fc.remove('figure-in-row can-go-right can-go-down can-go-left');
+    figure.removeClass('figure-in-row can-go-right can-go-down can-go-left');
   }
 };
 
 
 Editor.prototype.moveFigureDown = function (figure) {
-  var next = figure.nextElementSibling, toGrid = false;
+  let next = figure.nextElementSibling, toGrid = false;
   figure.removeClass('figure-in-row');
 
   if (next != null) {
@@ -3288,8 +3223,8 @@ Editor.prototype.moveFigureDown = function (figure) {
   } else if (figure.hasClass('figure-full-width')) { // full width image.. find next container
     
   } else { // figure is first item in the column
-    var column = figure.closest('.block-content-inner');
-    var nextColumn = column != null ? column.next('.block-content-inner') : null;
+    const column = figure.closest('.block-content-inner');
+    const nextColumn = column != null ? column.next('.block-content-inner') : null;
     if (nextColumn != null) {
       if (nextColumn.hasClass('block-grid')) { // next item is grid, add image to the grid
         this.moveFigureInsideGrid(figure, nextColumn, true);
@@ -3303,7 +3238,7 @@ Editor.prototype.moveFigureDown = function (figure) {
             nextAfterFW.insertBefore(figure, nextAfterFW.firstChild);
             //Utils.prependNode(figure, nextAfterFW);
           } else if (nextAfterFW.hasClass('full-width-column') || nextAfterFW.hasClass('block-grid')) { // anotehr full width here..or block grid put a center column inbetween and put figure there
-            var centerColumn = this.pushCenterColumn(nextAfterFW, true);
+            const centerColumn = this.pushCenterColumn(nextAfterFW, true);
             centerColumn.appendChild(figure);
           } 
         }
@@ -3319,12 +3254,12 @@ Editor.prototype.moveFigureDown = function (figure) {
 
 Editor.prototype.moveFigureInsideGrid = function (figure, grid, firstItem) {
   if (firstItem) {
-    var row = grid.querySelector('.block-grid-row:first-child');
+    const row = grid.querySelector('.block-grid-row:first-child');
 
     figure.addClass('figure-in-row');
     Utils.prependNode(figure, row);
 
-    var figures = row.querySelectorAll('.item-figure');
+    const figures = row.querySelectorAll('.item-figure');
 
     this.streamer.notifySubscribers('Katana.Images.Restructure', {
       container: row,
@@ -3333,11 +3268,11 @@ Editor.prototype.moveFigureInsideGrid = function (figure, grid, firstItem) {
     })
 
   } else {
-    var row = grid.querySelector('.block-grid-row:last-child');
+    const row = grid.querySelector('.block-grid-row:last-child');
     figure.addClass('figure-in-row');
     row.appendChild(figure);
 
-    var figures = row.querySelectorAll('.item-figure');
+    const figures = row.querySelectorAll('.item-figure');
 
     this.streamer.notifySubscribers('Katana.Images.Restructure', {
       container: row,
@@ -3349,17 +3284,17 @@ Editor.prototype.moveFigureInsideGrid = function (figure, grid, firstItem) {
 };
 
 Editor.prototype.pushCenterColumn = function (place, before) {
-  var div = Utils.generateElement(`<div class="center-column block-content-inner"></div>`);
+  const div = Utils.generateElement(`<div class="center-column block-content-inner"></div>`);
   if(before) {
-    div.insertBefore(place);
+    place.insertAdjacentElement('beforebegin', div);
   } else {
-    div.insertAfter( place);
+    place.insertAdjacentElement('afterend', div);
   }
   return div;
 }
 
 Editor.prototype.addClassesToElement = function(element, forceKlass) {
-  var n, name, new_el;
+  let n, name, new_el;
   n = element;
 
   let fK = typeof forceKlass != 'undefined' ? forceKlass : false;
@@ -3373,7 +3308,7 @@ Editor.prototype.addClassesToElement = function(element, forceKlass) {
     n.removeClass('pullquote');
   }
 
-  var hasEmpty = false;
+  let hasEmpty = false;
   if (n.hasClass('item-empty')) {
     hasEmpty = true;
   }
@@ -3459,10 +3394,10 @@ Editor.prototype.addClassesToElement = function(element, forceKlass) {
     case "blockquote":
       n.removeAttribute('class');
       if (n.hasClass('pullquote')) {
-        n.addClass('pullquote');
+        fK = 'pullquote';
       };
       if (n.hasClass('with-cite')) {
-        n.addClass('with-cite');
+        fK = fK + ' with-cite';
       }
       n.addClass('item item-' + name);
       if(fK) {
@@ -3507,7 +3442,7 @@ Editor.prototype.setupElementsClasses = function(element, cb) {
   } else {
     this.element = typeof element['length'] == 'undefined' ? [element] : element;
   }
-  let _this = this;
+  const _this = this;
   setTimeout(() => {
       _this.cleanContents(_this.element);
       _this.wrapTextNodes(_this.element);
@@ -3597,7 +3532,7 @@ Editor.prototype.setElementName = function(element) {
 
 
 Editor.prototype.handleSmartList = function(item, e) {
-  var li, chars, match, regex;
+  let li, chars, match, regex;
 
   chars = this.getCharacterPrecedingCaret();
   match = chars.match(/^\s*(\-|\*)\s*$/);
@@ -3617,7 +3552,7 @@ Editor.prototype.handleSmartList = function(item, e) {
 };
 
 Editor.prototype.handleListLineBreak = function(li, e) {
-  var list, paragraph, content;
+  let list, paragraph, content;
   this.hideContentBar();
   list = li.parentNode;
 
@@ -3649,6 +3584,7 @@ Editor.prototype.handleListLineBreak = function(li, e) {
       paragraph.innerHTML = content;
     }
   }
+
   if (list && list.children.length === 0) {
     list.parentNode.removeChild(list);
   }
@@ -3661,7 +3597,7 @@ Editor.prototype.handleListLineBreak = function(li, e) {
   }
 };
 
-  Editor.prototype.listify = function(paragraph, listType, regex, match) {
+Editor.prototype.listify = function(paragraph, listType, regex, match) {
   let li, list, content;
   this.removeSpanTag(paragraph);
 
@@ -3705,7 +3641,7 @@ Editor.prototype.handleListLineBreak = function(li, e) {
 
 
 Editor.prototype.handleListBackspace = function(li, e) {
-  var list, paragraph, content;
+  let list, paragraph, content;
   list = li.parentNode;
   liPr = li.parentNode.tagName.toLowerCase();
   if(liPr != 'ul' && liPr != 'ol') {
@@ -3746,16 +3682,15 @@ Editor.prototype.removeSpanTag = function(item) {
 
 
 Editor.prototype.handleInmediateDeletion = function(element) {
-  var new_node;
   this.inmediateDeletion = false;
-  new_node = Utils.generateElement(this.baseParagraphTmpl()).insertBefore(element);
+  let new_node = Utils.generateElement(this.baseParagraphTmpl()).insertBefore(element);
   new_node.addClass("item-selected");
   this.setRangeAt( element.previousElementSibling );
   return element.parentNode.removeChild(element);
 };
 
 Editor.prototype.handleUnwrappedNode = function(element) {
-  var new_node, tmpl;
+  let new_node, tmpl;
   tmpl = Utils.generateElement(this.baseParagraphTmpl());
   this.setElementName(tmpl);
   element.wrap(tmpl);
@@ -3774,7 +3709,7 @@ a nasty nasty one...
   */
 
 Editor.prototype.handleNullAnchor = function() {
-  var node, num, prev, range, sel, span;
+  let node, num, prev, range, sel, span;
   sel = this.selection();
 
   if (sel.isCollapsed && sel.rangeCount > 0) {
@@ -3822,7 +3757,7 @@ Editor.prototype.handleCompleteDeletion = function(element) {
 };
 
 // Anchor tooltip //
-  Editor.prototype.displayPopOver = function(ev, matched) {
+Editor.prototype.displayPopOver = function(ev, matched) {
   return this.tooltip.displayAt(ev, matched);
 };
 
@@ -3850,7 +3785,7 @@ Editor.prototype.relocateImageToolbar = function (position) {
   if(position == null) {
     return;
   }
-  var height, left, padd, top, scrollTop;
+  let height, left, padd, top, scrollTop;
   const ebr = this.image_toolbar.elNode.getBoundingClientRect();
 
   height = ebr.height;      
@@ -3882,41 +3817,35 @@ Editor.prototype.selectFigure = function (figure) {
   if (figure.hasClass('with-background')) {
     figure.addClass('figure-focused');
     this.displayImageToolbar();
-    var item = figure.querySelector('.item');
+    const item = figure.querySelector('.item');
     if (item != null) {
       Utils.setCaretAtPosition(item, 0);
       item.focus();
       return;
     }
-  }else {
+  } else {
     this.markAsSelected(figure.querySelector('.padding-cont'));
     figure.addClass('figure-focused item-selected');
-    const bg = figure.closest(".block-grid");
-    if(bg != null) {
-      bg.addClass('figure-focused');
-    }
+    const bg = figure.closest(".block-grid")?.addClass('figure-focused');
     this.selection().removeAllRanges();
     this.displayImageToolbar();  
   }
 
   if (figure.hasClass('figure-in-row')) {
-    const bci = figure.closest('.block-content-inner');
-    if(bci != null) {
-      bci.addClass('figure-focused grid-focused');
-    }
+    figure.closest('.block-content-inner')?.addClass('figure-focused grid-focused');
   }
 
   figure.focus();
 };
 
 Editor.prototype.handleGrafFigureSelectImg = function (ev, matched) {
-  var element;
-  var text = this.getSelectedText();
+  let text = this.getSelectedText();
   if (text && text.killWhiteSpace().length > 0) {
     return false;
   }
-  element = matched ? matched : ev.currentTarget;
-  var sec = element.closest('.with-background');
+
+  const element = matched ? matched : ev.currentTarget;
+  const sec = element.closest('.with-background');
   if (sec != null) {
     this.selectFigure(sec);
   } else {
@@ -3930,7 +3859,7 @@ Editor.prototype.handleGrafFigureSelectImg = function (ev, matched) {
 };
 
 Editor.prototype.handleGrafFigureTypeCaption = function(ev) {
-  var element = ev.currentTarget,
+  let element = ev.currentTarget,
       text = element.textContent,
       figure = element.closest('figure');
 
@@ -3950,7 +3879,7 @@ Editor.prototype.handleFigureAnchorClick = function (ev, matched) {
 };
 
 Editor.prototype.handleKeyDownOnFigure = function (ev, figure) {
-  var keyCode = ev.keyCode;
+  const keyCode = ev.keyCode;
   if (!this.image_toolbar) {
     return;
   }
@@ -3981,11 +3910,11 @@ Editor.prototype.handleKeyDownOnFigure = function (ev, figure) {
 };
 
 Editor.prototype.handleImageActionClick = function (ev, matched) {
-  var tg = matched ? matched : ev.currentTarget,
+  const tg = matched ? matched : ev.currentTarget,
     action = tg.attr('data-action'),
     figure = tg.closest('figure');
 
-    Utils.stopEvent(ev);
+  Utils.stopEvent(ev);
   
   switch(action) {
     case 'remove':
@@ -4041,15 +3970,12 @@ Editor.prototype.handleImageActionClick = function (ev, matched) {
 };
 
 Editor.prototype.embedIFrameForPlayback = function (ev) {
-  var elem = ev.target,
+  const elem = ev.target,
       frameContainer = elem.closest('.iframeContainer'),
-      image = null;
-  if(frameContainer != null) {  
-    image = frameContainer.querySelector('[data-frame-url]');
-  }
+      image = frameContainer?.querySelector('[data-frame-url]');
   if (image != null) {
-    var frameUrl = image.attr('data-frame-url') + '&autoplay=1';
-    var iframe = Utils.generateElement('<iframe src="' + frameUrl + '"></iframe>');
+    const frameUrl = image.attr('data-frame-url') + '&autoplay=1';
+    const iframe = Utils.generateElement('<iframe src="' + frameUrl + '"></iframe>');
     image.parentNode.replaceChild(iframe, image);
     frameContainer.addClass('hide-controls');
   }
@@ -4064,10 +3990,10 @@ Editor.prototype.embedIFrameForPlayback = function (ev) {
 Editor.prototype.mergeInnerSections = function (section) {
   let _this = this;
   let merge = function() {
-    var inners = section.querySelectorAll('.block-content-inner');
+    const inners = section.querySelectorAll('.block-content-inner');
     if(inners.length) {
-      for(var i = 0; i < inners.length; i = i + 1) {
-        var curr = inners[i],
+      for(let i = 0; i < inners.length; i = i + 1) {
+        const curr = inners[i],
             k = i + 1,
             next = typeof inners[k] != 'undefined' ? inners[k] : false;
         if (next) {
@@ -4091,24 +4017,25 @@ Editor.prototype.mergeInnerSections = function (section) {
 };
 
 Editor.prototype.cleanUpInnerSections = function () {
-  var inners = this.elNode.querySelectorAll('.block-content-inner');
-  for( var i = 0; i < inners.length; i = i + 1) {
-    var curr = inners[i];
+  const inners = this.elNode.querySelectorAll('.block-content-inner');
+  for( let i = 0; i < inners.length; i = i + 1) {
+    const curr = inners[i];
     if (curr.querySelectorAll('.item').length == 0) {
       curr.parentNode.removeChild(curr);
     }
   }
-  var blockGrid = this.elNode.querySelectorAll('.block-grid');
-  for (var i = 0; i < blockGrid.length; i = i + 1) {
-    var curr = blockGrid[i];
+
+  const blockGrid = this.elNode.querySelectorAll('.block-grid');
+  for (let i = 0; i < blockGrid.length; i = i + 1) {
+    const curr = blockGrid[i];
     if (curr.querySelectorAll('.item-figure').length == 0 ) {
       curr.parentNode.removeChild(curr);
     }
   }
 
-  var blockRows = this.elNode.querySelectorAll('.block-grid-row');
-  for (var i = 0; i < blockRows.length; i = i + 1) {
-    var curr = blockRows[i];
+  const blockRows = this.elNode.querySelectorAll('.block-grid-row');
+  for (let i = 0; i < blockRows.length; i = i + 1) {
+    const curr = blockRows[i];
     if (curr.querySelectorAll('.item-figure').length == 0 ) {
       curr.parentNode.removeChild(curr);
     }
@@ -4134,23 +4061,23 @@ Editor.prototype.refreshStoriesMenus = function (val) {
   if (val == '') {
     return;
   }
-  var toAdd = null;
+  let toAdd = null;
   if (val == 'featured') {
-    var menu = this.menuOpts[0];
+    const menu = this.menuOpts[0];
     toAdd = document.createElement('option');
     toAdd.value = menu[0];
     toAdd.text = menu[1];
   } else if(val == 'latest') {
-    var menu = this.menuOpts[1];
+    const menu = this.menuOpts[1];
     toAdd = document.createElement('option');
     toAdd.value = menu[0];
     toAdd.text = menu[1];
   }
 
-  var stfors = this.elNode.querySelectorAll('.block-stories [data-for="storytype"]');
+  const stfors = this.elNode.querySelectorAll('.block-stories [data-for="storytype"]');
   if (stfors.length) {
-    for (var i = 0; i < stfors.length; i = i + 1) {
-      var stf = stfors[i];
+    for (let i = 0; i < stfors.length; i = i + 1) {
+      const stf = stfors[i];
       if(toAdd != null) {
         stf.appendChild(toAdd);
       }
@@ -4160,9 +4087,9 @@ Editor.prototype.refreshStoriesMenus = function (val) {
 
 
 Editor.prototype.removeUnnecessarySections = function () {
-  var sects = this.elNode.querySelectorAll('section');
-  for (var i = 0; i < sects.length; i = i + 1) {
-    var sec = sects[i];
+  const sects = this.elNode.querySelectorAll('section');
+  for (let i = 0; i < sects.length; i = i + 1) {
+    const sec = sects[i];
     if (sec.querySelectorAll('.item').length == 0) {
       sec.parentNode.removeChild(sec);
     }
@@ -4172,7 +4099,7 @@ Editor.prototype.removeUnnecessarySections = function () {
 
 
 Editor.prototype.mergeWithUpperSection = function (curr) {
-  let upper = curr.prev('.block-content');
+  const upper = curr.prev('.block-content');
   if (upper != null) {
     const mb = upper.querySelector('.main-body');
     if(mb != null) {
@@ -4220,7 +4147,7 @@ Editor.prototype.splitContainer = function (atNode, insrtSection, carryContent) 
     }
   }
 
-  var splittedLayout = Utils.generateElement(this.getSingleLayoutTempalte());
+  const splittedLayout = Utils.generateElement(this.getSingleLayoutTempalte());
   splittedLayout.attr('class', currInner.attr('class'));
 
   while (atNode.nextElementSibling != null) {
@@ -4252,31 +4179,30 @@ Editor.prototype.parallaxImages = [];
 // canvas scrolling related stuff
 Editor.prototype.parallaxCandidateChanged = function () {
 
-  var sects = this.elNode.querySelectorAll('.image-in-background'),
+  let sects = this.elNode.querySelectorAll('.image-in-background'),
       scrolling,
       _this = this,
       parallaxRect = this.parallax.getBoundingClientRect();
 
   if (this.parallaxContext && sects.length) {
     sects.forEach(se => {
-      se.addClass('talking-to-canvas');
-      se.removeClass('talk-to-canvas');
+      se.addClass('talking-to-canvas').removeClass('talk-to-canvas');
     });
   }
 
   this.parallaxImages = [];
   this.sectionsForParallax = sects;
 
-  for (var i = 0; i < sects.length;i = i + 1) {
-    var item = sects[i];
-    var bg = item.querySelector('.block-background-image');
+  for (let i = 0; i < sects.length;i = i + 1) {
+    const item = sects[i];
+    const bg = item.querySelector('.block-background-image');
     if(bg != null) {
       // const styles = getComputedStyle(bg);
       let path = Utils.getStyle(bg, 'backgroundImage'); // styles.getPropertyValue('background-image');
       path = /^url\((['"]?)(.*)\1\)$/.exec(path);
       path = path ? path[2] : '';
       if (path != '') {
-        var img = new Image();
+        const img = new Image();
         img.src = path;
         this.parallaxImages.push(img);  
       }
@@ -4298,7 +4224,7 @@ Editor.prototype.parallaxCandidateChanged = function () {
 };
 
 Editor.prototype.calculatePosition = function (img, sect) {
-  var iratio = img.naturalWidth / img.naturalHeight,
+  let iratio = img.naturalWidth / img.naturalHeight,
       sectionRect = sect.getBoundingClientRect(),
       sectionWidth = sectionRect.width,
       sectionHeight = sectionRect.height,
@@ -4308,12 +4234,12 @@ Editor.prototype.calculatePosition = function (img, sect) {
       scaledImageWidth = sectionWidth,
       scaledImageHeight = scaledImageWidth / iratio;
 
-  var padding = 50, singlePad = padding / 2;
+  let padding = 50, singlePad = padding / 2;
 
-  var iX, iY, iWidth, iHeight, cX, cY, cWidth, cHeight;
+  let iX, iY, iWidth, iHeight, cX, cY, cWidth, cHeight;
   
   if (sectionHeight > (scaledImageHeight - padding)) {
-    var delta = sectionHeight - canvasHeight,
+    let delta = sectionHeight - canvasHeight,
         buffer = scaledImageHeight - canvasHeight,
         factor = buffer / delta;
 
@@ -4325,7 +4251,7 @@ Editor.prototype.calculatePosition = function (img, sect) {
       iY = canvasHeight - sectionBottom;
       cHeight = sectionBottom;
       cY = 0;
-    }else {
+    } else {
       iY = -1 * sectionRect.top * factor;
       cY = 0;
       cHeight = sectionRect.height + sectionRect.top;
@@ -4365,7 +4291,7 @@ Editor.prototype.calculatePosition = function (img, sect) {
 };
 
 Editor.prototype.checkViewPortForCanvas = function () {
-  var i = 0,
+  let i = 0,
       sect,
       sections = this.sectionsForParallax,
       isVisible = false,
@@ -4380,7 +4306,7 @@ Editor.prototype.checkViewPortForCanvas = function () {
       if (this.mode == 'read' && sect.hasClass('video-in-background')) {
         videos.push(sect);
       } else {
-        var img = this.parallaxImages[i],
+        let img = this.parallaxImages[i],
           pos = this.calculatePosition(img, sect);
           draf.push([img, pos]);  
       }
@@ -4407,9 +4333,9 @@ Editor.prototype.checkViewPortForCanvas = function () {
 };
 
 Editor.prototype.addImageToCanvas = function (draf, image, pos) {
-  for (var i = 0; i < draf.length;i = i + 1) {
-    var image = draf[i][0];
-    var pos = draf[i][1];
+  for (let i = 0; i < draf.length;i = i + 1) {
+    const image = draf[i][0];
+    const pos = draf[i][1];
     this.parallaxContext.drawImage(
       image,
       pos.ix, pos.iy, 
@@ -4429,25 +4355,26 @@ Editor.prototype.showNoteIcon = function (ev, matched) {
 
 
 /** mobile touch handling **/
-var _pressWatch = null,
-_pressHappened = false;
+Editor.prototype._pressWatch = null;
+Editor.prototype._pressHappened = false;
+
 Editor.prototype.handleTap = function (ev) {
-  if (_pressHappened) {
+  if (this._pressHappened) {
     setTimeout( () => {
-      var txt = this.getSelectedText();
-      if (txt == '' && _pressWatch) {
-        clearInterval(_pressWatch);
-        _pressHappened = false;
+      const txt = this.getSelectedText();
+      if (txt == '' && this._pressWatch) {
+        clearInterval(this._pressWatch);
+        this._pressHappened = false;
       }
     }, 100); // force wait
   }
 };
 
 Editor.prototype.handlePress = function (ev) {
-  let _pressHappened = true, prev, _this = this;
+  let prev, _this = this;
 
-  _pressWatch = setInterval( function() {
-    var txt = _this.getSelectedText();
+  this._pressWatch = setInterval( function() {
+    const txt = _this.getSelectedText();
     if (prev && txt != prev && txt != '') {
       Utils.animationFrame.call(window, function() {
         _this.handleMouseUp(false);
@@ -4518,7 +4445,7 @@ Editor.prototype.handleSectionToolbarItemDblclick = function (ev) {
 };
 
 Editor.prototype.handleSelectionStoryTypeChange = function (ev) {
-  var ctg = ev.currentTarget,
+  let ctg = ev.currentTarget,
   cont = ctg.closest('.main-controls'),
   input = cont != null ? cont.querySelector('[data-for="tagname"]') : null,
   autoCont = input != null ? input.closest('.autocomplete-buttons') : null;
@@ -4531,12 +4458,12 @@ Editor.prototype.handleSelectionStoryTypeChange = function (ev) {
 };
 
 Editor.prototype.handleSelectionStoryCountChange = function (ev) {
-  var ctg = ev.currentTarget;
-  var section = ctg.closest('.block-stories');
-  var val = parseInt(ctg.value);
+  let ctg = ev.currentTarget;
+  const section = ctg.closest('.block-stories');
+  const val = parseInt(ctg.value);
   if (!isNaN(val) && section != null) {
     section.attr('data-story-count', val);
-    var bd = section.querySelector('.main-body');
+    const bd = section.querySelector('.main-body');
     this.fillStoryPreview(bd, val);
   }
 };
