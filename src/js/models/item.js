@@ -4,7 +4,7 @@ function Item(opts) {
 }
 
 Item.prototype.getType = function (element) {
-  var tagName = element.tagName.toLowerCase();
+  const tagName = element.tagName.toLowerCase();
   if ( this.contentTags.indexOf(tagName) != -1)  {
     return 10;
   } else {
@@ -13,14 +13,15 @@ Item.prototype.getType = function (element) {
 };
 
 Item.prototype.build = function (element, index, sectionName) {
-  var ob = {};
   this.elNode = element;
   this.index = index;
-  ob.type = this.getType(element);
-  ob.name = this.elNode.attr('name');
-  ob.index = this.index;
-  ob.section = sectionName;
-  ob.tag = this.elNode.tagName.toLowerCase();
+  const ob = {
+    type : this.getType(element),
+    name : this.elNode.attr('name'),
+    index : this.index,
+    section : sectionName,
+    tag : this.elNode.tagName.toLowerCase()
+  };
 
   if (ob.type == 10) {
     if (this.elNode.querySelectorAll('.placeholder-text').length) {
@@ -58,7 +59,7 @@ Item.prototype.buildFigure = function (element, ob) {
     ob.text = '';
     ob.empty = true;
   } else {
-    var caption = element.querySelector('figcaption');
+    const caption = element.querySelector('figcaption');
     if (caption != null && caption.querySelector('.placeholder-text') != null) {
       ob.empty = true;
     }else {
@@ -67,15 +68,15 @@ Item.prototype.buildFigure = function (element, ob) {
     }
   }
 
-  var meta = {};
-  var img = element.querySelector('img');
+  const meta = {};
+  const img = element.querySelector('img');
 
   if(img != null) {
     meta.resourceId = img.attr('data-image-id');
     meta.resourceUrl = img.attr('data-delayed-src');
     const pboxStyle = element.querySelector('.padding-box') != null ? element.querySelector('.padding-box').attr('style') : '';
     meta.resourceMarkup = {
-      w: img.attr('data-width'), 
+      w: img.attr('data-width'),
       h: img.attr('data-height'),
       a: pboxStyle
     };
@@ -84,15 +85,15 @@ Item.prototype.buildFigure = function (element, ob) {
   }
 
   if(element.hasClass('figure-to-left')) {
-    meta.resourceMarkup.s = element.querySelector('.padding-cont') != null ? element.querySelector('.padding-cont').attr('style') : '';
+    meta.resourceMarkup.s = element.querySelector('.padding-cont')?.attr('style');
     meta.pos = 0;
   }else if(element.hasClass('figure-full-width')){
-    meta.resourceMarkup.s = element.querySelector('.padding-cont') != null ? element.querySelector('.padding-cont').attr('data-style') : '';
+    meta.resourceMarkup.s = element.querySelector('.padding-cont')?.attr('data-style');
     meta.pos = 2;
   }else if (element.hasClass('figure-in-row')) {
-    meta.resourceMarkup.s = element.querySelector('.padding-cont') != null ? element.querySelector('.padding-cont').attr('style') : '';
+    meta.resourceMarkup.s = element.querySelector('.padding-cont')?.attr('style');
     meta.pos = 3;
-    var st = element.attr('style') ? element.attr('style') : '';
+    const st = element.attr('style') ? element.attr('style') : '';
     meta.width = st.replace('width:','').replace('%','').replace(';','');
   }else {
     meta.resourceMarkup.s = element.querySelector('.padding-cont') != null ? element.querySelector('.padding-cont').attr('style') : '';
@@ -100,15 +101,16 @@ Item.prototype.buildFigure = function (element, ob) {
   }
 
   if (element.hasClass('figure-in-row')) {
-    var inner = element.closest('.block-content-inner');
+    const inner = element.closest('.block-content-inner');
     meta.partial = inner.attr('data-name');
     meta.count = inner.attr('data-paragraph-count');
-    var row = element.closest('.block-grid-row');
     meta.grid = -1;
 
-    var first = inner.querySelector('.block-grid-row:first-child .item-figure:first-child');
+    const row = element.closest('.block-grid-row');
+
+    const first = inner.querySelector('.block-grid-row:first-child .item-figure:first-child');
     if (first != null && first == element) {
-      var gridCaption = inner.querySelector('.block-grid-caption');
+      const gridCaption = inner.querySelector('.block-grid-caption');
       if (gridCaption != null && gridCaption.querySelector('.placeholder-text') == null) {
         ob.text = gridCaption.textContent;
         ob.markups = this.common.readMarkups(gridCaption);
@@ -122,12 +124,12 @@ Item.prototype.buildFigure = function (element, ob) {
       meta.grid = 0;
     }
 
-    if (row.length) {
+    if (row != null) {
       meta.row = row.attr('data-name');
       meta.rowElementCount = row.attr('data-paragraph-count');
     }
 
-  }else {
+  } else {
     meta.partial = false;
   }
 
@@ -156,7 +158,7 @@ Item.prototype.buildFigure = function (element, ob) {
 };
 
 Item.prototype.buildList = function (element, ob) {
-  var prnt = element.closest('.postList'),
+  const prnt = element.closest('.postList'),
       prntTag = prnt != null ? prnt.tagName.toLowerCase() : null;
 
   if(prntTag == 'ul') {

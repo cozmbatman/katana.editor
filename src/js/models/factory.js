@@ -56,17 +56,17 @@ ModelFactory.prototype.stop = function () {
 ModelFactory.prototype._cache = {};
 
 ModelFactory.prototype._fixNames = function () {
-  var items = this.elNode.querySelectorAll('[name]');
+  const items = this.elNode.querySelectorAll('[name]');
       
-  for (var i = 0; i < items.length; i = i + 1) {
-    var it = items[i];
-    var name = it.attr('name');
-    var duplicates = this.elNode.querySelectorAll('[name="' + name + '"]');
+  for (let i = 0; i < items.length; i = i + 1) {
+    const it = items[i],
+          name = it.attr('name'),
+          duplicates = this.elNode.querySelectorAll('[name="' + name + '"]');
+
     if (duplicates && duplicates.length > 1) {
-      for( var k = 1; k < duplicates.length; k = k +1) {
-        var dup = duplicates[k];
+      for( let k = 1; k < duplicates.length; k = k +1) {
         // make it nine digit in case we end up with some conflicts again
-        dup.attr('name', Math.random().toString(36).slice(9)); 
+        duplicates[k].attr('name', Math.random().toString(36).slice(9)); 
       }
     }
   }
@@ -84,25 +84,21 @@ ModelFactory.prototype.errorCallback = function () {
 ModelFactory.prototype._build = function() {
   this._fixNames();
 
-  var sections = this.elNode.querySelectorAll('section'),
-      i = 0,
-      section,
-      serializer = this.getSerializer('section'),
-      delta = false;
+  const sections = this.elNode.querySelectorAll('section'),
+    serializer = this.getSerializer('section');
 
   if (this.current_editor.currentRequestCount) {
     if (this.goingForUnload) {
       this.goingForUnload = false;
-      return 'Your story has unsaved changes.';
+      this.streamer.notifySubscribers('Katana.Important', {msg: 'Your story has unsaved changes'});
     }
     return;
   }
 
   this.addTo = {};
 
-  for(; i < sections.length; i = i + 1) {
-    section = sections[i];
-    serializer.build(section, i);
+  for(let i = 0; i < sections.length; i = i + 1) {
+    serializer.build(sections[i], i);
   }
 
 /*if (this.warmupOnly) {
@@ -111,7 +107,7 @@ ModelFactory.prototype._build = function() {
     return;
   } */
 
-  delta = this.findDelta();
+  let delta = this.findDelta();
 
   if (delta ) {
     //TODO generate sequence information here
@@ -121,13 +117,13 @@ ModelFactory.prototype._build = function() {
     
     if (this.goingForUnload) {
       this.goingForUnload = false;
-      return 'Your story has unsaved changes.'
+      this.streamer.notifySubscribers('Katana.Important', {msg: 'Your story has unsaved changes'});
     }
   }
 };
 
 ModelFactory.prototype.findDelta = function () {
-  var deltaOb = {},
+  let deltaOb = {},
       item,
       citem,
       prop,
@@ -170,7 +166,7 @@ ModelFactory.prototype.findDelta = function () {
 ModelFactory.prototype.getLayoutType = function(element) {
   if (element.hasClass('full-width-column')) {
     return 6;
-  }else if(element.hasClass('center-column')) {
+  } else if(element.hasClass('center-column')) {
     return 5;
   }
 };

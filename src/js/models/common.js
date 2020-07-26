@@ -1,5 +1,5 @@
 function Common() {
-  var opts = arguments.length ? arguments[0] : {};    
+  const opts = arguments.length ? arguments[0] : {};    
   this.factory = opts.factory;
 
   this.contentTags = ['h1','h2','h3','h4','h5','h6','p','pre','blockquote','li', 'figcaption'];
@@ -7,25 +7,22 @@ function Common() {
 }
 
 Common.prototype.readMarkups = function (element) {
-  var original = element,
-      workingCopy = original.cloneNode(true),
-      textContent = workingCopy.textContent,
+  const original = element,
       markups = [];
 
   const workOnChildren = (el) => {
-    var children = el.childNodes;
-    for (var i = 0; i < children.length; i = i + 1) {
-      var node = children[i];
+    const children = el.childNodes;
+    for (let i = 0; i < children.length; i = i + 1) {
+      const node = children[i];
 
       if (node.nodeType == Node.ELEMENT_NODE) {
-        var tagName = node.nodeName.toLowerCase();
+        let tagName = node.nodeName.toLowerCase();
 
         if (this.markupTags.indexOf(tagName) != -1) {
           tagName = tagName == 'b' ? 'strong' : tagName;
           tagName = tagName == 'i' ? 'em' : tagName;
 
-          var o = {};
-          o.tag = tagName;
+          const o = {tag: tagName};
           if(o.tag == 'a') {
             o.href = node.attr('href');
           }
@@ -43,22 +40,22 @@ Common.prototype.readMarkups = function (element) {
 };
 
 Common.prototype.findPositionInElement = function (positionOf, inElement) {
-  var baseElement = positionOf;
+  let baseElement = positionOf;
 
   while(baseElement.parentNode != inElement) {
     baseElement = baseElement.parentNode;
   }
 
-  var childNodes = inElement.childNodes, start, end , textSoFar = 0;
-  for (var i = 0; i < childNodes.length; i = i + 1) {
-    var node = childNodes[i];
+  let childNodes = inElement.childNodes, start, end , textSoFar = 0;
+  for (let i = 0; i < childNodes.length; i = i + 1) {
+    const node = childNodes[i];
     if (baseElement != node) {
       if (node.nodeType == Node.ELEMENT_NODE) {
         textSoFar += node.textContent.length;
       }else if(node.nodeType == Node.TEXT_NODE) {
         textSoFar += node.nodeValue.length;
       }
-    }else {
+    } else {
       break;
     }
   }
