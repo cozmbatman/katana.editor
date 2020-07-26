@@ -307,7 +307,7 @@ Editor.prototype.init = function(cb) {
 
   if (this.notes_options.commentable) {
     const winWidth = Utils.getWindowWidth();
-    var layout = winWidth <= 480 ? 'popup' : 'side';
+    let layout = winWidth <= 480 ? 'popup' : 'side';
     this.notesManager = new Notes({editor: this, notes: [], info : this.notes_options, layout: layout, node: document.querySelector('#notes_container')});
     this.notesManager.init();
   }
@@ -470,7 +470,7 @@ Editor.prototype.initContentOptions = function () {
 
     this.image_toolbar.render().hide();
     
-    var opt = new ImageContentBarItem({editor: this, toolbar: this.image_toolbar});
+    const opt = new ImageContentBarItem({editor: this, toolbar: this.image_toolbar});
     this.image_toolbar.setController(opt);
     this.content_options.push(opt);
     this.image_uploader = opt;
@@ -726,7 +726,7 @@ Editor.prototype.getStoryPreviewTemplate = function () {
 Editor.prototype.fillStoryPreview = function (container, count) {
   count = typeof count == 'undefined' || isNaN(count) ? 6 : count;
   let ht = `<div class="center-column" contenteditable="false">`;
-  for (var i = 0; i < count; i = i + 1) {
+  for (let i = 0; i < count; i = i + 1) {
     ht += this.getStoryPreviewTemplate();
   }
   ht += `</div>`;
@@ -1350,7 +1350,7 @@ Editor.prototype.cleanupEmptyModifierTags = function (elements) {
   elements.forEach(element => {
     element.querySelectorAll('i, b, strong, em').forEach( item => {
       if(item.textContent.killWhiteSpace().length == 0) {
-        var pnt = item.parentNode;
+        const pnt = item.parentNode;
         item.parentNode.replaceChild(document.createTextNode(''), item);
         if(pnt != null) {
           pnt.normalize();
@@ -1621,9 +1621,9 @@ Editor.prototype.insertTextAtCaretPosition = function (textToInsert, haveMoreNod
 
     const generateRightParts = (node) => {
       if (sel.rangeCount > 0) {
-        var blockEl = getBlockContainer(range.endContainer);
+        let blockEl = getBlockContainer(range.endContainer);
         if (blockEl) {
-          var ran = range.cloneRange();
+          const ran = range.cloneRange();
           ran.selectNodeContents(blockEl);
           ran.setStart(range.endContainer, range.endOffset);
           return ran.extractContents();
@@ -1633,9 +1633,9 @@ Editor.prototype.insertTextAtCaretPosition = function (textToInsert, haveMoreNod
 
     const generateLeftParts = (node) => {
       if (sel.rangeCount > 0) {
-        var blockEl = getBlockContainer(range.startContainer);
+        let blockEl = getBlockContainer(range.startContainer);
         if (blockEl) {
-          var ran = range.cloneRange();
+          const ran = range.cloneRange();
           ran.selectNodeContents(blockEl);
           ran.setEnd(range.startContainer, range.startOffset);
           return ran.extractContents();
@@ -1748,7 +1748,7 @@ Editor.prototype.doPaste = function (pastedText) {
           nodes.splice(0, 1);
           first.parentNode.removeChild(first);
           if (leftOver != '') {
-            var o = document.createElement('p');
+            const o = document.createElement('p');
             o.appendChild(Utils.generateElement(leftOver));
             o.insertAfter(nodes.lastElementChild);
           }
@@ -2412,7 +2412,7 @@ Editor.prototype.handleKeyPress = function({which}) {
 Editor.prototype.handleShortCutKeys = function ({which}) {
   
   this.current_node = this.getNode();
-  var node = this.current_node;
+  let node = this.current_node;
 
   if (e.ctrlKey && which == CHAR_LINK) {
     if (this.image_toolbar && (node.hasClass('item-figure') || node.hasClass('item-iframe')) ) {
@@ -2485,7 +2485,7 @@ Editor.prototype.handleKeyDown = function(e) {
       const figure = document.querySelector('.figure-focused .item-image');
       this.skip_keyup = true;
       if (figure != null) {
-        var sel = this.selection();
+        const sel = this.selection();
         sel.removeAllRanges();
         range.selectNode(figure);
         sel.addRange(range);  
@@ -2678,7 +2678,7 @@ Editor.prototype.handleKeyDown = function(e) {
     utils_anchor_node = Utils.getNode();  
 
     this.content_options.forEach( w => {
-      var handled;
+      let handled;
       if (w.handleBackspaceKey && !handled) {
         return handled = w.handleBackspaceKey(e, anchor_node);
       }
@@ -3198,7 +3198,7 @@ Editor.prototype.moveFigureUp = function (figure) {
           if (prevBeforeFW.hasClass('center-column')) {
             prevBeforeFW.appendChild(figure);
           } else if(prevBeforeFW.hasClass('full-width-column') || prevBeforeFW.hasClass('block-grid')) {
-            var centerColumn = this.pushCenterColumn(prevBeforeFW, false);
+            const centerColumn = this.pushCenterColumn(prevBeforeFW, false);
             centerColumn.appendChild(figure);
           }
         }
@@ -3232,7 +3232,7 @@ Editor.prototype.moveFigureDown = function (figure) {
       } else if (nextColumn.hasClass('center-column')) {  // next is text based center clumn.. prepend item there..
         nextColumn.insertBefore(figure, nextColumn.firstChild);
       } else if (nextColumn.hasClass('full-width-column')) { //next is full width image..move image to next column after that..
-        var nextAfterFW = nextColumn.nextElementSibling;
+        const nextAfterFW = nextColumn.nextElementSibling;
         if (nextAfterFW != null) { // we have something after next column
           if (nextAfterFW.hasClass('center-column')) { // its centered column
             nextAfterFW.insertBefore(figure, nextAfterFW.firstChild);
@@ -3520,7 +3520,7 @@ Editor.prototype.setElementName = function(element) {
 
       let lis = elChilds; //el.querySelectorAll(' > li');
       lis.forEach( item => {
-        var li = item;
+        const li = item;
         if(!li.matches('[name]')) {
           li.attr('name', Utils.generateId());
         }
@@ -3602,7 +3602,7 @@ Editor.prototype.listify = function(paragraph, listType, regex, match) {
   this.removeSpanTag(paragraph);
 
   content = paragraph.innerHTML.replace(/&nbsp;/g, " ").replace(regex, "");
-  var type = match[0].charAt(0);
+  const type = match[0].charAt(0);
   switch (listType) {
     case "ul":
       list = document.createElement('ul');
@@ -3773,7 +3773,7 @@ Editor.prototype.displayImageToolbar = function () {
   }
 
   setTimeout(() => {
-      var pos = Utils.getImageSelectionDimension();  
+      const pos = Utils.getImageSelectionDimension();  
       this.image_toolbar.render();
       this.image_toolbar.show();
       this.relocateImageToolbar(pos);
@@ -3952,7 +3952,7 @@ Editor.prototype.handleImageActionClick = function (ev, matched) {
         return false;
       }
     case 'addpic':
-      var row = figure.closest('.block-grid-row');
+      const row = figure.closest('.block-grid-row');
       if (row != null) {
         this.streamer.notifySubscribers('Katana.Images.Add', {row})
       } else {
