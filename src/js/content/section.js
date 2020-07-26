@@ -4,6 +4,8 @@ import Stream from '../stream';
 
 function Section(opts) {
   this.opts = opts;
+  this.streamer = Stream;
+
   this.initialize = this.initialize.bind(this);
 
   this.handleEnterKey = this.handleEnterKey.bind(this);
@@ -30,12 +32,11 @@ Section.prototype.initialize = function () {
 
 
 Section.prototype.template = function () {
-  var t = (title, action, icon)  => {
-    return "<button class='inlineTooltip-button scale' title='" + title + "' data-action='inline-menu-" + action + "' data-action-value='"+ action+"' > <span class='tooltip-icon " + icon + "'></span> </button>";
+  const t = (title, action, icon)  => {
+    return `<button class='inlineTooltip-button scale' title='${title}' data-action='inline-menu-${action}' data-action-value='${action}' > <span class='tooltip-icon ${icon}'></span> </button>`;
   };
   if (this.editorType == 'publication') {
-    var ht = '';
-    ht = t(this.title, this.action, this.icon);
+    let ht = t(this.title, this.action, this.icon);
     ht = ht + t('Stories', 'section-stories', 'mfi-grid-icon');
     return ht;
   }
@@ -44,11 +45,11 @@ Section.prototype.template = function () {
 };
 
 Section.prototype.handleClick = function (ev, matched) {
-  var target = matched ? matched : ev.currentTarget;
+  const target = matched ? matched : ev.currentTarget,
+    toolTipContainer = target.closest('.inlineContentOptions'),
+    actionValue = target.attr('data-action-value');
 
-  var toolTipContainer = target.closest('.inlineContentOptions');
-  var actionValue = target.attr('data-action-value');
-  var storiesSection = false;
+  let storiesSection = false;
   if (this.publicationMode) {
     if (actionValue == 'section' && !toolTipContainer.hasClass('choose-section')) { // show other options
       toolTipContainer.addClass('choose-section');
@@ -58,7 +59,7 @@ Section.prototype.handleClick = function (ev, matched) {
     }   
   }
   
-  var anchor_node = this.current_editor.getNode();
+  let anchor_node = this.current_editor.getNode();
   if(anchor_node == null) {
     anchor_node = document.querySelectorAll('.item-selected');
   }
@@ -71,14 +72,17 @@ Section.prototype.handleClick = function (ev, matched) {
 };
 
 Section.prototype.handleDeleteKey = function (e, node) {
-  var sect, cont, last;
   if (this.current_editor.isLastChar()) {
-    sect = node.closest('.block-content');
+
+    const sect = node.closest('.block-content');
     if (sect != null && !sect.hasClass('block-last')) {
-      cont = node.closest('.block-content-inner');
+
+      const cont = node.closest('.block-content-inner');
       if(cont != null) {
-        last = cont.querySelector('.item:last-child');
+
+        const last = cont.querySelector('.item:last-child');
         if (last != null && last.attr('name') == node.attr('name')) {
+
           e.preventDefault();
           this.current_editor.mergeWithUpperSection(sect.next('.block-content'));
           return true;
@@ -86,22 +90,24 @@ Section.prototype.handleDeleteKey = function (e, node) {
       }
     }
   }
+
   return true;
 };
 
 Section.prototype.handleBackspaceKey = function (e, node) {
-  var sect,
-      cont,
-      first;
   if (this.current_editor.isFirstChar() && node) {
-    sect = node.closest('.block-content');
+    const sect = node.closest('.block-content');
+
     if(sect != null && !sect.hasClass('block-first')) {
-      var cont = node.closest('.block-content-inner');
+      const cont = node.closest('.block-content-inner');
+
         if(cont != null) {
-          first = cont.querySelector('.item:first-child');
+          const first = cont.querySelector('.item:first-child');
+
           if (first != null && first.attr('name') == node.attr('name')) {
             this.current_editor.mergeWithUpperSection(sect);
             if (node != null) {
+
               this.current_editor.setRangeAt(node);  
               e.preventDefault();
               if (!node.hasClass('.item-figure')) {
@@ -116,18 +122,18 @@ Section.prototype.handleBackspaceKey = function (e, node) {
         }          
     }
   } else {
-    var sect = document.querySelector('.figure-focused.with-background');
+    const sect = document.querySelector('.figure-focused.with-background');
     if (sect != null) {
-      var sel = this.current_editor.selection();
+      const sel = this.current_editor.selection();
       if (sel && sel.type == 'Caret') {
-        var anchorNode = sel.anchorNode;
+        const anchorNode = sel.anchorNode;
         if (anchorNode.hasClass('block-background')) {
           e.preventDefault();
           this.convertBackgroundSectionToPlain(anchorNode);
           return true;
         }
       } else if(sel && sel.type == 'None') {
-        var anchorNode = sel.anchorNode;
+        const anchorNode = sel.anchorNode;
         if (anchorNode.hasClass('block-background')) {
           e.preventDefault();
           this.convertBackgroundSectionToPlain(anchorNode);
@@ -140,12 +146,12 @@ Section.prototype.handleBackspaceKey = function (e, node) {
 };
 
 Section.prototype.convertBackgroundSectionToPlain = function (node) {
-  var sect = node.closest('.block-content');
+  const sect = node?.closest('.block-content');
   if(sect != null) {
-    var newContainer = Utils.generateElement(this.current_editor.getSingleSectionTemplate());
-    var currentBody = sect.querySelector('.main-body');
+    const newContainer = Utils.generateElement(this.current_editor.getSingleSectionTemplate());
+    const currentBody = sect.querySelector('.main-body');
     if(newContainer != null) {
-      var newContainerBody = newContainer.querySelector('.main-body');
+      const newContainerBody = newContainer.querySelector('.main-body');
       currentBody.parentNode.replaceChild(newContainerBody, currentBody);
       sect.parentNode.replaceChild(newContainer, sect);
       this.current_editor.removeUnnecessarySections();
@@ -156,8 +162,6 @@ Section.prototype.convertBackgroundSectionToPlain = function (node) {
 }
 
 Section.prototype.handleEnterKey = function (e, node) {
-  var prev = node.previousElementSibling,
-      onePrev = prev != null ? prev.previousElementSibling : null;
   if (e.ctrlKey) { // 
     if (node.querySelector('.placeholder-text') == null) {
       this.splitContainer(node);
@@ -179,26 +183,26 @@ Section.prototype.fillPreview = function (container, count) {
 };
 
 Section.prototype.handlePreviousStoryTypeOptionsAfterAddition = function (newContainer) { 
-  var stype = newContainer.querySelector('[data-for="storytype"]');
+  const stype = newContainer.querySelector('[data-for="storytype"]');
   if (stype != null) {
-    var stval = stype.value;
+    const stval = stype.value;
     if (stval == 'tagged') {
       // no issue just return from here
       return;
     }
 
-    var others = this.current_editor.elNode.querySelectorAll('.block-stories [data-for="storytype"]');
+    const others = this.current_editor.elNode.querySelectorAll('.block-stories [data-for="storytype"]');
 
-    for (var i = 0; i < others.length; i = i + 1) {
-      var ot = others[i];
+    for (let i = 0; i < others.length; i = i + 1) {
+      const ot = others[i];
       if (ot == stype) {
         continue;
       }
-      var curral = ot.value;
-      var opts = ot.querySelectorAll('option');
+      const curral = ot.value;
+      const opts = ot.querySelectorAll('option');
       if (opts.length) {
-        for (var m = 0; m < opts.length; m = m + 1) {
-          var kopts = opts[m];
+        for (let m = 0; m < opts.length; m = m + 1) {
+          const kopts = opts[m];
           if (kopts.attr('value') == stval && stval != curral) {
             kopts.parentNode.removeChild(kopts);
           }
@@ -209,7 +213,7 @@ Section.prototype.handlePreviousStoryTypeOptionsAfterAddition = function (newCon
 };
 
 Section.prototype.splitContainer = function (atNode, storiesSection) {
-  var newContainer;
+  let newContainer;
   if (typeof storiesSection != 'undefined' && storiesSection) {
     newContainer = Utils.generateElement(this.current_editor.getSingleStorySectionTemplate());
   } else {
@@ -220,11 +224,11 @@ Section.prototype.splitContainer = function (atNode, storiesSection) {
 
   if (this.publicationMode && storiesSection) {
     if (atNode != null) {
-      var sec = atNode.closest('.block-content');
+      const sec = atNode.closest('.block-content');
       if(sec != null) {
-        newContainer.insertBefore(sec);
+        sec.insertAdjacentElement('beforebegin', newContainer);
       }
-      var ac = newContainer.querySelector('.autocomplete');
+      const ac = newContainer.querySelector('.autocomplete');
       if(ac != null) {
         //FIXME autocomplete
         //(ac).autocomplete();
@@ -239,7 +243,7 @@ Section.prototype.splitContainer = function (atNode, storiesSection) {
   }
 
   if (atNode.nextElementSibling != null && atNode.textContent.isEmpty()) {
-    var next = atNode.nextElementSibling;
+    const next = atNode.nextElementSibling;
     this.current_editor.setRangeAt(next);
     if (!next.hasClass('item-figure')) {
       Utils.setCaretAtPosition(next);
@@ -255,7 +259,7 @@ Section.prototype.splitContainer = function (atNode, storiesSection) {
 
 // commands when in publication mode
 Section.prototype.command = function (action, button) {
-  var section = button.closest('.block-stories');
+  let section = button.closest('.block-stories');
   if (section == null) {
     section = button.closest('.block-content');
   }
@@ -315,15 +319,9 @@ Section.prototype.removeLayoutClasses = function (section) {
 };
 
 Section.prototype.mightAdjustFigures = function (section) {
-  var figs = section.querySelectorAll('.item-figure:not(.figure-in-row)');
-  figs.forEach((item) => {
-
-    setTimeout( () => {
-      const cm = new CustomEvent('Mizuchi.Images.Refit', {type: 'Mizuchi.Images.Refit',
-      figure: item});
-      this.current_editor.elNode.dispatchEvent(cm);
-    }, 250);
-    
+  section.querySelectorAll('.item-figure:not(.figure-in-row)').forEach((item) => {
+    //FIXME delayed send
+    this.streamer.notifySubscribers('Katana.Images.Refit', {figure: item});  
   });
 };
 
@@ -346,8 +344,8 @@ Section.prototype.commandFullWidth = function (section) {
 };
 
 Section.prototype.commandRemoveBlock = function (section) {
-  var needRefresh = section.hasClass('block-stories');
-  var val = '';
+  const needRefresh = section.hasClass('block-stories');
+  let val = '';
   if (needRefresh) {
     val = section.querySelector('[data-for="storytype"]').value;
     if (val == 'tagged') {

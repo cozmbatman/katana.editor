@@ -4,7 +4,7 @@ import Stream from '../stream';
 
 function Images(opts) {
   this.opts = opts;
-  this.stream = Stream;
+  this.streamer = Stream;
 
   this.initialize = this.initialize.bind(this);
 
@@ -43,18 +43,16 @@ Images.prototype.initialize = function () {
   this.personal_toolbar = opts.toolbar;
   this.image_cdn_path = '/';
 
-  const _this = this;
-
-  this.stream.subscribe('Katana.Images.Restructure', (event) => {
-    _this.fixPositioningForMultipleImages(event.container, event.figures, event.count);
+  this.streamer.subscribe('Katana.Images.Restructure', (event) => {
+    this.fixPositioningForMultipleImages(event.container, event.figures, event.count);
   });
 
-  this.stream.subscribe('Katana.Images.Add', (event) => {
+  this.streamer.subscribe('Katana.Images.Add', (event) => {
     if (typeof event.row != 'undefined') {
-      _this.addImagesInRow = event.row;  
-      _this.imageSelect(event);
+      this.addImagesInRow = event.row;  
+      this.imageSelect(event);
     } else if(typeof event.figure != 'undefined') {
-      _this.imageSelect(event);
+      this.imageSelect(event);
     }
   });
 
@@ -66,13 +64,12 @@ Images.prototype.handleClick = function (ev) {
 };
 
 Images.prototype.createRowAroundFigure = function (figure) {
-  var row = this.pushMultipleImageContainer(2, figure);
+  const row = this.pushMultipleImageContainer(2, figure);
   figure.addClass('figure-in-row');
-  var img = figure.querySelector('.item-image');
+  const img = figure.querySelector('.item-image');
   row.appendChild(figure);
 
   if(img != null) {
-    img = img;
     this.setAspectRatio(figure, img.naturalWidth, img.naturalHeight);
   }
   
@@ -110,15 +107,16 @@ Images.prototype.processSingleImageElement = function (image_element, opts, key)
       try {
         const data = JSON.parse(oReq.responseText);
         if(data.success) {
-          var imgSrc = data.file,
+          const imgSrc = data.file,
               imageId = data.id;
-          _this.thirdPartyImageLoaded({url: url, file: imgSrc, imageId: imageId, key: key});
+          _this.thirdPartyImageLoaded({url, imageId, key, file: imgSrc});
           _this.current_editor.currentRequestCount--;
         }
       } catch(e) {
         console.log('While uploading image');
         console.error(e);
         _this.current_editor.currentRequestCount--;
+        this.streamer.notifySubscribers('Katana.Error', e);
       }
     } else {
       _this.current_editor.currentRequestCount--;
@@ -128,12 +126,12 @@ Images.prototype.processSingleImageElement = function (image_element, opts, key)
 };
 
 Images.prototype.processThirdPartyQueue = function () {
-  var currentlyProcessing = 0, toProcess = [],
-    process;
+  let currentlyProcessing = 0;
+  const toProcess = [];
 
-  for (var prop in this.thirdPartyQueue) {
+  for (let prop in this.thirdPartyQueue) {
     if (this.thirdPartyQueue.hasOwnProperty(prop)) {
-      var item = this.thirdPartyQueue[prop];
+      let item = this.thirdPartyQueue[prop];
       if(item && item.processing) {
         currentlyProcessing++;
       }else if(item && !item.processing) {
@@ -146,7 +144,7 @@ Images.prototype.processThirdPartyQueue = function () {
     return;
   }
 
-  for (var i = 0; i < toProcess.length; i = i + 1) {
+  for (let i = 0; i < toProcess.length; i = i + 1) {
     toProcess[i].processing = true;
     this.processSingleImageElement(toProcess[i].element, toProcess[i].opts, toProcess[i].key);
     if (i == 1) {
@@ -157,49 +155,43 @@ Images.prototype.processThirdPartyQueue = function () {
 };
 
 Images.prototype.handleThirdPartyImage = function(image_element, opts) {
-  var url = image_element.attr('src');
-  var key = url + Math.random(0, Math.random()).toString(32).substring(0,8);
+  const url = image_element.attr('src');
+  const key = url + Math.random(0, Math.random()).toString(32).substring(0,8);
   image_element.attr('data-key', key);
-  this.thirdPartyQueue[url] = {element : image_element, opts: opts, key: key};
-  var _this = this;
+  this.thirdPartyQueue[url] = { element : image_element, opts, key };
 
   if (this.queueProcessTimer == null) {
-    this.queueProcessTimer = setInterval(function () {
-      _this.processThirdPartyQueue();
+    this.queueProcessTimer = setInterval(() => {
+      this.processThirdPartyQueue();
     }, 3000);
   }
 
 };
 
 Images.prototype.thirdPartyImageLoaded = function (ob) {
-  var oldImg = document.querySelector('[src="'+ob.url+'"]'),
+  const oldImg = document.querySelector('[src="'+ob.url+'"]'),
       newUrl = this.image_cdn_path + '/fullsize/' + ob.file,
       tmpl = Utils.generateElement(this.current_editor.getFigureTemplate()),
-      _this = this,
       img = tmpl.querySelector('img');
 
   img.attr('src', newUrl);
   img.attr('data-delayed-src', newUrl);
   img.attr('data-image-id', ob.imageId);
 
-  var figure = img.closest('.item-figure');
-  if(figure != null) {
-    figure.removeClass('item-uploading');
-  }
+  img.closest('.item-figure')?.removeClass('item-uploading');
+  
+  this.replaceImg(oldImg, tmpl, newUrl, (figure, image_element) => {
+    this.thirdPartyImageProcessed(image_element, ob.key);
 
-  this.replaceImg(oldImg, tmpl, newUrl, function (figure, image_element) {
-    _this.thirdPartyImageProcessed(image_element, ob.key);
-
-    var insideGraf = figure.closest('.item:not(".item-figure")');
+    let insideGraf = figure.closest('.item:not(".item-figure")');
     if (insideGraf != null) {
       do {
         figure.unwrap();
         insideGraf = figure.closest('.item:not(".item-figure")');
       } while(insideGraf != null);
     }
-    if (figure.closest('.ignore-block.item-uploading') != null) {
-      figure.unwrap();
-    }
+
+    figure.closest('.ignore-block.item-uploading')?.unwrap();
     image_element.parentNode.removeChild(image_element);
   });
 
@@ -208,9 +200,9 @@ Images.prototype.thirdPartyImageLoaded = function (ob) {
 Images.prototype.pastedImagesCache = {};
 
 Images.prototype.uploadExistentImage = function(image_element, opts) {
-  var src = image_element.attr('src');
+  let src = image_element.attr('src');
 
-  var name;
+  let name;
   if (image_element.hasAttribute('name'))  {
     name = image_element.attr('name');
   }
@@ -230,13 +222,13 @@ Images.prototype.uploadExistentImage = function(image_element, opts) {
   }
 
   if (!Utils.urlIsFromDomain(src, 'mefacto.com')) {
-    var div = Utils.generateElement(`<div class="ignore-block item-uploading" contenteditable="false"></div>`);
+    const div = Utils.generateElement(`<div class="ignore-block item-uploading" contenteditable="false"></div>`);
     image_element.parentNode.insertBefore(div, image_element);
     div.appendChild(image_element);
     return this.handleThirdPartyImage(image_element, opts);
   }
 
-  var i, img, n, node, tmpl, _i, _ref,
+  let i, img, n, node, tmpl, _i, _ref,
       pasting = false;
 
   if (opts == null) {
@@ -282,7 +274,7 @@ Images.prototype.uploadExistentImage = function(image_element, opts) {
         }
       }
     }
-  }else {
+  } else {
     this.replaceImg(image_element, document.querySelector("[name='" + (tmpl.attr('name')) + "']"));
   }
   
@@ -290,32 +282,28 @@ Images.prototype.uploadExistentImage = function(image_element, opts) {
 };
 
 Images.prototype.replaceImg = function(image_element, figure, srcToUse, callback) {
-  var img, self,sr;
+  let img = new Image(), self = this, sr;
   
-  img = new Image();
-
   if (typeof srcToUse == 'undefined' && typeof callback == 'undefined') {
     img.attr('src', image_element.attr('src') );  
     sr = image_element.attr('src');
-    var imgE = image_element;
-    const fig = imgE.closest('figure');
+    const fig = image_element.closest('figure');
     if(fig != null) {
       fig.parentNode.removeChild(fig);
     }
-    imgE.parentNode.removeChild(imgE);
+    image_element.parentNode.removeChild(image_element);
     let ig = figure.querySelector('img');
     if(ig != null) {
       ig.attr('src', sr);
       ig.attr('data-delayed-src',sr);
     }
   } else {
-    img.attr('src',srcToUse);
+    img.attr('src', srcToUse);
     sr = srcToUse;
   }
 
   img.attr('data-delayed-src', sr);
   
-  self = this;
   return img.onload = function() {
     self.setAspectRatio(figure, this.width, this.height);
 
@@ -324,7 +312,7 @@ Images.prototype.replaceImg = function(image_element, figure, srcToUse, callback
       fig.attr("data-height", this.height);
       fig.attr("data-width", this.width);
     }
-    console.log(`replaceImg = this.naturalWidth ${this.naturalWidth}, width ${this.width}`);
+    
     if (this.naturalWidth < 760) {
       figure.addClass('n-fullSize');
     } else {
@@ -365,8 +353,7 @@ Images.prototype.imageSelect = function(ev) {
   selectFile.click();
   self = this;
   return selectFile.addEventListener('change', function() {
-    var t;
-    t = this;
+    const t = this;
     self.viaDrop = false;
     if(ev.row) {
       self.addImagesInRow = ev.row;
@@ -388,20 +375,18 @@ Images.prototype.displayCachedImage = function(file, cont, callback) {
   this.current_editor.content_bar.hide();
   window.URL = window.webkitURL || window.URL; // Vendor prefixed in Chrome.
 
-  var img = document.createElement('img');
-  var _this = this;
+  const img = document.createElement('img');
+  const _this = this;
   img.onload = function(e) {
     
     if (_this.droppedCount) {
       _this.droppedCount--;
     }
 
-    var node, self;
-    node = _this.viaDrop ? document.querySelector('.drop-placeholder') : _this.current_editor.getNode();
-
-    self = _this;
+    const node = _this.viaDrop ? document.querySelector('.drop-placeholder') : _this.current_editor.getNode();
+    const self = _this;
   
-    var img_tag, new_tmpl, replaced_node;
+    let img_tag, new_tmpl, replaced_node;
     new_tmpl = Utils.generateElement(self.current_editor.getFigureTemplate());
 
     if(typeof cont != 'undefined' && cont != null) {
@@ -463,7 +448,7 @@ Images.prototype.displayCachedImage = function(file, cont, callback) {
 };
 
 Images.prototype.setAspectRatio = function(figure, w, h) {
-  var fill_ratio, height, maxHeight, maxWidth, ratio, result, width;
+  let fill_ratio, height, maxHeight, maxWidth, ratio, width;
   maxWidth = 760;
   maxHeight = 700;
   ratio = 0;
@@ -499,9 +484,8 @@ Images.prototype.setAspectRatio = function(figure, w, h) {
   }
 };
 
-Images.prototype.formatData = function(file) {
-  var formData;
-  formData = new FormData();
+Images.prototype.formatData = (file) => {
+  const formData = new FormData();
   formData.append('file', file, file.name);
   return formData;
 };
@@ -514,7 +498,7 @@ Images.prototype.uploadFiles = function(files, viaDrop) {
     this.viaDrop = true;
   }
 
-  var sizeLimit = 17900000, // 8 MB
+  let sizeLimit = 17900000, // 8 MB
 
   acceptedTypes, file, i, _results, sizeError;
   
@@ -542,7 +526,7 @@ Images.prototype.uploadFiles = function(files, viaDrop) {
   }
 
   if (sizeError) {
-    this.current_editor.notifySubscribers('Katana.Error', {
+    this.streamer.notifySubscribers('Katana.Error', {
         target : 'image',
         message: 'Max file size exceeded'
       });
@@ -563,19 +547,18 @@ Images.prototype.uploadFiles = function(files, viaDrop) {
 };
 
 Images.prototype.addImagesOnScene = function () {
-  var batch = this.batchesFiles,
+  let batch = this.batchesFiles,
       size = batch.length,
-      cont = false,
-      i = 0;
+      cont = false;
   if(!size) {
     return;
   }
 
   if (this.wrapFigureWithAdditions) {
-    var figure = this.wrapFigureWithAdditions;
-    var row = this.pushMultipleImageContainer(2, figure);
+    const figure = this.wrapFigureWithAdditions;
+    const row = this.pushMultipleImageContainer(2, figure);
     figure.addClass('figure-in-row');
-    var img = figure.querySelector('.item-image');
+    const img = figure.querySelector('.item-image');
     row.appendChild(figure);
 
     if(img != null) {
@@ -586,8 +569,8 @@ Images.prototype.addImagesOnScene = function () {
   }
 
   if (this.addImagesInRow) {
-    var len = size > 3 ? 3 : size;
-    for (var i = 0; i < len; i = i + 1) {
+    const len = size > 3 ? 3 : size;
+    for (let i = 0; i < len; i = i + 1) {
       this.displayAndUploadImages(batch[i], this.addImagesInRow, this.imageUploadCallback);
     }
     return;
@@ -601,9 +584,9 @@ Images.prototype.addImagesOnScene = function () {
     }
     k = 0;
     while (k < size) {
-      var l = ((k + 3) > size) ? size : k + 3;
+      const l = ((k + 3) > size) ? size : k + 3;
 
-      for (i = k; i < l; i = i + 1) {
+      for (let i = k; i < l; i = i + 1) {
         this.displayAndUploadImages(batch[i], cont, this.imageUploadCallback);  
         k++;
       }
@@ -612,39 +595,40 @@ Images.prototype.addImagesOnScene = function () {
         break;
       }
 
-      var newCount = size - l > 3 ? 3 : size - l;
-      var newRow = this.blockGridRowTemplate(newCount);
-      newRow.insertAfter(cont);
+      const newCount = size - l > 3 ? 3 : size - l;
+      const newRow = this.blockGridRowTemplate(newCount);
+      cont.insertAdjacentElement('afterend', newRow);
       cont = newRow;
     }
   }
 };
 
 Images.prototype.imageUploadCallback = function (figure) {
-  var node ,parentNode;
+  let node ,parentNode;
   node = figure;
   parentNode = node.parentNode;
+
   if(parentNode != null && parentNode.hasClass('block-grid-row')) {
-    var count = parentNode.attr('data-paragraph-count'),
+    const count = parentNode.attr('data-paragraph-count'),
     figures = parentNode.querySelectorAll('.figure-in-row');
     this.fixPositioningForMultipleImages(parentNode, figures, count);
 
     if (figures.length == count) {
 
       if(parentNode.querySelector('.item-selected') != null) { // move to next section , so that its width doesn't change
-        var selected = parentNode.querySelector('.item-selected'),
-            next_cont = parentNode.next('.block-content-inner'),
-            first_child = null;
+        const selected = parentNode.querySelector('.item-selected'),
+          next_cont = parentNode.next('.block-content-inner');
+        let first_child = null;
 
-            if(next_cont != null) {
-              for(let i = 0; i < next_cont.children.length; i++) {
-                let ncc = next_cont.children[i];
-                if(ncc.hasClass('item')) {
-                  first_child = ncc;
-                  break;
-                }
-              }
+        if(next_cont != null) {
+          for(let i = 0; i < next_cont.children.length; i++) {
+            let ncc = next_cont.children[i];
+            if(ncc.hasClass('item')) {
+              first_child = ncc;
+              break;
             }
+          }
+        }
 
         if(first_child != null) {
           first_child.parentNode.insertBefore(selected, first_child);
@@ -666,7 +650,7 @@ Images.prototype.fixPositioningForMultipleImages = function (cont, figures, coun
   if(cont == null) {
     return;
   }
-  var ratios = [],
+  let ratios = [],
       rsum = 0,
       height, 
       len = figures.length,
@@ -675,9 +659,9 @@ Images.prototype.fixPositioningForMultipleImages = function (cont, figures, coun
       i = 0;
 
   for (i; i < len; i = i + 1) {
-    var fig = figures[i];
-    var  ig = fig.querySelector('img')
-    var nw = nh = 0;
+    const fig = figures[i];
+    const ig = fig.querySelector('img')
+    let nw = nh = 0;
     if(ig != null) {
       if (ig.hasAttribute('data-width')) {
         nw = parseInt(ig.attr('data-width'));
@@ -694,7 +678,7 @@ Images.prototype.fixPositioningForMultipleImages = function (cont, figures, coun
   }
 
   for (i = 0; i < len; i = i +1 ) {
-    var ig = figures[i].querySelector('img');
+    const ig = figures[i].querySelector('img');
     if(ig != null) {
       r = parseFloat(ig.attr('data-width')) / parseFloat(ig.attr('data-height'));
       rsum += r;
@@ -705,37 +689,36 @@ Images.prototype.fixPositioningForMultipleImages = function (cont, figures, coun
   height = totalWidth / rsum;
 
   for(i = 0; i < len; i = i +1 ) {
-    var fig = figures[i],
-        wid = ((ratios[i] * height) / totalWidth) * 100;
-        fig.style.width = wid + '%';
+    const fig = figures[i],
+      wid = ((ratios[i] * height) / totalWidth) * 100;
+    fig.style.width = wid + '%';
   }
 
   if (count == 1) {
-    let pcA = figures[0].querySelectorAll('.padding-cont');
+    const pcA = figures[0].querySelectorAll('.padding-cont');
     pcA.forEach(pc => {
       pc.removeAttribute('style');
     });
   }
 
   cont.attr('data-paragraph-count', figures.length);
-  var grid = cont.closest('.block-grid');
-  var figs = grid != null ? grid.querySelectorAll('.item-figure') : null;
+  const grid = cont.closest('.block-grid');
+  const figs = grid != null ? grid.querySelectorAll('.item-figure') : null;
   if(grid != null) {
     grid.attr('data-paragraph-count', figs.length);
   }
   
 };
 
-Images.prototype.blockGridRowTemplate = function (count) {
+Images.prototype.blockGridRowTemplate = (count) => {
   return Utils.generateElement(`<div class="block-grid-row" data-name="${Utils.generateId()}" data-paragraph-count="${count}"></div>`);
 };
 
-Images.prototype.blockGridTemplate = function (count) {
-  var ht = `<figure class="block-content-inner block-grid item-text-default" data-name="${Utils.generateId()}" >
-  <div class="block-grid-row" data-name="${Utils.generateId()}" data-paragraph-count="${count}"></div>
-  <figcaption class="block-grid-caption" data-name="${Utils.generateId()}" data-placeholder-value="Type caption for image (optional)"><span class="placeholder-text">Type caption for image (optional)</span></figcaption>
-  </figure>`;
-  return Utils.generateElement(ht);
+Images.prototype.blockGridTemplate = (count) => {
+  return Utils.generateElement(`<figure class="block-content-inner block-grid item-text-default" data-name="${Utils.generateId()}" >
+    <div class="block-grid-row" data-name="${Utils.generateId()}" data-paragraph-count="${count}"></div>
+    <figcaption class="block-grid-caption" data-name="${Utils.generateId()}" data-placeholder-value="Type caption for image (optional)"><span class="placeholder-text">Type caption for image (optional)</span></figcaption>
+    </figure>`);
 }
 
 Images.prototype.pushMultipleImageContainer = function (count, figure) {
@@ -751,20 +734,18 @@ Images.prototype.pushMultipleImageContainer = function (count, figure) {
     return;
   }
   
-  var parentContainer = node.closest('.block-content-inner');
-  var item = node.closest('.item');
+  const parentContainer = node.closest('.block-content-inner');
+  const item = node.closest('.item');
 
-  var bottomContainer = Utils.generateElement(`<div class="${parentContainer.attr('class')}"></div>`);
+  const bottomContainer = Utils.generateElement(`<div class="${parentContainer.attr('class')}"></div>`);
 
   while(item.nextElementSibling != null) {
     bottomContainer.append(item.nextElementSibling);
   }
 
-  var new_tmpl = this.blockGridTemplate(count);
+  const new_tmpl = this.blockGridTemplate(count);
   parentContainer.insertAdjacentElement('afterend', new_tmpl);
-  //new_tmpl.insertAfter(parentContainer);
   new_tmpl.insertAdjacentElement('afterend', bottomContainer);
-  //bottomContainer.insertAfter(new_tmpl);
 
   this.addImagesInContainer = true;
   bottomContainer.prepend(item);
@@ -797,19 +778,18 @@ Images.prototype.uploadFile = function(file, node) {
       } catch(e) {
         console.log('--- image upload issue ---');
         console.error(e);
-        _this.current_editor.notifySubscribers('Katana.Error', e);
+        _this.streamer.notifySubscribers('Katana.Error', e);
       }
     } else {
       _this.current_editor.currentRequestCount--;
     }
   };
   oReq.send(formData);
-
 };
 
+
 Images.prototype.updateProgressBar = function(e) {
-  var complete;
-  complete = "";
+  let complete = "";
   if (e.lengthComputable) {
     complete = e.loaded / e.total * 100;
     complete = complete != null ? complete : {
@@ -820,10 +800,10 @@ Images.prototype.updateProgressBar = function(e) {
 };
 
 Images.prototype.uploadCompleted = function(ob, node) {
-  var ig = node.querySelector('img');
+  const ig = node.querySelector('img');
   if(ig != null) {
     ig.attr('data-image-id', ob.id);
-    var path = `${this.image_cdn_path}/fullsize/${ob.file}`;
+    const path = `${this.image_cdn_path}/fullsize/${ob.file}`;
     node.removeClass('item-uploading');
     ig.attr('data-delayed-src', path);
     return ig.attr('src', path);
@@ -832,11 +812,10 @@ Images.prototype.uploadCompleted = function(ob, node) {
 };
 
 Images.prototype._uploadCompleted = function (ob, node) {
-  var ig = node.querySelector('img');
+  const ig = node.querySelector('img');
   if(ig != null) {
     ig.attr('data-image-id', ob.id);
-    var path = `${this.image_cdn_path}/fullsize/${ob.file}`;
-    return ig.attr('src', path);
+    return ig.attr('src', `${this.image_cdn_path}/fullsize/${ob.file}`);
   }
   return null;
 };
@@ -851,20 +830,20 @@ Images.prototype._uploadCompleted = function (ob, node) {
   */
 
 Images.prototype.handleBackspaceKey = function(e, anchor_node) {      
-  var figure = document.querySelector(".item-selected");
+  const figure = document.querySelector(".item-selected");
   if (figure != null && figure.hasClass("item-figure") && (typeof anchor_node === "undefined" || anchor_node === null)) {
     
+    //FIXME check for matched
     if(e.target.hasClass('figure-caption')) {
       return true;
     }
     this.personal_toolbar.removeFigure(figure);
-    var ret = false;
-
+    
     e.preventDefault();
     this.current_editor.image_toolbar.hide();
     return true;
   } else if(figure.hasClass('item-figure') && anchor_node && anchor_node.hasClass('item-figure') && e.target.tagName == "FIGCAPTION") {
-    var haveTextBefore = this.current_editor.getCharacterPrecedingCaret();
+    const haveTextBefore = this.current_editor.getCharacterPrecedingCaret();
     if (haveTextBefore.killWhiteSpace().length == 0) {
       e.preventDefault();
       this.current_editor.image_toolbar.hide();
@@ -877,7 +856,7 @@ Images.prototype.handleBackspaceKey = function(e, anchor_node) {
 };
 
 Images.prototype.handleDeleteKey = function (e, node) {
-  var sel = document.querySelector('.item-selected');
+  const sel = document.querySelector('.item-selected');
   if (sel != null && sel.hasClass('item-figure') && (!node || node.length == 0)) {
     this.personal_toolbar.removeFigure(sel);
     e.preventDefault();
@@ -885,7 +864,7 @@ Images.prototype.handleDeleteKey = function (e, node) {
     return true;
   }
   if (node && node.length && Utils.editableCaretAtEnd(node)) {
-    var next = node.nextElementSibling;
+    const next = node.nextElementSibling;
     if (next != null && next.hasClass('item-figure') && !next.hasClass('figure-in-row')) {
       this.personal_toolbar.removeFigure(next);
       e.preventDefault();
@@ -898,12 +877,11 @@ Images.prototype.handleDeleteKey = function (e, node) {
 };
 
 Images.prototype.embedParagraphAboveImage = function(figure) {
-  var cont = figure.closest('.block-content-inner'),
-      self = this,
+  let cont = figure.closest('.block-content-inner'),
       p = null,
-    createAndAddContainer = function(before) {
-      var div = Utils.generateElement(self.current_editor.getSingleLayoutTempalte());
-      p = Utils.generateElement(self.current_editor.baseParagraphTmpl());
+    createAndAddContainer = (before) => {
+      const div = Utils.generateElement(this.current_editor.getSingleLayoutTempalte());
+      const p = Utils.generateElement(this.current_editor.baseParagraphTmpl());
       div.appendChild(p);
       before.parentNode.insertBefore(div, before);
     };
@@ -913,11 +891,11 @@ Images.prototype.embedParagraphAboveImage = function(figure) {
       p = Utils.generateElement(this.current_editor.baseParagraphTmpl());
       figure.parentNode.insertBefore(p, figure);
     } else if(cont.hasClass('full-width-column')) {
-      var figures = cont.querySelectorAll('.item-figure');
+      const figures = cont.querySelectorAll('.item-figure');
       if (figures.length == 1) {
         createAndAddContainer(cont);
-      }else {
-        var bottomContainer = Utils.generateElement(`<div class="block-content-inner full-width-column"></div>`);
+      } else {
+        let bottomContainer = Utils.generateElement(`<div class="block-content-inner full-width-column"></div>`);
         while(figure.nextElementSibling != null) {
           bottomContainer.appendChild(figure.nextElementSibling);
         }
@@ -931,15 +909,15 @@ Images.prototype.embedParagraphAboveImage = function(figure) {
   this.current_editor.mergeInnerSections(figure.closest('section'));
 
   if(p != null) {
-    self.current_editor.image_toolbar.hide();
-    self.current_editor.markAsSelected(p);
-    self.current_editor.setRangeAt(document.querySelector('.item-selected'));
+    this.current_editor.image_toolbar.hide();
+    this.current_editor.markAsSelected(p);
+    this.current_editor.setRangeAt(document.querySelector('.item-selected'));
   }
   
 };
 
 Images.prototype.handleEnterKey = function(e, node) {
-  var figure = document.querySelector('.figure-focused');
+  const figure = document.querySelector('.figure-focused');
   if (figure != null && figure.hasClass('item-figure')) {
     e.preventDefault();
     this.embedParagraphAboveImage(figure);
