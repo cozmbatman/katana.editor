@@ -107,7 +107,7 @@ function Templates() {
         <hr class='divider-line' tabindex='-1'/>
       </div>
       <div class='main-body'>
-        <div class='block-content-inner center-column'>${this.getPlaceholders()}</div>
+        <div class='block-content-inner center-column'>${getPlaceholders()}</div>
       </div>
       </section>`;
   };

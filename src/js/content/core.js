@@ -27,17 +27,18 @@ Manager.prototype.initialize = function () {
 
 Manager.prototype.template = function () {
   let menu = "";
+  
   this.widgets.forEach( b => {
     const data_action_value = b.action ? "data-action-value='" + b.action + "'" : "";
     if (b.template) {
       menu += b.template();
     } else {
-      menu += this.current_editor.template.contentBasicButton(b, data_action_value);
+      menu += this.current_editor.templates.contentBasicButton(b, data_action_value);
     }
     return menu;
   });
 
-  return this.current_editor.template.contentBasicButtonsWrap(menu);
+  return this.current_editor.templates.contentBasicButtonsWrap(menu);
 };
 
 Manager.prototype.render = function () {
