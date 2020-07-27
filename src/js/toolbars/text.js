@@ -178,8 +178,7 @@ TextToolbar.prototype.shortCutKey = function (key, event) {
   };
 
   if (this.mode == 'write') {
-    const config = this.defaultConfig();
-    const action = '';
+    let action = '';
     const node = this.current_editor.elNode.querySelector('.item-selected');
     if (node && !node.hasClass('item-figure')) {
       this.savedSel = Utils.saveSelection();
@@ -209,7 +208,7 @@ TextToolbar.prototype.shortCutKey = function (key, event) {
             this.actionIsLink(this.elNode.querySelector('[data-action="createlink"]').closest('li'), event);
           }
           break;
-      };  
+      }
 
       if (action != '') {
         this.menuApply(action);
@@ -223,7 +222,7 @@ TextToolbar.prototype.shortCutKey = function (key, event) {
 
 };
 
-TextToolbar.prototype.closeInput = function(e) {
+TextToolbar.prototype.closeInput = function() {
   this.elNode.removeClass("mf-menu--linkmode");
   return false;
 };
@@ -346,7 +345,7 @@ TextToolbar.prototype.refreshMenuState = function () {
   this.render();
 };
 
-TextToolbar.prototype.commandCenter = function (cmd, val) {
+TextToolbar.prototype.commandCenter = function () {
   const node = this.current_editor.current_node;
   if (!node) {
     return;
@@ -462,7 +461,7 @@ TextToolbar.prototype.displayHighlights = function() {
   });
 
   nodes.forEach( (node) => {
-      const tag = node.nodeName.toLowerCase(),
+      let tag = node.nodeName.toLowerCase(),
       _thisEl = this.elNode;
       switch (tag) {
         case "a":
@@ -517,14 +516,14 @@ TextToolbar.prototype.displayHighlights = function() {
           el.closest('li')?.removeClass('hide')
         );
         if (node.hasClass('btn') & !node.hasClass('trans')) {
-          _this.highlight('button');
+          this.highlight('button');
           _thisEl.querySelectorAll('.mfi-button-trans').forEach( el => 
             el.closest('li')?.removeClass('active')
           );
         } else if(node.hasClass('trans')) {
           _thisEl.querySelectorAll('.mfi-button').forEach( el => el.closest('li')?.removeClass('active')
           );
-          _this.highlight('button-trans');
+          this.highlight('button-trans');
         }
       } 
 

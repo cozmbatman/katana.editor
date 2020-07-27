@@ -1,4 +1,17 @@
 {
+  "extends": "eslint:recommended",
   "parser": "babel-eslint",
-  "rules": {}
+  "globals": {
+    "window": true,
+    "document": true,
+    "console": true,
+    "Element": true,
+    "Node": true,
+    "NodeList": true,
+    "HTMLElement": true,
+    "setTimeout": true,
+    "setInterval": true,
+    "clearInterval": true,
+    "getComputedStyle": true
+  }
 }

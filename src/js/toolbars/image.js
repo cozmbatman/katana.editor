@@ -120,7 +120,7 @@ ImageToolbar.prototype.handleClick = function (ev, matched) {
   return false;
 };
 
-ImageToolbar.prototype.shortCutKey = function (key, event) {
+ImageToolbar.prototype.shortCutKey = function (key) {
   let handled = false;
   switch(key) {
     case 49: // left budge
@@ -170,7 +170,7 @@ ImageToolbar.prototype.removeLink = function () {
   this.elNode.querySelector('.mf-menu-input').value = '';
 };
 
-ImageToolbar.prototype.closeInput = function(e) {
+ImageToolbar.prototype.closeInput = function() {
   this.elNode.removeClass("mf-menu--linkmode");
   return false;
 };
@@ -274,7 +274,7 @@ ImageToolbar.prototype.pullFullWidthContainer = function () {
       return;
     }
 
-    const prevContainer = curr.prev('.block-content-inner'),
+    let prevContainer = curr.prev('.block-content-inner'),
       nextContainer = curr.next('.block-content-inner'),
       aspect = sel.querySelector('.padding-cont');
 
@@ -286,7 +286,7 @@ ImageToolbar.prototype.pullFullWidthContainer = function () {
         prevContainer.appendChild(sel);
       } else {
         const ct = Utils.generateElement(this.current_editor.templates.getSingleLayoutTemplate());
-        curr.parentNode.insertBefore(ct, curr);;
+        curr.parentNode.insertBefore(ct, curr);
         ct.appendChild(sel);
         prevContainer = ct;
       }
@@ -439,7 +439,7 @@ ImageToolbar.prototype._commandStretchImageInGrid = function(figure) {
 };
 
 ImageToolbar.prototype._commandGoDownInGrid = function (sel) {
-  const row = sel.closest('.block-grid-row'),
+  let row = sel.closest('.block-grid-row'),
     nextRow = row?.next('.block-grid-row');
 
   if(row != null) {
@@ -870,7 +870,7 @@ ImageToolbar.prototype.unwrapSingleFigure = function (container) {
       }
     }
 
-    const ig = figures.querySelectorAll('.item-image');
+    let ig = figures.querySelectorAll('.item-image');
     if (ig.length) {
       ig = ig[0];
       this._setAspectRatio(figures, ig.naturalWidth, ig.naturalHeight);
@@ -881,7 +881,7 @@ ImageToolbar.prototype.unwrapSingleFigure = function (container) {
 };
 
 ImageToolbar.prototype._setAspectRatio = function (figure, w, h) {
-  let fill_ratio, height, maxHeight, maxWidth, ratio, result, width;
+  let fill_ratio, height, maxHeight, maxWidth, ratio, width;
   maxWidth = 760;
   maxHeight = 700;
   ratio = 0;
@@ -984,6 +984,7 @@ ImageToolbar.prototype.pullBackgroundContainer = function () {
       isIFrame = section?.hasClass('section--video'),
       figure,
       currentContent,
+      captionCurrent,
       backgrounded,
       backgroundedImage,
 

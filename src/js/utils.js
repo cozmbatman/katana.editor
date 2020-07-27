@@ -13,31 +13,12 @@ const is_caret_at_end_of_node = (node, range) => {
   return post_range.toString().trim().length === 0;
 };
 
-const editableIsCaret = () => {
-  return window.getSelection().type === 'Caret';
-};
-
 const editableRange = () => {
   const sel = window.getSelection();
   if (!(sel.rangeCount > 0)) {
     return;
   }
   return sel.getRangeAt(0);
-};
-
-const editableCaretRange = () => {
-  if (!editableIsCaret()) {
-    return;
-  }
-  return editableRange();
-};
-
-const editableSetRange = (range) => {
-  const sel = window.getSelection();
-  if (sel.rangeCount > 0) {
-    sel.removeAllRanges();
-  }
-  return sel.addRange(range);
 };
 
 const Utils = {
@@ -240,9 +221,9 @@ const Utils = {
 
   selection : () => {
     if (window.getSelection) {
-      return selection = window.getSelection();
+      return window.getSelection();
     } else if (document.selection && document.selection.type !== "Control") {
-      return selection = document.selection;
+      return document.selection;
     }
   },
 
@@ -273,8 +254,9 @@ const Utils = {
 
   urlIsForImage : (url) => {
     let a = document.createElement('a');
-    a.href = url,
-    path = a.pathname;
+    let path = a.pathname;
+
+    a.href = url;
     if (path.indexOf('.jpeg') != -1) {
       return true;
     }
@@ -463,18 +445,17 @@ const Utils = {
       window.mozRequestAnimationFrame ||
       window.oRequestAnimationFrame ||
       window.msRequestAnimationFrame ||
-      function (callback, element) {
+      function (callback) {
         window.setTimeout(callback, 1000 / 60);
       }
     })(),
 
-  handleScroll : (items) => {
+  handleScroll : () => {
     if (Utils.scrollAttached) {
       return;
     }
     Utils.scrollAttached = true;
     let d = document,
-        w = window,
         wHeight = Utils.getWindowHeight(),
         didScroll = false,
         body = d.querySelector('body'),
@@ -483,11 +464,9 @@ const Utils = {
     function hasScrolled() {
       const st = d.body.scrollTop;
       const cbs = _this.scrollHandlers;
-      for (let key in cbs) {
-        if (cbs.hasOwnProperty(key)) {
-          const fn = cbs[key];
-          fn(st, body, d.documentElement.scrollHeight, wHeight);
-        }
+      for (const key of Object.entries(cbs)) {
+        const fn = cbs[key];
+        fn(st, body, d.documentElement.scrollHeight, wHeight);
       }
       didScroll = false;
     }
@@ -495,7 +474,7 @@ const Utils = {
     function checkScroll() {
       if (!didScroll) {
         didScroll = true;
-        animationFrame(hasScrolled);
+        Utils.animationFrame(hasScrolled);
       }
     }
     //TODO pipe debounce
