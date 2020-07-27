@@ -171,7 +171,7 @@ Images.prototype.handleThirdPartyImage = function(image_element, opts) {
 Images.prototype.thirdPartyImageLoaded = function (ob) {
   const oldImg = document.querySelector('[src="'+ob.url+'"]'),
       newUrl = this.image_cdn_path + '/fullsize/' + ob.file,
-      tmpl = Utils.generateElement(this.current_editor.getFigureTemplate()),
+      tmpl = Utils.generateElement(this.current_editor.templates.getFigureTemplate()),
       img = tmpl.querySelector('img');
 
   img.attr('src', newUrl);
@@ -235,7 +235,7 @@ Images.prototype.uploadExistentImage = function(image_element, opts) {
     opts = {};
   }
 
-  tmpl = Utils.generateElement(this.current_editor.getFigureTemplate());
+  tmpl = Utils.generateElement(this.current_editor.templates.getFigureTemplate());
   
   if (this.addImagesInContainer) {
     tmpl.addClass('figure-in-row');
@@ -387,7 +387,7 @@ Images.prototype.displayCachedImage = function(file, cont, callback) {
     const self = _this;
   
     let img_tag, new_tmpl, replaced_node;
-    new_tmpl = Utils.generateElement(self.current_editor.getFigureTemplate());
+    new_tmpl = Utils.generateElement(self.current_editor.templates.getFigureTemplate());
 
     if(typeof cont != 'undefined' && cont != null) {
       new_tmpl.addClass('figure-in-row');
@@ -596,7 +596,7 @@ Images.prototype.addImagesOnScene = function () {
       }
 
       const newCount = size - l > 3 ? 3 : size - l;
-      const newRow = this.blockGridRowTemplate(newCount);
+      const newRow = Utils.generateElement(this.current_editor.templates.gridRowTemplate(newCount));
       cont.insertAdjacentElement('afterend', newRow);
       cont = newRow;
     }
@@ -710,17 +710,6 @@ Images.prototype.fixPositioningForMultipleImages = function (cont, figures, coun
   
 };
 
-Images.prototype.blockGridRowTemplate = (count) => {
-  return Utils.generateElement(`<div class="block-grid-row" data-name="${Utils.generateId()}" data-paragraph-count="${count}"></div>`);
-};
-
-Images.prototype.blockGridTemplate = (count) => {
-  return Utils.generateElement(`<figure class="block-content-inner block-grid item-text-default" data-name="${Utils.generateId()}" >
-    <div class="block-grid-row" data-name="${Utils.generateId()}" data-paragraph-count="${count}"></div>
-    <figcaption class="block-grid-caption" data-name="${Utils.generateId()}" data-placeholder-value="Type caption for image (optional)"><span class="placeholder-text">Type caption for image (optional)</span></figcaption>
-    </figure>`);
-}
-
 Images.prototype.pushMultipleImageContainer = function (count, figure) {
   let node;
   if (typeof figure != 'undefined') {
@@ -743,7 +732,7 @@ Images.prototype.pushMultipleImageContainer = function (count, figure) {
     bottomContainer.append(item.nextElementSibling);
   }
 
-  const new_tmpl = this.blockGridTemplate(count);
+  const new_tmpl = Utils.generateElement(this.current_editor.templates.blockGridTemplate(count));
   parentContainer.insertAdjacentElement('afterend', new_tmpl);
   new_tmpl.insertAdjacentElement('afterend', bottomContainer);
 
@@ -880,22 +869,22 @@ Images.prototype.embedParagraphAboveImage = function(figure) {
   let cont = figure.closest('.block-content-inner'),
       p = null,
     createAndAddContainer = (before) => {
-      const div = Utils.generateElement(this.current_editor.getSingleLayoutTempalte());
-      const p = Utils.generateElement(this.current_editor.baseParagraphTmpl());
+      const div = Utils.generateElement(this.current_editor.templates.getSingleLayoutTemplate());
+      const p = Utils.generateElement(this.current_editor.templates.baseParagraphTmpl());
       div.appendChild(p);
       before.parentNode.insertBefore(div, before);
     };
 
   if(cont != null) {
     if (cont.hasClass('center-column')) { // just embed a paragraph above it
-      p = Utils.generateElement(this.current_editor.baseParagraphTmpl());
+      p = Utils.generateElement(this.current_editor.templates.baseParagraphTmpl());
       figure.parentNode.insertBefore(p, figure);
     } else if(cont.hasClass('full-width-column')) {
       const figures = cont.querySelectorAll('.item-figure');
       if (figures.length == 1) {
         createAndAddContainer(cont);
       } else {
-        let bottomContainer = Utils.generateElement(`<div class="block-content-inner full-width-column"></div>`);
+        let bottomContainer = Utils.generateElement(this.current_editor.templates.getSingleLayoutTemplate("full-width-column"));
         while(figure.nextElementSibling != null) {
           bottomContainer.appendChild(figure.nextElementSibling);
         }

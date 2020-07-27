@@ -1,6 +1,5 @@
 (function () {
-  var u = Katana.utils;
-
+  
   Katana.Builder = (function() {
     
     function Builder(opts) {
@@ -56,16 +55,16 @@
     };
 
     Builder.prototype.segregateData = function () {
-      var firstPass = {}; // after first pass, this object ll contains key => sectionName, value => {section: 'name', content: [], info: sectionInfo};
+      const firstPass = {}; // after first pass, this object ll contains key => sectionName, value => {section: 'name', content: [], info: sectionInfo};
 
-      for(var prop in this.data) {
+      for(let prop in this.data) {
         if (this.data.hasOwnProperty(prop)) {
-          var item = this.data[prop]
+          const item = this.data[prop]
               type = item.type,
               name = item.name;
-              if (type >=0 && type <= 3) { // section we got
+          if (type >=0 && type <= 3) { // section we got
           if (typeof firstPass[name] == 'undefined') {
-            var ob = {
+            const ob = {
                 section: name,
                 content: [],
                 info: item
@@ -83,11 +82,11 @@
         }
       }
 
-      var items = [];
-      for(var prop in firstPass) {
+      const items = [];
+      for(let prop in firstPass) {
         if (firstPass.hasOwnProperty(prop)) {
-          var item = firstPass[prop];
-          var info = item.info;
+          const item = firstPass[prop];
+          const info = item.info;
           items[info.index] = item;
         }
       }
@@ -97,8 +96,8 @@
     };
 
     Builder.prototype.paint = function () {
-      var html = this.template(this.parsedData);
-      console.log(html);
+      //const html = this.template(this.parsedData);
+      //console.log(html);
     };
 
     return Builder;

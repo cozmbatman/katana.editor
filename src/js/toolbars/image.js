@@ -72,17 +72,7 @@ ImageToolbar.prototype.defaultConfig = function () {
 
 ImageToolbar.prototype.template = function () {
   if(this.config.buttons.length > 0) {
-    let html = `<div class="mf-menu-linkinput">
-          <input class="mf-menu-input" placeholder="https://">
-          <div class="mf-menu-button mf-link-close">&#215;</div>
-        </div>
-        <ul class='mf-menu-buttons'>`;
-
-    this.config.buttons.forEach((item) => {
-      html += `<li class='mf-menu-button'><i class="mf-icon mfi-${item.i}" data-action="${item.a}"></i></li>`;
-    });
-    html += `</ul>`;
-    return html;  
+    return this.current_editor.templates.toolbarTemplate(this.config.buttons);
   }
   return '';
 };
@@ -151,7 +141,7 @@ ImageToolbar.prototype.shortCutKey = function (key, event) {
     break;
   }
   if (handled) {
-    /*var _this = this;
+    /*const _this = this;
     setTimeout(function () {
       // _this.current_editor.image_toolbar.show();  
     }, 50);*/
@@ -205,7 +195,7 @@ ImageToolbar.prototype.createlink = function(input) {
   this.elNode.removeClass("mf-menu--linkmode");
   if (input.value != '') {
     const inputValue = input.value.replace(this.strReg.whiteSpace, "").replace(this.strReg.mailTo, "mailto:$1").replace(this.strReg.http, "http://$1");
-    const a = `<a href="${inputValue}" data-href="${inputValue}" class="markup-anchor markup-figure-anchor"></a>`;
+    const a = this.current_editor.templates.anchorMarkup(inputValue, "markup-figure-anchor");
     document.querySelector('.item-figure.item-selected')?.querySelector('img')?.wrap(a);
     this.displayHighlights();
   }
@@ -295,7 +285,7 @@ ImageToolbar.prototype.pullFullWidthContainer = function () {
       if (prevContainer != null) {
         prevContainer.appendChild(sel);
       } else {
-        const ct = Utils.generateElement(this.current_editor.getSingleLayoutTempalte());
+        const ct = Utils.generateElement(this.current_editor.templates.getSingleLayoutTemplate());
         curr.parentNode.insertBefore(ct, curr);;
         ct.appendChild(sel);
         prevContainer = ct;
@@ -320,7 +310,7 @@ ImageToolbar.prototype.pullFullWidthContainer = function () {
         nextContainer.parentNode.removeChild(nextContainer);
       }
       curr.parentNode.removeChild(curr);
-    }else { // we have merged two full width containers together
+    } else { // we have merged two full width containers together
       const firstGraf = curr.querySelector('.item-figure:first-child'),
       lastGraf = curr.querySelector('.item-figure:last-child');
 
@@ -328,24 +318,24 @@ ImageToolbar.prototype.pullFullWidthContainer = function () {
         if (prevContainer != null) {
           prevContainer.append(sel);
         } else {
-          const newCont = Utils.generateElement(this.current_editor.getSingleLayoutTempalte());
+          const newCont = Utils.generateElement(this.current_editor.templates.getSingleLayoutTemplate());
           newCont.appendChild(sel);
           newCont.insertBefore(curr);
         }
-      }else if(lastGraf != null && lastGraf == sel) { // add in lower container or create one
+      } else if(lastGraf != null && lastGraf == sel) { // add in lower container or create one
         if (nextContainer != null) {
           sel.insertBefore(nextContainer.querySelector('.item:first-child'));
         } else {
-          const newCont = Utils.generateElement(this.current_editor.getSingleLayoutTempalte());
+          const newCont = Utils.generateElement(this.current_editor.templates.getSingleLayoutTemplate());
           newCont.appendChild(sel);
           newCont.insertAfter(curr);
         }
-      }else { // create a layout single inbetween
+      } else { // create a layout single inbetween
         const newBottomContainer = Utils.generateElement('<div class="block-content-inner full-width-column"></div>');
         while(sel.nextElementSibling != null){
           newBottomContainer.appendChild(sel.nextElementSibling);
         }
-        const newFigureContainer = Utils.generateElement(this.current_editor.getSingleLayoutTempalte());
+        const newFigureContainer = Utils.generateElement(this.current_editor.templates.getSingleLayoutTemplate());
         newFigureContainer.appendChild(sel);
         newFigureContainer.insertAfter(curr);
         newBottomContainer.insertAfter(newFigureContainer);
@@ -360,9 +350,9 @@ ImageToolbar.prototype.pushFullWidthContainer = function () {
     return;
   }
 
-  const bottomContainer = Utils.generateElement('<div class="block-content-inner center-column"></div>'),
+  const bottomContainer = Utils.generateElement(this.current_editor.templates.getSingleLayoutTemplate()),
   currentContainer = sel.closest('.block-content-inner'),
-  figureContainer = Utils.generateElement('<div class="block-content-inner full-width-column"></div>');
+  figureContainer = Utils.generateElement(this.current_editor.templates.getSingleLayoutTemplate("full-width-column"));
 
   while(sel.nextElementSibling != null) {
     bottomContainer.appendChild(sel.nextElementSibling);
@@ -393,7 +383,7 @@ ImageToolbar.prototype._commandStretchImageInGrid = function(figure) {
 
   if (nxtFigures != null) {
     if(nextRow == null) {
-      const tmpl = Utils.generateElement(`<div class="block-grid-row" data-name="${Utils.generateId()}"></div>`);
+      const tmpl = Utils.generateElement(this.current_editor.templates.gridRowTemplate());
       currentRow.insertAdjacentElement('afterend', tmpl);
       nextRow = tmpl;
     }
@@ -405,7 +395,7 @@ ImageToolbar.prototype._commandStretchImageInGrid = function(figure) {
     });
   }
 
-  const stretchRow = `<div class="block-grid-row" data-name="${Utils.generateId()}" data-paragraph-count="1"></div>`;
+  const stretchRow = this.current_editor.templates.gridRowTemplate("1");
   stretchRow = Utils.generateElement(stretchRow);
   stretchRow.appendChild(figure);
   currentRow.insertAdjacentElement('afterend', stretchRow);
@@ -478,7 +468,7 @@ ImageToolbar.prototype._commandGoDownInGrid = function (sel) {
   }
 
   if (nextRow == null) {
-    const tmpl = Utils.generateElement(`<div class="block-grid-row" data-name="${Utils.generateId()}"></div>`);
+    const tmpl = Utils.generateElement(this.current_editor.templates.gridRowTemplate());
     row.insertAdjacentElement('afterend', tmpl);
     nextRow = tmpl;
   }
@@ -517,7 +507,7 @@ ImageToolbar.prototype._commandGoUpInGrid = function (figure) {
   }
 
   if (prevRow == null) {
-    const tmpl = Utils.generateElement(`<div class="block-grid-row" data-name="${Utils.generateId()}"></div>`);
+    const tmpl = Utils.generateElement(this.current_editor.templates.gridRowTemplate());
     tmpl.insertBefore(currRow);
     prevRow = tmpl;
   }
@@ -941,7 +931,7 @@ ImageToolbar.prototype.pushBackgroundContainer = function () {
   }
 
   const img = figure.querySelector('img'),
-      tmpl = isIFrame ? Utils.generateElement(this.current_editor.templateBackgroundSectionForVideo()) : Utils.generateElement(this.current_editor.templateBackgroundSectionForImage()),
+      tmpl = isIFrame ? Utils.generateElement(this.current_editor.templates.templateBackgroundSectionForVideo()) : Utils.generateElement(this.current_editor.templates.templateBackgroundSectionForImage()),
       bgImg = tmpl.querySelector('.block-background-image').attr('style', 'background-image:url(' + img.attr('src') + ')'),
       aspectLock = tmpl.querySelector('.block-background');
 
@@ -973,10 +963,10 @@ ImageToolbar.prototype.pushBackgroundContainer = function () {
 
   // if we are the only section left after mergin we create one at the bottom of the image container
   if (tmpl.hasClass('block-first block-last')) {
-    const sectionTmpl = Utils.generateElement(this.current_editor.getSingleSectionTemplate());
+    const sectionTmpl = Utils.generateElement(this.current_editor.templates.getSingleSectionTemplate());
 
-    sectionTmpl.querySelector('.main-body')?.appendChild(Utils.generateElement(this.current_editor.getSingleLayoutTempalte()));
-    sectionTmpl.querySelector('.main-body .center-column')?.appendChild(Utils.generateElement(this.current_editor.baseParagraphTmpl()));
+    sectionTmpl.querySelector('.main-body')?.appendChild(Utils.generateElement(this.current_editor.templates.getSingleLayoutTemplate()));
+    sectionTmpl.querySelector('.main-body .center-column')?.appendChild(Utils.generateElement(this.current_editor.templates.baseParagraphTmpl()));
     sectionTmpl.insertAfter(tmpl);
     this.current_editor.fixSectionClasses();
   }
@@ -1006,7 +996,7 @@ ImageToolbar.prototype.pullBackgroundContainer = function () {
     return;
   }
 
-  figure = isIFrame ? Utils.generateElement(this.current_editor.getFrameTemplate()) : Utils.generateElement(this.current_editor.getFigureTemplate());
+  figure = isIFrame ? Utils.generateElement(this.current_editor.templates.getFrameTemplate()) : Utils.generateElement(this.current_editor.templates.getFigureTemplate());
   backgrounded = section.querySelector('.block-background');
   backgroundedImage = section.querySelector('.block-background-image');
   path = backgroundedImage != null ? Utils.getStyle(backgroundedImage , 'backgroundImage') : null;
@@ -1044,7 +1034,7 @@ ImageToolbar.prototype.pullBackgroundContainer = function () {
     figure.removeClass('item-text-default');
   }
 
-  figure.wrap(this.current_editor.getSingleLayoutTempalte());
+  figure.wrap(this.current_editor.getSingleLayoutTemplate());
 
   figure = figure.closest('.center-column');
 
@@ -1067,7 +1057,7 @@ ImageToolbar.prototype.pullBackgroundContainer = function () {
     }
     section.parentNode.removeChild(section);
   }else {
-    const newSection = Utils.generateElement(this.current_editor.getSingleSectionTemplate()),
+    const newSection = Utils.generateElement(this.current_editor.templates.getSingleSectionTemplate()),
         innerSection =  newSection.querySelector('.main-body');
 
     innerSection.appendChild(figure);

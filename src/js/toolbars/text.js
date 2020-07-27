@@ -102,17 +102,7 @@ TextToolbar.prototype.defaultConfig = function () {
 
 TextToolbar.prototype.template = function () {
   if(this.cachedTemplate == null) {
-    let html = `<div class="mf-menu-linkinput">
-        <input class="mf-menu-input" placeholder="https://">
-        <div class="mf-menu-button mf-link-close">&#215;</div></div>
-        <ul class='mf-menu-buttons'>`;
-  
-    this.config.buttons.forEach( item => {
-      return html += `<li class='mf-menu-button'><i class="mf-icon mfi-${item.i}"  data-action="${item.a}"></i></li>`;
-    });
-    
-    html += `</ul>`;
-    this.cachedTemplate = html;
+    this.cachedTemplate = this.current_editor.templates.toolbarTemplate(this.config.buttons);
   }
   return this.cachedTemplate;
 };
@@ -180,16 +170,16 @@ TextToolbar.prototype.actionIsLink = function (target, event) {
 };
 
 TextToolbar.prototype.shortCutKey = function (key, event) {
-  var _this = this;
-  var shouldOpenLink = function () {
-    var text = _this.current_editor.getSelectedText();
+  const _this = this;
+  const shouldOpenLink = function () {
+    const text = _this.current_editor.getSelectedText();
     return text.length ? true : false;
   };
 
   if (this.mode == 'write') {
-    var config = this.defaultConfig();
-    var action = '';
-    var node = this.current_editor.elNode.querySelector('.item-selected');
+    const config = this.defaultConfig();
+    const action = '';
+    const node = this.current_editor.elNode.querySelector('.item-selected');
     if (node && !node.hasClass('item-figure')) {
       this.savedSel = Utils.saveSelection();
       switch(key) {

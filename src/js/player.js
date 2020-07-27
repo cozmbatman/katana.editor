@@ -206,8 +206,7 @@ Player.manage = function (videos) {
 
 Player.addYoutubePlayers = function (urls) {
   for (let i = 0; i < urls.length; i = i + 1) {
-    var url = urls[i];
-    new YouTubePlayer(url);
+    new YouTubePlayer(urls[i]);
   }
 };
 

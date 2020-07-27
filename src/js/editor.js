@@ -4,6 +4,7 @@ import Poly from './polyfills';
 import boot from './boot';
 import Tooltip from './tooltip';
 import Player from './player';
+import Templates from './templates';
 
 import {TextToolbar, ImageToolbar} from './toolbars/index';
 import { ContentBar, ImageContentBarItem, VideoContentBarItem, SectionContentBarItem, EmbedContentBarItem } from './content/index';
@@ -57,15 +58,16 @@ function Editor(opts) {
   this.init = this.init.bind(this); // activate
   this.destroy = this.destroy.bind(this); // deactivate
 
+  //templates
+  this.templates = Templates;
+  
   //streamer
   this.streamer = Stream;
   this.subscribe = this.subscribe.bind(this); // for subscription to events
-  //this.notifySubscribers = this.notifySubscribers.bind(this); // notify subscribers of events
 
   // ui related
   this.render = this.render.bind(this);
-  this.template = this.template.bind(this);
-
+  
   //base methods
   this.initialize = this.initialize.bind(this);
   this.initContentOptions = this.initContentOptions.bind(this);
@@ -250,14 +252,8 @@ Editor.prototype.initialize = function () {
   this.embed_options = opts.embed ? opts.embed : { enabled: false };
   this.json_quack = opts.json_quack;
 
-  const embedPlcStr = opts.placeholders && opts.placeholders.embed ? opts.placeholders.embed : 'Paste a YouTube video link, and press Enter';
-  const titlePlcStr = opts.placeholders && opts.placeholders.title ? opts.placeholders.title : 'Title here';
-  const subTitlePlcStr = opts.placeholders && opts.placeholders.subtitle ? opts.placeholders.subtitle : 'Start with introduction ..';
-  
-  this.embed_placeholder = `<span class='placeholder-text placeholder-text--root'>${embedPlcStr}</span><br>`;
-  //this.oembed_url = `http://iframe.ly/api/iframely?api_key=4afb3d8a83ee3fdb9ecf73&url=`;
-  this.title_placeholder = `<span class="placeholder-text placeholder-text--root" data-placeholder-text="${titlePlcStr}">${titlePlcStr}</span><br>`;
-  this.subtitle_placeholder = `<span class="placeholder-text placeholder-text--root" data-placeholder-text="${subTitlePlcStr}">${subTitlePlcStr}</span><br>`;
+  this.storySectionFilterCallback = this.storySectionFilterCallback.bind(this);
+  this.templates.init({...opts.placeholders, storySectionFilter: this.storySectionFilterCallback});
 
   this.sectionsForParallax = [];
   this.parallax = null;
@@ -316,7 +312,7 @@ Editor.prototype.init = function(cb) {
     this.removeUnwantedSpans();
     setTimeout( () => {
       this.addFigureControls();
-    }, 200);
+    }, 100);
   }
 
   if (this.mode == 'read') {
@@ -331,7 +327,7 @@ Editor.prototype.init = function(cb) {
 
   setTimeout( () => {
     this.addBlanktoTargets();
-  }, 200);
+  }, 100);
 
   this.addEmptyClass();
 
@@ -348,8 +344,7 @@ Editor.prototype.addBlanktoTargets = function() {
   });
 };
 
-Editor.prototype.addEmptyClass = function() {
-};
+Editor.prototype.addEmptyClass = function() {};
 
 Editor.prototype.setInitialFocus = function () {
   const items = this.elNode.querySelectorAll('.item');
@@ -382,7 +377,7 @@ Editor.prototype.appendParallax = function () {
     if (document.querySelector('.parallax') != null) {
       return;
     }
-    let cv = Utils.generateElement(`<canvas class="parallax"></canvas>`),
+    let cv = Utils.generateElement(this.templates.canvasTemplate()),
         handled = false,
         resizeHandler;
 
@@ -433,8 +428,7 @@ Editor.prototype.initTextToolbar = function () {
   let toolbarNode = editorWrapper.querySelector('.mf-toolbar-base');
 
   if ( toolbarNode == null ) {
-    const tbHt = "<div class='mf-menu mf-toolbar-base mf-toolbar hide' ></div>";
-    const tbEl = Utils.generateElement(tbHt);
+    const tbEl = Utils.generateElement(this.templates.textToolbarBase());
     toolbarNode = this.elNode.insertAdjacentElement('afterend', tbEl);
   }
   
@@ -457,8 +451,7 @@ Editor.prototype.initContentOptions = function () {
   if (base_options.indexOf("image") >= 0) {
     let toolbarNode = editorWrapper.querySelector('.mf-toolbar-base-image');
     if (toolbarNode == null) {
-      const igTb = `<div class='mf-menu mf-toolbar-base mf-toolbar-base-image mf-toolbar hide'></div>`;
-      const igEl = Utils.generateElement(igTb);
+      const igEl = Utils.generateElement(this.templates.imageToolbarBase());
       toolbarNode = this.elNode.insertAdjacentElement('afterend', igEl);
     }
     
@@ -496,7 +489,7 @@ Editor.prototype.initContentOptions = function () {
 
   let contentBaseNode = editorWrapper.querySelector('.inlineContentOptions');
   if (contentBaseNode == null) {
-    const coEl = Utils.generateElement(`<div class='inlineContentOptions inlineTooltip' id='mfContentBase'></div>`);
+    const coEl = Utils.generateElement(this.templates.contentToolbarBase());
     contentBaseNode = this.elNode.insertAdjacentElement('afterend', coEl);
   }
   
@@ -507,7 +500,7 @@ Editor.prototype.initContentOptions = function () {
 
 Editor.prototype.render = function (cb) {
   if (this.elNode.innerHTML.trim() == '') {
-    this.elNode.appendChild( Utils.generateElement(this.template()) );
+    this.elNode.appendChild( Utils.generateElement(this.templates.mainTemplate(this.publicationMode)) );
     if (this.publicationMode) {
       const bd = this.elNode.querySelector('.block-stories .main-body');
       //TODO add autocomplete dependency
@@ -516,7 +509,7 @@ Editor.prototype.render = function (cb) {
       this.fillStoryPreview(bd, 6);
       const lsect = this.elNode.querySelector('section:last-child .main-body');
       if(lsect != null) {
-        lsect.appendChild(Utils.generateElement(`<div class="block-content-inner center-column"><p class="item item-p" name="${Utils.generateId()}"><br /></p></div>`));
+        lsect.appendChild(Utils.generateElement(this.templates.singleColumnPara()));
       }
     }
     return setTimeout(() => { 
@@ -546,7 +539,7 @@ Editor.prototype.parseInitialContent = function (cb) {
           const cont = item.closest('.block-grid');
           let caption = cont.querySelector('.block-grid-caption');
           if (caption == null) {
-            const t = Utils.generateElement(_this.figureCaptionTemplate(true));
+            const t = Utils.generateElement(_this.templates.figureCaptionTemplate(true));
             t.removeClass('figure-caption');
             t.addClass('block-grid-caption');
             cont.appendChild(t);
@@ -556,7 +549,7 @@ Editor.prototype.parseInitialContent = function (cb) {
         } else {
           let caption = item.querySelector('figcaption');
           if (caption == null) {
-            item.appendChild(Utils.generateElement(_this.figureCaptionTemplate()));
+            item.appendChild(Utils.generateElement(_this.templates.figureCaptionTemplate()));
             caption = item.querySelector('figcaption');
             item.addClass('item-text-default');
           }
@@ -610,7 +603,7 @@ Editor.prototype.setUpStoriesToolbar = function () {
       }
       let toolbar;
       if (section.hasClass('block-stories')) {
-        toolbar = Utils.generateElement(this.getStoriesSectionMenu(true));
+        toolbar = Utils.generateElement(this.templates.getStoriesSectionMenu(true));
         const name = section.attr('name');
         const obName = window['ST_' + name];
         
@@ -636,7 +629,7 @@ Editor.prototype.setUpStoriesToolbar = function () {
         }
 
         //FIXME autocomplete issue
-        //var auto = toolbar.querySelector('.autocomplete');
+        //const auto = toolbar.querySelector('.autocomplete');
         //auto.autocomplete({threshold:2, behave: 'buttons', type: 'tag'});
 
         const tagInpt = toolbar.querySelector('[data-for="tagname"]');
@@ -648,7 +641,7 @@ Editor.prototype.setUpStoriesToolbar = function () {
         }
         toolbar.insertBefore(body);
       } else {
-        toolbar = Utils.generateElement(this.getStoriesSectionMenu(false));
+        toolbar = Utils.generateElement(this.templates.getStoriesSectionMenu(false));
         toolbar.insertBefore(body);
       }
     }
@@ -656,9 +649,8 @@ Editor.prototype.setUpStoriesToolbar = function () {
 };
 
 Editor.prototype.addFigureControls = function () {
-
   this.elNode.querySelectorAll('.item-figure:not(.item-iframe)').forEach( item => {
-    const temp = Utils.generateElement(this.getImageFigureControlTemplate());
+    const temp = Utils.generateElement(this.templates.getImageFigureControlTemplate());
     item.querySelector('img')?.insertAdjacentElement('afterend', temp);
   });
 
@@ -671,25 +663,7 @@ Editor.prototype.addPlaceholdersForBackgrounds = function () {
   }
 };
 
-
-Editor.prototype.getPlaceholders = function () {
-  return `<h3 class="item item-h3 item-first" name="${Utils.generateId()}">${this.title_placeholder}</h3>
-  <p class="item item-p item-last" name="${Utils.generateId()}">${this.subtitle_placeholder}</p>`;
-};
-
-Editor.prototype.getSingleLayoutTempalte = function () {
-  return `<div class="block-content-inner center-column"></div>`;
-};
-
-Editor.prototype.getSingleSectionTemplate = function () {
-  return `<section class="block-content" name="${Utils.generateId()}">
-    <div class="main-divider" contenteditable="false"><hr class="divider-line" tabindex="-1"></div>
-    <div class="main-body">
-    </div>
-    </section>`;
-};
-
-Editor.prototype.getSingleStorySectionTemplate = function () {
+Editor.prototype.storySectionFilterCallback = function() {
   const existingSects = this.elNode.querySelectorAll('.block-stories'),
   excludes = [];
 
@@ -706,199 +680,17 @@ Editor.prototype.getSingleStorySectionTemplate = function () {
     }
   }
 
-  return `<section class="block-stories block-add-width as-image-list" name="${Utils.generateId()}" data-story-count="6">
-      <div class="main-divider" contenteditable="false"><hr class="divider-line" tabindex="-1"></div>
-      ${this.getStoriesSectionMenu(true, excludes)}
-      <div class="main-body">
-      </div>
-      </section>`;
-};
-
-Editor.prototype.getStoryPreviewTemplate = function () {
-  return `<div class="st-pre" >
-      <div class="st-img"></div>
-      <div class="st-title"></div>
-      <div class="st-sub"></div>
-      <div class="st-sub2"></div>
-      </div>`;
-};
+  return excludes;
+}
 
 Editor.prototype.fillStoryPreview = function (container, count) {
   count = typeof count == 'undefined' || isNaN(count) ? 6 : count;
   let ht = `<div class="center-column" contenteditable="false">`;
   for (let i = 0; i < count; i = i + 1) {
-    ht += this.getStoryPreviewTemplate();
+    ht += this.templates.getStoryPreviewTemplate();
   }
   ht += `</div>`;
   container.innerHTML = ht;
-};
-
-Editor.prototype.menuOpts = [['featured','Featured'],['latest','Latest'],['tagged','Tagged as']];
-
-Editor.prototype.getStoriesSectionMenu = function (forStories, exclude) {
-  const fs = typeof forStories == 'undefined' ? true : forStories;
-  let ht = `<div class="main-controls '${fs ? `story-mode` : `plain-mode`}" contenteditable="false">
-        <div class="main-controls-inner center-column">
-        <select data-for="storytype">`;
-
-  let opts = '';
-  const excludeOpts = typeof exclude != 'undefined' ? exclude : [];
-
-  for (let i = 0; i < this.menuOpts.length; i = i + 1) {
-    const menu = this.menuOpts[i];
-    if (excludeOpts.indexOf(menu[0]) == -1) {
-      opts += `<option value="${menu[0]}">${menu[1]}</option>`;
-    }
-  }
-
-  ht += opts;
-
-  ht += `</select>';
-    <input type="text" class="text-small autocomplete" data-behave="buttons" data-type="tag" data-for="tagname" placeholder="Tag name here"></input>
-    <input type="number" class="text-small" data-for="storycount" value="6" min="4" max="10"></input>
-    <div class="right">
-    <div class="main-controls-structure">
-    <i class="mfi-text-left" data-action="list-view"></i>
-    <i class="mfi-photo" data-action="image-grid"></i>
-    </div>
-    <div class="main-controls-layout">`;
-
-  if (!fs) {
-    ht += `<i class="mfi-image-default" data-action="center-width"></i>`;
-  }
-
-  ht += `<i class="mfi-image-add-width" data-action="add-width"></i>
-    <i class="mfi-image-full-width" data-action="full-width"></i>
-    <i class="mfi-cross left-spaced" data-action="remove-block"></i>
-    </div>
-    </div>
-    </div>
-    </div>`
-  return ht;
-};
-
-Editor.prototype.getImageFigureControlTemplate = function () {
-  return  `<div class='item-controls-cont'>
-  <div class='item-controls-inner'>
-  <i class='mfi-arrow-up action' data-action='goup' title='Move image up'></i>
-  <i class='mfi-arrow-left action' data-action='goleft' title='Move image to left'></i>
-  <i class='mfi-arrow-right action' data-action='goright' title='Move image to right'></i>
-  <i class='mfi-cross action' data-action='remove' title='Remove image'></i>
-  <i class='mfi-carriage-return action' data-action='godown' title='Move image to next line'></i>
-  <i class='mfi-plus action' data-action='addpic' title='Add photo here'></i>
-  <div class='extend-button action' data-action='stretch' title='Stretch to full width'><i class='mfi-extend-in-row'></i></div>
-  </div>
-  </div>`;
-};
-
-Editor.prototype.getFigureTemplate = function () {
-  return  `<figure contenteditable='false' class='item item-figure item-text-default' name='${Utils.generateId()}' tabindex='0'>
-  <div style='' class='padding-cont'> 
-  <div style='padding-bottom: 100%;' class='padding-box'></div> 
-  <img src='' data-height='' data-width='' data-image-id='' class='item-image' data-delayed-src='' /> 
-  ${this.getImageFigureControlTemplate()}
-  </div> 
-  <figcaption contenteditable='true' data-placeholder-value='Type caption for image (optional)' class='figure-caption caption'>
-  <span class='placeholder-text'>Type caption for image (optional)</span> <br> 
-  </figcaption> 
-  </figure>`;
-};
-
-Editor.prototype.figureCaptionTemplate = function (multiple) {
-  const plc = typeof multiple != 'undefined' ? `Type caption for images(optional)` : `Type caption for image(optional)`;
-  return `<figcaption contenteditable='true' data-placeholder-value='${plc}' class='figure-caption caption'>
-    <span class="placeholder-text">${plc}<span> <br />
-    </figcaption>`;
-};
-
-Editor.prototype.getFrameTemplate = function () {
-  return `<figure contenteditable='false' class='item item-figure item-iframe item-first item-text-default' name='${Utils.generateId()}' tabindex='0'>
-  <div class='iframeContainer'>
-  <div style='' class='padding-cont'> 
-  <div style='padding-bottom: 100%;' class='padding-box'>
-  </div>
-  <img src='' data-height='' data-width='' data-image-id='' class='item-image' data-delayed-src=''> 
-  </div> 
-  <div class='item-controls ignore'>
-  <i class='mfi-icon mfi-play'></i>
-  </div>
-  </div> 
-  <figcaption contenteditable='true' data-placeholder-value='Type caption for video (optional)' class='figure-caption caption'>
-  <span class='placeholder-text'>Type caption for video (optional)</span>"
-  </figcaption> 
-  </figure>`;
-};
-
-
-Editor.prototype.template = function() {
-  if (this.publicationMode) {
-    return `<section class='block-content block-first block-last block-center-width' name='${Utils.generateId()}'>
-          <div class='main-divider' contenteditable='false'>
-            <hr class='divider-line' tabindex='-1'/>
-          </div> 
-        ${this.getStoriesSectionMenu()}
-        <div class='main-body'>  
-        <div class='block-content-inner center-column'>${this.getPlaceholders()}</div> </div> </section>
-        ${this.getSingleStorySectionTemplate()}
-        ${this.getSingleSectionTemplate()}`;
-  }
-
-  return `<section class='block-content block-first block-last' name='${Utils.generateId()}'>
-    <div class='main-divider' contenteditable='false'>
-      <hr class='divider-line' tabindex='-1'/>
-    </div>
-    <div class='main-body'>
-      <div class='block-content-inner center-column'>${this.getPlaceholders()}</div>
-    </div>
-    </section>`;
-};
-
-Editor.prototype.templateBackgroundSectionForImage = function () {
-  return `<section name="${Utils.generateId()}" class="block-content block-image image-in-background with-background">
-  <div class="block-background" data-scroll="aspect-ratio-viewport" contenteditable="false" data-image-id="" data-width="" data-height="">
-  <div class="block-background-image" style="display:none;"></div>
-  </div>
-  <div class="table-view">
-  <div class="table-cell-view" contenteditable="false">
-  <div class="main-body" contenteditable="true">
-  <div class="block-content-inner center-column">
-  <h2 name="${Utils.generateId()}" class="item item-h2 item-text-default item-first item-selected" data-placeholder-value="Continue writing">
-  <span class="placeholder-text">Continue writing</span><br>
-  </h2>
-  </div></div>
-  </div></div>
-  <div class="block-caption">
-  <label name="${Utils.generateId()}" data-placeholder-value="Type caption " class="section-caption item-text-default item-last">
-  <span class="placeholder-text">Type caption </span><br>
-  </label>
-  </div>
-  </section>`;
-};
-
-Editor.prototype.templateBackgroundSectionForVideo = function () {
-  return `<section name="${Utils.generateId()}" class="block-content video-in-background block-image image-in-background with-background">
-  <div class="block-background" data-scroll="aspect-ratio-viewport" contenteditable="false" data-image-id="" data-width="" data-height="">
-  <div class="block-background-image" style="display:none;"></div>
-  </div>
-  <div class="table-view">
-  <div class="table-cell-view" contenteditable="false">
-  <div class="main-body" contenteditable="true">
-  <div class="block-content-inner center-column">
-  <h2 name="${Utils.generateId()}" class="item item-h2 item-text-default item-first item-selected" data-placeholder-value="Continue writing" data-scroll="native">
-  <span class="placeholder-text">Continue writing</span><br>
-  </h2>
-  </div></div>
-  </div></div>
-  <div class="block-caption">
-  <label name="${Utils.generateId()}" data-placeholder-value="Type caption " class="section-caption item-text-default item-last">
-  <span class="placeholder-text">Type caption </span><br>
-  </label>
-  </div>
-  </section>`;
-};
-
-Editor.prototype.baseParagraphTmpl = function() {
-  return `<p class='item item-p' name='${Utils.generateId()}'><br></p>`;
 };
 
 Editor.prototype.hideImageToolbar = function() {
@@ -2915,7 +2707,7 @@ Editor.prototype.handleKeyUp = function(e, node) {
       if( anchor_node.textContent.isEmpty() && anchor_node.closest('.block-first') != null) {
         if(anchor_node.previousElementSibling && anchor_node.previousElementSibling.hasClass('item-first')) {
           Utils.stopEvent(e);
-          anchor_node.innerHTML = this.subtitle_placeholder;
+          anchor_node.innerHTML = this.templates.subtitle_placeholder;
           return false;
         }
       }
@@ -2926,7 +2718,7 @@ Editor.prototype.handleKeyUp = function(e, node) {
   
         if(anchor_node.nextElementSibling && anchor_node.nextElementSibling.hasClass('item-last')) {
           Utils.stopEvent(e);
-          anchor_node.innerHTML = this.title_placeholder;
+          anchor_node.innerHTML = this.templates.title_placeholder;
           return false;
         }
       }
@@ -2956,7 +2748,7 @@ Editor.prototype.handleKeyUp = function(e, node) {
       if (!caption.attr('data-placeholder-value')) {
         caption.attr('data-placeholder-value', 'Type caption for image(Optional)');
       }
-      caption.appendChild(Utils.generateElement('<span class="placeholder-text">' + caption.attr('data-placeholder-value') + '</span>'));
+      caption.appendChild(Utils.generateElement(`<span class="placeholder-text">${caption.attr('data-placeholder-value')}</span>`));
       if(caption.closest('.item-figure') != null) {
         caption.closest('.item-figure').addClass('item-text-default');
       }
@@ -3059,7 +2851,7 @@ Editor.prototype.handleDrop = function (e) {
 };
 
 Editor.prototype.handleLineBreakWith = function(etype, from_element) {
-  let new_paragraph = Utils.generateElement(`<${etype} class='item item-${etype} item-empty item-selected'><br/></${etype}>`);
+  let new_paragraph = Utils.generateElement(this.templates.singleItemTemplate(etype));
 
   if (from_element.hasClass('block-grid-caption')) {
     from_element.closest('.block-grid')?.insertAdjacentElement('afterend', new_paragraph)
@@ -3073,7 +2865,7 @@ Editor.prototype.handleLineBreakWith = function(etype, from_element) {
 };
 
 Editor.prototype.replaceWith = function(etype, from_element) {
-  const new_paragraph = Utils.generateElement(`<${etype} class='item item-${etype} item-empty item-selected'><br/></${etype}>`);
+  const new_paragraph = Utils.generateElement(this.templates.singleItemTemplate(etype));
   from_element.replaceWith(new_paragraph);
   this.setRangeAt(new_paragraph);
   this.scrollTo(new_paragraph);
@@ -3392,13 +3184,13 @@ Editor.prototype.addClassesToElement = function(element, forceKlass) {
       n = n.parentNode;
       break;  
     case "blockquote":
-      n.removeAttribute('class');
       if (n.hasClass('pullquote')) {
         fK = 'pullquote';
       };
       if (n.hasClass('with-cite')) {
         fK = fK + ' with-cite';
       }
+      n.removeAttribute('class');
       n.addClass('item item-' + name);
       if(fK) {
         n.addClass(fK);
@@ -3420,7 +3212,7 @@ Editor.prototype.addClassesToElement = function(element, forceKlass) {
   }
 
   if (['figure', 'img', 'iframe', 'ul', 'ol'].indexOf(name) == -1) {
-    /*var n = n;
+    /*const n = n;
     n.html(n.html().replace(/&nbsp;/g, ' ')); */
   }
   if (hasEmpty) {
@@ -3504,7 +3296,7 @@ Editor.prototype.wrapTextNodes = function(element) {
     return false;
   });
 
-  Utils.arrayToNodelist(ecw).wrap("<p class='item grap--p'></p>");
+  Utils.arrayToNodelist(ecw).wrap("<p class='item item-p'></p>");
 };
 
 Editor.prototype.setElementName = function(element) {
@@ -3683,7 +3475,7 @@ Editor.prototype.removeSpanTag = function(item) {
 
 Editor.prototype.handleInmediateDeletion = function(element) {
   this.inmediateDeletion = false;
-  let new_node = Utils.generateElement(this.baseParagraphTmpl()).insertBefore(element);
+  let new_node = Utils.generateElement(this.templates.baseParagraphTmpl()).insertBefore(element);
   new_node.addClass("item-selected");
   this.setRangeAt( element.previousElementSibling );
   return element.parentNode.removeChild(element);
@@ -3691,7 +3483,7 @@ Editor.prototype.handleInmediateDeletion = function(element) {
 
 Editor.prototype.handleUnwrappedNode = function(element) {
   let new_node, tmpl;
-  tmpl = Utils.generateElement(this.baseParagraphTmpl());
+  tmpl = Utils.generateElement(this.templates.baseParagraphTmpl());
   this.setElementName(tmpl);
   element.wrap(tmpl);
   new_node = document.querySelector("[name='" + (tmpl.attr('name')) + "']");
@@ -3717,7 +3509,7 @@ Editor.prototype.handleNullAnchor = function() {
       return;
     }
     range = sel.getRangeAt(0);
-    span = Utils.generateElement(this.baseParagraphTmpl());
+    span = Utils.generateElement(this.templates.baseParagraphTmpl());
     range.insertNode(span);
     range.setStart(span, 0);
     range.setEnd(span, 0);
@@ -4063,12 +3855,12 @@ Editor.prototype.refreshStoriesMenus = function (val) {
   }
   let toAdd = null;
   if (val == 'featured') {
-    const menu = this.menuOpts[0];
+    const menu = this.templates.menuOpts[0];
     toAdd = document.createElement('option');
     toAdd.value = menu[0];
     toAdd.text = menu[1];
   } else if(val == 'latest') {
-    const menu = this.menuOpts[1];
+    const menu = this.templates.menuOpts[1];
     toAdd = document.createElement('option');
     toAdd.value = menu[0];
     toAdd.text = menu[1];
@@ -4124,13 +3916,13 @@ Editor.prototype.splitContainer = function (atNode, insrtSection, carryContent) 
       newContainer,
       newInner,
       carry = carryContent ? true : carryContent,
-      insertSection = typeof insrtSection == 'undefined' || insrtSection == null ? Utils.generateElement(this.getSingleSectionTemplate()) : insrtSection,
+      insertSection = typeof insrtSection == 'undefined' || insrtSection == null ? Utils.generateElement(this.templates.getSingleSectionTemplate()) : insrtSection,
       carryContainer = false;
 
   if (!carry) {
     newContainer = insertSection;
     newContainer.insertAfter(currContainer);
-    carryContainer = Utils.generateElement(this.getSingleSectionTemplate());
+    carryContainer = Utils.generateElement(this.templates.getSingleSectionTemplate());
     carryContainer.insertAfter(newContainer);
     newContainer = carryContainer;
     insertAfterContainer = carryContainer;
@@ -4147,7 +3939,7 @@ Editor.prototype.splitContainer = function (atNode, insrtSection, carryContent) 
     }
   }
 
-  const splittedLayout = Utils.generateElement(this.getSingleLayoutTempalte());
+  const splittedLayout = Utils.generateElement(this.templates.getSingleLayoutTemplate());
   splittedLayout.attr('class', currInner.attr('class'));
 
   while (atNode.nextElementSibling != null) {
@@ -4165,10 +3957,10 @@ Editor.prototype.splitContainer = function (atNode, insrtSection, carryContent) 
 
 
 Editor.prototype.appendTextSection = function () {
-  const sec = Utils.generateElement(this.getSingleSectionTemplate());
+  const sec = Utils.generateElement(this.templates.getSingleSectionTemplate());
   const mb = sec.querySelector('.main-body');
   if(mb != null) {
-    const mbs = '<div class="block-content-inner center-column"><p class="item item-p item-empty" name="'+Utils.generateId()+'"><br /></p></div>';
+    const mbs = this.templates.singleColumnPara("item-empty");
     mb.appendChild(Utils.generateElement(mbs));
   }
   this.elNode.appendChild(sec);

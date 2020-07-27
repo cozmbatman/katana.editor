@@ -33,7 +33,7 @@ Section.prototype.initialize = function () {
 
 Section.prototype.template = function () {
   const t = (title, action, icon)  => {
-    return `<button class='inlineTooltip-button scale' title='${title}' data-action='inline-menu-${action}' data-action-value='${action}' > <span class='tooltip-icon ${icon}'></span> </button>`;
+    return this.current_editor.templates.contentBasicButton({title,action,icon}, action);
   };
   if (this.editorType == 'publication') {
     let ht = t(this.title, this.action, this.icon);
@@ -148,7 +148,7 @@ Section.prototype.handleBackspaceKey = function (e, node) {
 Section.prototype.convertBackgroundSectionToPlain = function (node) {
   const sect = node?.closest('.block-content');
   if(sect != null) {
-    const newContainer = Utils.generateElement(this.current_editor.getSingleSectionTemplate());
+    const newContainer = Utils.generateElement(this.current_editor.templates.getSingleSectionTemplate());
     const currentBody = sect.querySelector('.main-body');
     if(newContainer != null) {
       const newContainerBody = newContainer.querySelector('.main-body');
@@ -215,9 +215,9 @@ Section.prototype.handlePreviousStoryTypeOptionsAfterAddition = function (newCon
 Section.prototype.splitContainer = function (atNode, storiesSection) {
   let newContainer;
   if (typeof storiesSection != 'undefined' && storiesSection) {
-    newContainer = Utils.generateElement(this.current_editor.getSingleStorySectionTemplate());
+    newContainer = Utils.generateElement(this.current_editor.templates.getSingleStorySectionTemplate());
   } else {
-    newContainer = Utils.generateElement(this.current_editor.getSingleSectionTemplate());
+    newContainer = Utils.generateElement(this.current_editor.templates.getSingleSectionTemplate());
   } 
   
   this.current_editor.splitContainer(atNode);

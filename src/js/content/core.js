@@ -32,12 +32,12 @@ Manager.prototype.template = function () {
     if (b.template) {
       menu += b.template();
     } else {
-      menu += `<button class="inlineTooltip-button scale" title="${b.title}" data-action="inline-menu-${b.action}" ${data_action_value}"> <span class="tooltip-icon ${b.icon}"></span> </button>`;
+      menu += this.current_editor.template.contentBasicButton(b, data_action_value);
     }
     return menu;
   });
 
-  return `<button class='inlineTooltip-button control' data-action='inline-menu' title='Content Options'> <span class='tooltip-icon mfi-plus'></span> </button> <div class='inlineTooltip-menu'>${menu}</div>`;
+  return this.current_editor.template.contentBasicButtonsWrap(menu);
 };
 
 Manager.prototype.render = function () {

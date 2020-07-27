@@ -119,7 +119,7 @@ Video.prototype.embedFramePlaceholder = function (ob, current_node, callback) {
       canGoBackground = ob.fs;
 
   if (thumb != '') {
-    const figure = Utils.generateElement(this.current_editor.getFrameTemplate()),
+    const figure = Utils.generateElement(this.current_editor.templates.getFrameTemplate()),
         _this = this,
         src = thumb,
         img = new Image();
@@ -169,7 +169,7 @@ Video.prototype.embedFramePlaceholder = function (ob, current_node, callback) {
 
       let caption = figure.querySelector('figcaption');
       if (caption != null) {
-        let capth = `<a rel="nofollow" class="markup--anchor markup--figure-anchor" data-href="${captionHref}" href="${captionHref}" target="_blank">Watch Video here.</a>`, lastChar;
+        let capth = this.current_editor.templates.anchorMarkup(captionHref, "markup-figure-anchor", true, 'Watch Video here'), lastChar;
         if (captionTitle) {
           captionTitle = captionTitle.trim();
           lastChar = captionTitle.charAt(captionTitle.length -1);
