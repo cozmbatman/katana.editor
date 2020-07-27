@@ -23,7 +23,7 @@ function ModelFactory(opts) {
   this.cache = {};
   this.addTo = {};
 
-};
+}
 
 ModelFactory.prototype.warmupOnly = false;
 ModelFactory.prototype.goingForUnload = false;
@@ -42,7 +42,7 @@ ModelFactory.prototype.manage = function (warmup) {
       this._build();
     });
 
-    window.addEventListener('beforeunload', (e) => {
+    window.addEventListener('beforeunload', () => {
       this.goingForUnload = true;
       return this._build();
     });
@@ -73,7 +73,7 @@ ModelFactory.prototype._fixNames = function () {
 
 };
 
-ModelFactory.prototype.successCallback = function (e) {
+ModelFactory.prototype.successCallback = function () {
   this.cache = this.addTo;
 };
 
@@ -132,27 +132,23 @@ ModelFactory.prototype.findDelta = function () {
       changeCounter = 0;
 
   for (prop in addTo) {
-    if (addTo.hasOwnProperty(prop)) {
-      item = addTo[prop];
-      citem = typeof cache[prop] != 'undefined' ? cache[prop] : false;
-      if (citem && !Utils.isEqual(item, citem)) {
-        deltaOb[prop] = item;
-        changeCounter++;
-      } else if (!citem) {
-        changeCounter++;
-        deltaOb[prop] = item;
-      }
+    item = addTo[prop];
+    citem = typeof cache[prop] != 'undefined' ? cache[prop] : false;
+    if (citem && !Utils.isEqual(item, citem)) {
+      deltaOb[prop] = item;
+      changeCounter++;
+    } else if (!citem) {
+      changeCounter++;
+      deltaOb[prop] = item;
     }
   }
 
   for (prop in cache) {
-    if (cache.hasOwnProperty(prop)) {
-      citem = cache[prop];
-      item = typeof addTo[prop] == 'undefined' ? true : false;
-      if (item) {
-        changeCounter++;
-        deltaOb[prop] = { 'removed': true };
-      }
+    citem = cache[prop];
+    item = typeof addTo[prop] == 'undefined' ? true : false;
+    if (item) {
+      changeCounter++;
+      deltaOb[prop] = { 'removed': true };
     }
   }
 

@@ -90,13 +90,13 @@ Video.prototype.loadEmbedDetailsFromServer = function (url, current_node, callba
   xhr.open("POST", this.current_editor.video_options.url, true);
   xhr.onload = () => {
     if(xhr.status == "200" && xhr.readyState == 4) {
-      _this.current_editor.currentRequestCount--;
+      this.current_editor.currentRequestCount--;
       try {
         const resp = JSON.parse(xhr.responseText);
         if (resp && resp.success) {
           const dt = resp.data;
           if (dt.video) {
-            _this.embedFramePlaceholder(dt, current_node, callback);
+            this.embedFramePlaceholder(dt, current_node, callback);
           }
         }
       } catch(e) {
@@ -105,7 +105,7 @@ Video.prototype.loadEmbedDetailsFromServer = function (url, current_node, callba
     }
   };
   xhr.onerror = () => {
-    _this.current_editor.currentRequestCount--;
+    this.current_editor.currentRequestCount--;
   }
   xhr.send({url: urll});
 };
@@ -113,10 +113,10 @@ Video.prototype.loadEmbedDetailsFromServer = function (url, current_node, callba
 Video.prototype.embedFramePlaceholder = function (ob, current_node, callback) {
   const thumb = ob.thumbUrl,
       frameUrl = ob.frameUrl,
-      captionTitle = ob.captionTitle,
       captionHref = ob.captionHref,
       aspectRatio = ob.aspect,
       canGoBackground = ob.fs;
+  let captionTitle = ob.captionTitle;
 
   if (thumb != '') {
     const figure = Utils.generateElement(this.current_editor.templates.getFrameTemplate()),
@@ -198,15 +198,14 @@ Video.prototype.getEmbedFromNode = function(node, extractedUrl) {
   this.node.attr('contenteditable','false');
   this.node.appendChild(Utils.generateElement('<i class="loader small dark"></i>'));
 
-  let url = typeof extractedUrl != 'undefined' ? extractedUrl : this.node.textContent, 
-      canGoBackground = false;
+  let url = typeof extractedUrl != 'undefined' ? extractedUrl : this.node.textContent;
+      //canGoBackground = false;
 
   if (url.indexOf('vimeo') != -1) {
     url = url + '?badge=0&byline=0&portrait=0&title=0';
-    canGoBackground = true;
-  }else if (url.indexOf('youtube') != -1){
-    url = url;
-    canGoBackground = true;
+    //canGoBackground = true;
+  } else if (url.indexOf('youtube') != -1){
+    //canGoBackground = true;
   }
 
   url = url + '&luxe=1';

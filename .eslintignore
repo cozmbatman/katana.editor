@@ -2,6 +2,7 @@ public/fonts
 node_modules/
 dist/
 postcss.*.*
-./src/js/builder/*.js
+src/js/builder/core.js
+src/js/lib/*.js
 .vscode
 webpack.*.*

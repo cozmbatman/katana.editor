@@ -30,7 +30,7 @@ Notes.prototype.initialize = function () {
 
   this.layout = opts.layout || 'side';
 
-  this.commentsCloserElement.addEventListener('click', (ev) => {
+  this.commentsCloserElement.addEventListener('click', () => {
     this.detailsHandler.closePreviousBox();
     this.deactivateAll();          
   });
@@ -66,7 +66,7 @@ Notes.prototype.readNotes = function () {
     if(xhr.status == "200" && xhr.readyState == 4) {
       try {
         const resp = JSON.parse(xhr.responseText);
-        _this.parseNotes(resp);
+        this.parseNotes(resp);
       } catch(e) {
         console.error(e);
       }
@@ -77,7 +77,7 @@ Notes.prototype.readNotes = function () {
 
 Notes.prototype.parseNotes = function (data) {
   if (data && data.success) {
-    const dt = data.data, notes = [];
+    let dt = data.data, notes = [];
 
     const pieces = {};
     if (dt.notes) {
@@ -105,7 +105,7 @@ Notes.prototype.handleNoteIconClick = function (ev, matched) {
       document.body.addClass('notes-opened');
       curr.addClass('is-clicked');
 
-      if (!_this.smallScreen) {
+      if (!this.smallScreen) {
 
         setTimeout(() => {
           this.repositionIcon(curr, against);
@@ -154,9 +154,9 @@ Notes.prototype.hidePreviousVisible = function () {
 };
 
 Notes.prototype.showNoteIcon = function (ob) {
-  const noteIcon = this._getNoteIcon(ob);
-  noteIcon.addClass('is-active');
-  if (ob.selection != null) {
+  this._getNoteIcon(ob)?.addClass('is-active');
+  
+  /*if (ob.selection != null) {
     let range,
       selection = ob.selection;
     if (selection.getRangeAt) {
@@ -164,7 +164,7 @@ Notes.prototype.showNoteIcon = function (ob) {
     } else {
       range = selection[0];
     }
-  }
+  }*/
 };
 
 Notes.prototype._getNoteIcon = function (ob) {
@@ -327,11 +327,9 @@ Notes.prototype.refresh = function () {
   this.deactivateCloser();
   const notes = this.existing_notes;
   for (let name in notes) {
-    if (notes.hasOwnProperty(name)) {
-      const sel = this.current_editor.elNode.querySelector('[name="' + name + '"]');
-      if (sel != null) {
-        this.showNoteIcon({node: sel, text: ''});
-      }
+    const sel = this.current_editor.elNode.querySelector('[name="' + name + '"]');
+    if (sel != null) {
+      this.showNoteIcon({node: sel, text: ''});
     }
   }
   this.detailsHandler.existingNotes(notes);

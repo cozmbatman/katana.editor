@@ -31,7 +31,7 @@ if (!Element.prototype.closest) {
 }
 
 if (!Element.prototype.parent) {
-  Element.prototype.parent = function(s) { // jquery .parent
+  Element.prototype.parent = function() { // jquery .parent
     let el = this;
     if(el.parentNode == null) {
       return null;
@@ -84,7 +84,7 @@ if (!Element.prototype.next) {
     }
     return all.length == 0 ? null : (all.length == 1 ? all[0] : all);
   }
-};
+}
 
 if (!Element.prototype.insertAfter) {
   Element.prototype.insertAfter = function(after) {
@@ -169,8 +169,7 @@ if(!Element.prototype.isElementVerticallyInViewPort) {
   Element.prototype.isElementVerticallyInViewPort = function() {
     let el = this;
     const rect = el.getBoundingClientRect(),
-        ch = (window.innerHeight || document.documentElement.clientHeight),
-        cw = (window.innerWidth || document.documentElement.clientWidth);
+        ch = (window.innerHeight || document.documentElement.clientHeight);
     return (rect.top <= ch) && ((rect.top + rect.height) >= 0);
   };
 }

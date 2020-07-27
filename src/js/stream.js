@@ -28,8 +28,8 @@ function Stream() {
       return;
     }
     const entries = streamHandlers[name].entries();
-    for(const [k, v] of entries) {
-      v.execute(ev);
+    for(const k of entries) {
+      entries[k].execute(ev);
     }
   }
 }

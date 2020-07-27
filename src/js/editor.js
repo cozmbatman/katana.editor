@@ -1,6 +1,6 @@
 import Utils from './utils';
 import Stream from './stream';
-import Poly from './polyfills';
+import Poly from './polyfills'; //eslint-disable-line no-unused-vars
 import boot from './boot';
 import Tooltip from './tooltip';
 import Player from './player';
@@ -22,7 +22,7 @@ const BACKSPACE = 8,
     RIGHTARROW = 39,
     DOWNARROW = 40,
     DELETE = 46,
-    END_KEY = 35,
+    END_KEY = 35, //eslint-disable-line no-unused-vars
 
     SINGLE_QUOTE_WHICH = 39,
     DOUBLE_QUOTE_WHICH = 34,
@@ -129,7 +129,7 @@ function Editor(opts) {
 
   boot.it(this, opts);
 
-};
+}
 
 
 Editor.prototype.segregateEvents = function () {
@@ -417,7 +417,7 @@ Editor.prototype.appendToolbars = function () {
   this.initTextToolbar();
   if (this.base_content_options.length > 0 && this.mode == 'write') {
     this.initContentOptions();
-  };
+  }
 
   this.tooltip = new Tooltip({editor: this, node: document.querySelector('body')});
   this.tooltip.render().hide();
@@ -607,14 +607,15 @@ Editor.prototype.setUpStoriesToolbar = function () {
         const name = section.attr('name');
         const obName = window['ST_' + name];
         
-        const count = 6, stType = 'featured', tagValue = '';
+        let count = 6, stType = 'featured';
+        //, tagValue = '';
 
         if (obName) {
           count = obName.storyCount;
           stType = obName.storyType;
-          if (typeof obName.storyTag != 'undefined') {
-            tagValue = obName.storyTag;
-          }
+          // if (typeof obName.storyTag != 'undefined') {
+          //   tagValue = obName.storyTag;
+          // }
         } 
 
         this.fillStoryPreview(body, count);
@@ -635,7 +636,7 @@ Editor.prototype.setUpStoriesToolbar = function () {
         const tagInpt = toolbar.querySelector('[data-for="tagname"]');
         if (stType == 'tagged') {
           tagInpt.closest('.autocomplete-buttons').removeClass('hide');
-          auto.autocomplete({action:'set', data: JSON.parse(tagValue)});
+          //auto.autocomplete({action:'set', data: JSON.parse(tagValue)});
         } else {
           tagInpt.closest('.autocomplete-buttons').addClass('hide');
         }
@@ -657,10 +658,10 @@ Editor.prototype.addFigureControls = function () {
 };
 
 Editor.prototype.addPlaceholdersForBackgrounds = function () {
-  const backgrounds = this.elNode.querySelectorAll('.with-background');
-  if (backgrounds.length) {
+  //const backgrounds = this.elNode.querySelectorAll('.with-background');
+  // if (backgrounds.length) {
 
-  }
+  // }
 };
 
 Editor.prototype.storySectionFilterCallback = function() {
@@ -767,7 +768,8 @@ Editor.prototype.getCharacterPrecedingCaret = function() {
     } else if ((sel = document.selection) && sel.type !== "Control") {
       range = sel.createRange();
       precedingRange = range.duplicate();
-      precedingRange.moveToElementText(containerEl);
+      //FIXME what was containerEl
+      //precedingRange.moveToElementText(containerEl);
       precedingRange.setEndPoint("EndToStart", range);
       precedingChar = precedingRange.text.slice(0);
     }  
@@ -1039,7 +1041,7 @@ Editor.prototype.displayTooltipAt = function(element) {
   return this.content_bar.move(this.positions);
 };
 
-Editor.prototype.displayTextToolbar = function(sel) {
+Editor.prototype.displayTextToolbar = function() {
   return setTimeout(() => {
       const pos = Utils.getSelectionDimensions();
       this.text_toolbar.render();        
@@ -1118,7 +1120,7 @@ Editor.prototype.relocateTextToolbar = function(position) {
 // Toolbar related methods ends //
 
 Editor.prototype.hidePlaceholder = function (node, ev) {
-  let ev_type = ev.key || ev.keyIdentifier;
+  //let ev_type = ev.key || ev.keyIdentifier;
 
   if([UPARROW, DOWNARROW, LEFTARROW, RIGHTARROW].indexOf(ev.which) != -1) {
     this.skip_keyup = true;
@@ -1199,8 +1201,8 @@ Editor.prototype.doesTwoItemsMakeAList = function (first, second) {
     return { matched: firstMatch, type: 'ol' };
   }
 
-  firstMatch = f.match(/^\s*(\-|\*)\s*$/);
-  secondMatch = s.match(/^\s*(\-|\*)\s*$/);
+  firstMatch = f.match(/^\s*(\-|\*)\s*$/); //eslint-disable-line no-useless-escape
+  secondMatch = s.match(/^\s*(\-|\*)\s*$/); //eslint-disable-line no-useless-escape
 
   if (firstMatch && secondMatch) {
     return {matched: firstMatch, type: 'ul'};
@@ -1385,7 +1387,7 @@ Editor.prototype.cleanPastedText = function (text) {
     [new RegExp(/<\/?o:[a-z]*>/gi), ''],
 
     // Microsoft Word adds some special elements around list items
-    [new RegExp(/<!\[if !supportLists\]>(((?!<!).)*)<!\[endif]\>/gi), '$1']
+    [new RegExp(/<!\[if !supportLists\]>(((?!<!).)*)<!\[endif]\>/gi), '$1'] //eslint-disable-line no-useless-escape
 
   ];
 
@@ -1400,7 +1402,7 @@ Editor.prototype.insertTextAtCaretPosition = function (textToInsert, haveMoreNod
   if (document.getSelection && document.getSelection().getRangeAt) {
     const sel = document.getSelection();
     const range = sel.getRangeAt(0);
-    const ca = range.commonAncestorContainer;
+    let ca = range.commonAncestorContainer;
     
     const getBlockContainer = (node) => {
       while (node) {
@@ -1411,7 +1413,7 @@ Editor.prototype.insertTextAtCaretPosition = function (textToInsert, haveMoreNod
       }
     };
 
-    const generateRightParts = (node) => {
+    const generateRightParts = () => {
       if (sel.rangeCount > 0) {
         let blockEl = getBlockContainer(range.endContainer);
         if (blockEl) {
@@ -1423,7 +1425,7 @@ Editor.prototype.insertTextAtCaretPosition = function (textToInsert, haveMoreNod
       }
     };
 
-    const generateLeftParts = (node) => {
+    const generateLeftParts = () => {
       if (sel.rangeCount > 0) {
         let blockEl = getBlockContainer(range.startContainer);
         if (blockEl) {
@@ -1436,7 +1438,7 @@ Editor.prototype.insertTextAtCaretPosition = function (textToInsert, haveMoreNod
     };
 
     if (sel.type == 'Caret') {
-      off = range.endOffset;
+      //let off = range.endOffset;
       const rest = generateRightParts();
 
       if (ca.nodeType == 3) {
@@ -1655,8 +1657,7 @@ Editor.prototype.handleDblclick = function(e) {
 };
 
 Editor.prototype.handleMouseDown = function (e) {
-  let node, anchor_node,
-    el = e.toElement;
+  let node, el = e.toElement;
 
   if (el.hasClass('placeholder-text') || el.querySelectorAll('.placeholder-text').length) {
     node = el.closest('.figure-caption');
@@ -1713,7 +1714,7 @@ Editor.prototype.handleMouseUp = function () {
   }
 };
 
-Editor.prototype.handleArrow = function(ev) {
+Editor.prototype.handleArrow = function() {
   const current_node = this.getNode();
   if (current_node != null) {
     this.markAsSelected(current_node);
@@ -2018,7 +2019,7 @@ Editor.prototype.handleArrowForKeyDown = function(ev) {
         
       } else if (current_node.hasClass('block-grid-row') && ev.target.hasClass('figure-caption')) {
           prev_node = current_node.querySelector('.figure-in-row:last-child');
-      } else if(current_node.hasClass('block-grid-row')) {
+      } else if(current_node.hasClass('block-grid-row')) { //eslint-disable-line no-empty
 
       } else {
         if (prev_node.hasClass('item-figure') && !ev.target.hasClass('figure-caption')) {
@@ -2136,7 +2137,7 @@ Editor.prototype.insertFancyChar = function (event, text) {
     range.deleteContents();
   if(text == 'single' || text == 'double') {
     textVal = node.textContent;
-    let leftQuote = false, rightQuote = false;
+    let leftQuote = false;//, rightQuote = false;
 
     if((text == null || (text != null && text.trim().length == 0)) || this.isFirstChar() || /\s/.test(textVal.charAt(textVal.length - 1)) ) {
       leftQuote = true;
@@ -2186,9 +2187,9 @@ Editor.prototype.insertFancyChar = function (event, text) {
 };
 
 // TODO for special chars insertion, keydown code is not differentiable
-Editor.prototype.handleKeyPress = function({which}) { 
+Editor.prototype.handleKeyPress = function(e) { 
   
-  switch(which) {
+  switch(e.which) {
     case SINGLE_QUOTE_WHICH:
       this.insertFancyChar(e, 'single');
     break;
@@ -2400,7 +2401,7 @@ Editor.prototype.handleKeyDown = function(e) {
     }
     const _this = this;
     setTimeout(function() {
-      const node = _this.getNode();
+      let node = _this.getNode();
 
       if ( !node ) {
         return;
@@ -2413,11 +2414,12 @@ Editor.prototype.handleKeyDown = function(e) {
       if (node.nodeName.toLowerCase() === "div") {
         node = _this.replaceWith("p", node);
       }
+      //FIXME fix this code
       const pctAll = node && node.nodeType == 1 ? node.children : null;
       if(pctAll != null && pctAll.length) {
         Array.from(pctAll).forEach(pa => {
           if(pa.matches('.placeholder-text')) {
-            pct.parentNode.removeChild(pct);
+            pa.parentNode.removeChild(pa);
           }
         });
       }
@@ -2450,7 +2452,7 @@ Editor.prototype.handleKeyDown = function(e) {
 
     const sel_anchor = this.selection().anchorNode;
 
-    if (this.reachedTop) {
+    if (this.reachedTop) { // eslint-disable-line no-empty
 
     }
 
@@ -2483,7 +2485,6 @@ Editor.prototype.handleKeyDown = function(e) {
 
     // Undo to normal quotes and dash if user immediately pressed backspace
     let existingText = this.getCharacterPrecedingCaret(), 
-        existingTextLength = existingText.length,
         charAtEnd = existingText.charAt(existingText.length - 1);
 
     if ( UNICODE_SPECIAL_CHARS.indexOf(charAtEnd) != -1) {
@@ -2509,7 +2510,7 @@ Editor.prototype.handleKeyDown = function(e) {
       }
     }
 
-    if (anchor_node && anchor_node.nodeType === 3) {
+    if (anchor_node && anchor_node.nodeType === 3) { //eslint-disable-line no-empty
 
     }
 
@@ -2572,7 +2573,7 @@ Editor.prototype.handleKeyDown = function(e) {
 
 
 Editor.prototype.handleSpecialCharsBackspace = function (charAtEnd) {
-  let anchor_node = '';
+
   if (window.getSelection) {
     const sel = window.getSelection();
     if (sel.type != 'Caret') { return; }
@@ -2615,7 +2616,7 @@ Editor.prototype.handleSpecialCharsBackspace = function (charAtEnd) {
 };
 
 
-Editor.prototype.handleKeyUp = function(e, node) {
+Editor.prototype.handleKeyUp = function(e) {
   let anchor_node, next_item, utils_anchor_node;
   if (this.skip_keyup) {
     this.skip_keyup = null;
@@ -2667,10 +2668,10 @@ Editor.prototype.handleKeyUp = function(e, node) {
             cont.parentNode.removeChild(cont);
             this.fixSectionClasses();
             this.setupFirstAndLast();
-          } else if(cont != null && cont.next('.block-content') != null) {
+          } else if(cont != null && cont.next('.block-content') == null) {
             const havePrev = cont.prev('.block-content');
             if (havePrev != null) {
-              const items = nxtSection.querySelectorAll('.item');
+              const items = havePrev.querySelectorAll('.item');
               if (items.length) {
                 const item = items[items.length - 1];
                 if (item) {
@@ -2825,7 +2826,7 @@ Editor.prototype.handleDrop = function (e) {
     const html = dragItem.getData('text/html');
     if (html != '') {
       const placeholder = this.elNode.querySelector('.drop-placeholder');
-      const m = placeholder.next('.item');
+      let m = placeholder.next('.item');
       //FIXME check for isngle item
       if (m.length) {
         this.aa = m;
@@ -2973,14 +2974,14 @@ Editor.prototype.moveFigureUp = function (figure) {
     if (prev.hasClass('item')) {
       figure.insertBefore(prev);
     }
-  } else if(figure.hasClass('figure-full-width')) {
+  } else if(figure.hasClass('figure-full-width')) { // eslint-disable-line no-empty
 
   } else {
     const column = figure.closest('.block-content-inner');
     const prevColumn = column.prev('.block-content-inner');
     if (prevColumn != null) {
       if (prevColumn.hasClass('block-grid')) {
-        this.moveFigureInsideGrid(figure, nextColumn, false);
+        this.moveFigureInsideGrid(figure, prevColumn, false);
         toGrid = true;
       } else if (prevColumn.hasClass('center-column')) {
         prevColumn.appendChild(figure);
@@ -3012,8 +3013,8 @@ Editor.prototype.moveFigureDown = function (figure) {
     if (next.hasClass('item')) {
       figure.insertAfter(next);
     }
-  } else if (figure.hasClass('figure-full-width')) { // full width image.. find next container
-    
+  } else if (figure.hasClass('figure-full-width')) { //eslint-disable-line no-empty
+    // full width image.. find next container 
   } else { // figure is first item in the column
     const column = figure.closest('.block-content-inner');
     const nextColumn = column != null ? column.next('.block-content-inner') : null;
@@ -3121,7 +3122,7 @@ Editor.prototype.addClassesToElement = function(element, forceKlass) {
       }
     break;
     case "div":
-      if (n.hasClass('block-grid-row')) {
+      if (n.hasClass('block-grid-row')) { //eslint-disable-line no-empty
 
       } else if (!n.hasClass("item-mixtapeEmbed")) {
         n.removeAttribute('class');
@@ -3186,7 +3187,7 @@ Editor.prototype.addClassesToElement = function(element, forceKlass) {
     case "blockquote":
       if (n.hasClass('pullquote')) {
         fK = 'pullquote';
-      };
+      }
       if (n.hasClass('with-cite')) {
         fK = fK + ' with-cite';
       }
@@ -3196,15 +3197,16 @@ Editor.prototype.addClassesToElement = function(element, forceKlass) {
         n.addClass(fK);
       }
       break;
+      //FIXME figure and caption
     case "figure":
-      if (n.hasClass("item-figure")) {
-        n = n;
-      }
+      // if (n.hasClass("item-figure")) {
+      //   n = n;
+      // }
       break;
     case "figcaption":
-      if (n.hasClass('block-grid-caption') || n.hasClass('figure-caption')) {
-        n = n;
-      }
+      // if (n.hasClass('block-grid-caption') || n.hasClass('figure-caption')) {
+      //   n = n;
+      // }
     break;
     default:
       n.wrap(`<p class='item item-${name}'></p>`);
@@ -3222,7 +3224,7 @@ Editor.prototype.addClassesToElement = function(element, forceKlass) {
   return n;
 };
 
-Editor.prototype.addHammer = function (element) {
+Editor.prototype.addHammer = function () {
   if (this.isTouch) {
     // $(element).hammer({});
   }
@@ -3276,9 +3278,7 @@ Editor.prototype.cleanContents = function(element) {
 Editor.prototype.wrapTextNodes = function(element) {
   if (!element) {
     element = this.elNode.querySelectorAll('.block-content-inner');
-  } else {
-    element = element;
-  }
+  } 
   let ecChildren = [];
   element.forEach( (elm) => {
     let elmc = elm.children ? Array.from(elm.children) : [];
@@ -3327,10 +3327,10 @@ Editor.prototype.handleSmartList = function(item, e) {
   let li, chars, match, regex;
 
   chars = this.getCharacterPrecedingCaret();
-  match = chars.match(/^\s*(\-|\*)\s*$/);
+  match = chars.match(/^\s*(\-|\*)\s*$/); //eslint-disable-line no-useless-escape
   if (match) {
     e.preventDefault();
-    regex = new RegExp(/\s*(\-|\*)\s*/);
+    regex = new RegExp(/\s*(\-|\*)\s*/); //eslint-disable-line no-useless-escape
     li = this.listify(item, "ul", regex, match);
   } else {
     match = chars.match(/^\s*[1aAiI](\.|\))\s*$/);
@@ -3433,7 +3433,7 @@ Editor.prototype.listify = function(paragraph, listType, regex, match) {
 
 
 Editor.prototype.handleListBackspace = function(li, e) {
-  let list, paragraph, content;
+  let list, paragraph, content, liPr;
   list = li.parentNode;
   liPr = li.parentNode.tagName.toLowerCase();
   if(liPr != 'ul' && liPr != 'ol') {
@@ -3618,7 +3618,7 @@ Editor.prototype.selectFigure = function (figure) {
   } else {
     this.markAsSelected(figure.querySelector('.padding-cont'));
     figure.addClass('figure-focused item-selected');
-    const bg = figure.closest(".block-grid")?.addClass('figure-focused');
+    //const bg = figure.closest(".block-grid")?.addClass('figure-focused');
     this.selection().removeAllRanges();
     this.displayImageToolbar();  
   }
@@ -3665,7 +3665,7 @@ Editor.prototype.handleGrafFigureTypeCaption = function(ev) {
   return;
 };
 
-Editor.prototype.handleFigureAnchorClick = function (ev, matched) {
+Editor.prototype.handleFigureAnchorClick = function (ev) {
   ev.preventDefault();
   return false;
 };
@@ -3680,22 +3680,18 @@ Editor.prototype.handleKeyDownOnFigure = function (ev, figure) {
       this.image_toolbar.commandPositionSwitch('left', figure);
       ev.preventDefault();
       return false;
-    break;
     case RIGHTARROW:
       this.image_toolbar.commandPositionSwitch('right', figure);
       ev.preventDefault();
       return false;
-    break;
     case UPARROW:
       ev.preventDefault();
       this.image_toolbar.commandPositionSwitch('up', figure);
       return false;
-    break;
     case DOWNARROW:
       ev.preventDefault();
       this.image_toolbar.commandPositionSwitch('down', figure);
       return false;
-    break;
     case ENTER:
     break;
   }
@@ -3704,7 +3700,8 @@ Editor.prototype.handleKeyDownOnFigure = function (ev, figure) {
 Editor.prototype.handleImageActionClick = function (ev, matched) {
   const tg = matched ? matched : ev.currentTarget,
     action = tg.attr('data-action'),
-    figure = tg.closest('figure');
+    figure = tg.closest('figure'),
+    row = figure.closest('.block-grid-row');
 
   Utils.stopEvent(ev);
   
@@ -3743,14 +3740,13 @@ Editor.prototype.handleImageActionClick = function (ev, matched) {
         this.image_toolbar.commandPositionSwitch('up', figure);
         return false;
       }
+    break;
     case 'addpic':
-      const row = figure.closest('.block-grid-row');
       if (row != null) {
         this.streamer.notifySubscribers('Katana.Images.Add', {row})
       } else {
         this.streamer.notifySubscribers('Katana.Images.Add', {figure})
       }
-      
     break;
     case 'stretch':
       if (this.image_toolbar) {
@@ -4026,7 +4022,7 @@ Editor.prototype.calculatePosition = function (img, sect) {
       scaledImageWidth = sectionWidth,
       scaledImageHeight = scaledImageWidth / iratio;
 
-  let padding = 50, singlePad = padding / 2;
+  let padding = 50;
 
   let iX, iY, iWidth, iHeight, cX, cY, cWidth, cHeight;
   
@@ -4124,7 +4120,7 @@ Editor.prototype.checkViewPortForCanvas = function () {
   
 };
 
-Editor.prototype.addImageToCanvas = function (draf, image, pos) {
+Editor.prototype.addImageToCanvas = function (draf) {
   for (let i = 0; i < draf.length;i = i + 1) {
     const image = draf[i][0];
     const pos = draf[i][1];
@@ -4150,7 +4146,7 @@ Editor.prototype.showNoteIcon = function (ev, matched) {
 Editor.prototype._pressWatch = null;
 Editor.prototype._pressHappened = false;
 
-Editor.prototype.handleTap = function (ev) {
+Editor.prototype.handleTap = function () {
   if (this._pressHappened) {
     setTimeout( () => {
       const txt = this.getSelectedText();
@@ -4162,7 +4158,7 @@ Editor.prototype.handleTap = function (ev) {
   }
 };
 
-Editor.prototype.handlePress = function (ev) {
+Editor.prototype.handlePress = function () {
   let prev, _this = this;
 
   this._pressWatch = setInterval( function() {
@@ -4217,7 +4213,7 @@ Editor.prototype.handleSectionToolbarItemKeyDown = function (ev) {
   return;
 };
 
-Editor.prototype.handleSectionToolbarItemKeyPress = function (ev) {
+Editor.prototype.handleSectionToolbarItemKeyPress = function () {
   
 };
 

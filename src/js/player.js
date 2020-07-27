@@ -5,7 +5,7 @@ const Player = {};
 function YouTubePlayer(url) {
   this._url = url;
   this.init(url);
-};
+}
 
 YouTubePlayer.prototype.init = function() {
   this.onYoutubePlayerReady = this.onYoutubePlayerReady.bind(this);
@@ -79,7 +79,6 @@ YouTubePlayer.prototype.initPlayer = function (container) {
     return;
   }
   let containerId = containerWrapper.attr('id'),
-    height,
     playerOptions = {
       autohide: true,
       autoplay: false,
@@ -118,11 +117,10 @@ YouTubePlayer.prototype.onYoutubePlayerReady = function (event){
   if (frameWrap != null && containerSection != null) {
     let wh = Utils.getWindowHeight(),
         ww = Utils.getWindowWidth(),
-        buttonsCont = Utils.generateElement('<div class="button-controls"><div class="container"><div class="row"><div class="col-lg-12 columns"></div></div></div></div>');
+        buttonsCont = Utils.generateElement('<div class="button-controls"><div class="container"><div class="row"><div class="col-lg-12 columns"></div></div></div></div>'),
         playButton = Utils.generateElement('<span class="play-button" stat="play"><i class="mfi-action"></i></span>'),
-        muteButton = Utils.generateElement('<span class="mute-button" stat="unmute"><b><i class="mfi-action"></i></b></span>')
+        muteButton = Utils.generateElement('<span class="mute-button" stat="unmute"><b><i class="mfi-action"></i></b></span>'),
         asp = frameWrap.hasClass('video16by9') ? 1.77 : 1.33,
-
         frameHeight = ww / asp;
 
     frame.attr('height', frameHeight);
@@ -148,7 +146,7 @@ YouTubePlayer.prototype.onYoutubePlayerReady = function (event){
     
     containerSection.addClass('video-frame-loaded player-youtube');
 
-    containerSection.style.position = relative;
+    containerSection.style.position = 'relative';
     const cf = containerSection.querySelector('.container-fixed');
     if(cf != null) {
       cf.show();
@@ -214,7 +212,7 @@ Player.notInView = function() {
 
 };
 
-Player.cameInView = function (sects) {
+Player.cameInView = function () {
 
 };
 

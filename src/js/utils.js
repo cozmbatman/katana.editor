@@ -335,7 +335,7 @@ const Utils = {
 
   isEqual : (obj1, obj2) => {
     for (let p in obj1) {
-      if (obj1.hasOwnProperty(p) !== obj2.hasOwnProperty(p)) return false;
+      if (p in obj1 !== p in obj2) return false;
       switch (typeof (obj1[p])) {
         case 'object':
           if (!Object.compare(obj1[p], obj2[p])) return false;

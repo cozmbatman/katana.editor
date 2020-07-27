@@ -84,7 +84,7 @@ Manager.prototype.move = function (coords) {
   return;
 };
 
-Manager.prototype.toggleOptions = function (ev) {
+Manager.prototype.toggleOptions = function () {
   this.elNode.removeClass('choose-section');
   if (this.elNode.hasClass('is-scaled')) {
     this.elNode.removeClass('is-scaled');

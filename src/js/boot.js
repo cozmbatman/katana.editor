@@ -1,4 +1,4 @@
-import Poly from './polyfills';
+import Poly from './polyfills'; //eslint-disable-line no-unused-vars
 
 function Boot() {
   

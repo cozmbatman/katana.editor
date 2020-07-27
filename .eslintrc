@@ -1,17 +1,12 @@
 {
   "extends": "eslint:recommended",
   "parser": "babel-eslint",
-  "globals": {
-    "window": true,
-    "document": true,
-    "console": true,
-    "Element": true,
-    "Node": true,
-    "NodeList": true,
-    "HTMLElement": true,
-    "setTimeout": true,
-    "setInterval": true,
-    "clearInterval": true,
-    "getComputedStyle": true
+  "env": {
+    "browser": true,
+    "es6": true
+  },
+  "globals" : {
+    "YT": true,
+    "YoutubeScriptLoaded": true
   }
 }

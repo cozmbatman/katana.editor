@@ -31,7 +31,7 @@ Details.prototype.initialize = function () {
   this.reply_url = opts.info.reply_url || '';
   this.privacy_url = opts.info.privacy_url || '';
   this.smallScreen = Utils.getWindowWidth() <= 480 ? true : false;
-  this.currentUser = typeof Mefacto.User != 'undefined' && Mefacto.User.id != 0 ? Mefacto.User.id : false;
+  this.currentUser = false;
 };
 
 Details.prototype.isLoggedIn = function () {
@@ -126,7 +126,7 @@ Details.prototype.getForm = function (mode) {
 
 Details.prototype.updateButtonClasses = function(form) {
   const handler = function () {
-    let e = null;
+    let el = null;
     const element = (sel) => {
       el = form.querySelector(sel);
       return this;
@@ -282,8 +282,8 @@ Details.prototype.handleUpdateClick = function (ev, matched) {
 Details.prototype.handleEditorEditClick = function (ev, matched) {
   const tg = matched ? matched : ev.currentTarget;
   if (tg != null && tg.matches.call(tg, '[data-edit-btn]')) {
-    const actionWrap  = tg.closest('[data-editor-actions]'),
-        noteId = actionWrap.attr('data-note');
+    const actionWrap  = tg.closest('[data-editor-actions]');
+        // noteId = actionWrap.attr('data-note');
 
     if (actionWrap != null) {
       const currentHTML = '<div class="hide">' + actionWrap.innerHTML + '</div>';
@@ -406,6 +406,11 @@ Details.prototype.saveRequest = function (ob, successCallback, errorCallback) {
       }
     }
   }
+  xhr.onerror = (e) => {
+    if(errorCallback) {
+      errorCallback(e);
+    }
+  }
 
   xhr.send(ob);
 };
@@ -440,11 +445,9 @@ Details.prototype.handleEditorCancelClick = function (ev, matched) {
   const tg = matched ? matched : ev.currentTarget;
   if (tg != null) {
     const actionWrap  = tg.closest('[data-editor-actions]');
-    if(actionWrap != null) {
-      const ach = actionWrap.querySelector('.hide');
-      if(ach != null) {
-        ach.innerHTML = hidenE.innerHTML;
-      }
+    const hidenE = actionWrap?.querySelector('.hide');
+    if(actionWrap && hidenE) {
+      actionWrap.innerHTML = hidenE.innerHTML;
     }
   }
   return false;
@@ -531,7 +534,7 @@ Details.prototype.handleDeleteClick = function (ev, matched) {
           container.querySelector('.notes-list')?.addClass('notes-list-empty')
         }
 
-        container.querySelector('.notes-form-container')?.append(_this.getForm('new'));
+        container.querySelector('.notes-form-container')?.append(this.getForm('new'));
         container.querySelector('.notes-form-container textarea')?.focus();
         
       }, () => {
@@ -569,7 +572,7 @@ Details.prototype.deleteRequest = function (noteId, successCallback, errorCallba
   xhr.send(null);
 };
 
-Details.prototype.handleReplyClick = function (ev, matched) {
+Details.prototype.handleReplyClick = function () {
   return false;
 };
 
@@ -617,8 +620,8 @@ Details.prototype.loadNotesDetails = function(name, icon, container, loadUrl) {
     url = loadUrl;
   }
 
-  const getPreviousUrl = function (page) {
-    return `${_this.read_url}/${_this.story.id}/${name}?page=${page}`;
+  const getPreviousUrl = (page) => {
+    return `${this.read_url}/${this.story.id}/${name}?page=${page}`;
   };
 
   const xhr = new XMLHttpRequest();
@@ -645,7 +648,7 @@ Details.prototype.loadNotesDetails = function(name, icon, container, loadUrl) {
             }
 
             if (notes.length) {
-              const ht = _this.getNotesList(notes);
+              const ht = this.getNotesList(notes);
               container.querySelectorAll('.read-prev-notes').forEach( el => el.remove() );
 
               const li = container.querySelector('.notes-list');
@@ -695,18 +698,13 @@ Details.prototype.openFor = function (name, icon) {
 
   if (icon.hasClass('on-dark')) {
     container.addClass('on-dark');
-  }else {
+  } else {
     container.removeClass('on-dark');
   }
-  let lb = container.querySelector('.note-login-btn');
-  if(lb != null) {
-    lb.remove();
-  }
-  let lc = container.querySelector('.note-close-btn');
-  if(lc != null) {
-    lc.remove();
-  }
+  container.querySelector('.note-login-btn')?.remove();
 
+  container.querySelector('.note-close-btn')?.remove();
+  
   container.querySelector('.notes-form-container')?.append(form);
   
   this.positionContainer(container, name);
@@ -718,27 +716,21 @@ Details.prototype.openFor = function (name, icon) {
 
 Details.prototype.positionContainer = function (container, name) {
   const against = document.querySelector('[name="' + name + '"]');
-  if (against != null) {
-    if (this.smallScreen) {
-
-    } else {
-      const rect = against.getBoundingClientRect();
-      const offset = {
-        top: rect.top + document.body.scrollTop,
-        left: rect.left + document.body.scrollLeft
-      };
-      const st = container.style;
-      const agwidth = parseFloat(getComputedStyle(against, null).width.replace("px", ""));
-      st.left = offset.left + agwidth + 50 + 'px';
-      st.top = offset.top + 'px';
-      st.position = 'absolute';
-    }
-    
+  if (against != null && !this.smallScreen) {
+    const rect = against.getBoundingClientRect();
+    const offset = {
+      top: rect.top + document.body.scrollTop,
+      left: rect.left + document.body.scrollLeft
+    };
+    const st = container.style;
+    const agwidth = parseFloat(getComputedStyle(against, null).width.replace("px", ""));
+    st.left = offset.left + agwidth + 50 + 'px';
+    st.top = offset.top + 'px';
+    st.position = 'absolute';
   }
 };
 
 Details.prototype.makeRequest = function (url, method, params, scallback, ecallback) {
-
   const xhr = new XMLHttpRequest();
   xhr.open(method, url, true);
   xhr.onload = () => {
@@ -754,6 +746,12 @@ Details.prototype.makeRequest = function (url, method, params, scallback, ecallb
       }
     }
   };
+  xhr.onerror = (er) => {
+    if(ecallback) {
+      ecallback(er);
+    }
+  };
+  xhr.send(params);
 };
 
 Details.prototype.existingNotes = function (notes) {

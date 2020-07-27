@@ -102,7 +102,7 @@ Images.prototype.processSingleImageElement = function (image_element, opts, key)
 
   const oReq = new XMLHttpRequest();
   oReq.open("POST", '/upload-url', true);
-  oReq.onload = function(event) {
+  oReq.onload = function() {
     if (oReq.status == 200) {
       try {
         const data = JSON.parse(oReq.responseText);
@@ -130,13 +130,11 @@ Images.prototype.processThirdPartyQueue = function () {
   const toProcess = [];
 
   for (let prop in this.thirdPartyQueue) {
-    if (this.thirdPartyQueue.hasOwnProperty(prop)) {
-      let item = this.thirdPartyQueue[prop];
-      if(item && item.processing) {
-        currentlyProcessing++;
-      }else if(item && !item.processing) {
-        toProcess.push(item);
-      }
+    let item = this.thirdPartyQueue[prop];
+    if(item && item.processing) {
+      currentlyProcessing++;
+    } else if(item && !item.processing) {
+      toProcess.push(item);
     }
   }
 
@@ -228,7 +226,7 @@ Images.prototype.uploadExistentImage = function(image_element, opts) {
     return this.handleThirdPartyImage(image_element, opts);
   }
 
-  let i, img, n, node, tmpl, _i, _ref,
+  let img, n, node, tmpl, _i, _ref,
       pasting = false;
 
   if (opts == null) {
@@ -269,7 +267,7 @@ Images.prototype.uploadExistentImage = function(image_element, opts) {
     if(n != null) {
       n = n.parentsUntil(".block-content-inner");
       if (n != null) {
-        for (i = _i = 0, _ref = n - 1; _i <= _ref; i = _i += 1) {
+        for ( _i = 0, _ref = n - 1; _i <= _ref; _i++) {
           document.querySelector("[name='" + (tmpl.attr('name')) + "']").unwrap();
         }
       }
@@ -654,7 +652,6 @@ Images.prototype.fixPositioningForMultipleImages = function (cont, figures, coun
       rsum = 0,
       height, 
       len = figures.length,
-      widths = [],
       totalWidth = cont.getBoundingClientRect().width,
       i = 0;
 
@@ -755,7 +752,7 @@ Images.prototype.uploadFile = function(file, node) {
   const oReq = new XMLHttpRequest();
   oReq.open("POST", this.current_editor.image_options.url, true);
   oReq.onprogress = this.updateProgressBar;
-  oReq.onload = function(event) {
+  oReq.onload = function() {
     if (oReq.status == 200) {
       _this.current_editor.currentRequestCount--;
       try {
@@ -905,7 +902,7 @@ Images.prototype.embedParagraphAboveImage = function(figure) {
   
 };
 
-Images.prototype.handleEnterKey = function(e, node) {
+Images.prototype.handleEnterKey = function(e) {
   const figure = document.querySelector('.figure-focused');
   if (figure != null && figure.hasClass('item-figure')) {
     e.preventDefault();

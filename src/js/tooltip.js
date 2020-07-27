@@ -31,18 +31,17 @@ Tooltip.prototype.template = function() {
 
 Tooltip.prototype.positionAt = function(ev, matched) {
   let left_value, popover_width, 
-    target, target_height, target_offset, target_positions, 
+    target, target_height, target_offset, 
     target_width, top_value, target_is_figure;
 
   target = matched ? matched : ev.currentTarget;
 
   const o = this.resolveTargetPosition(target);
-  target_positions = o.position;
   target = o.target;
   target_is_figure = o.figure;
   
   target_offset = target.getBoundingClientRect();
-  target_width = target_offset.width;;
+  target_width = target_offset.width;
   target_height = target_offset.height;
 
   const popover = this.elNode.querySelector('.popover');
@@ -89,7 +88,7 @@ Tooltip.prototype.cancelHide = function() {
   return clearTimeout(this.hideTimeout);
 };
 
-Tooltip.prototype.hide = function(ev) {
+Tooltip.prototype.hide = function() {
   this.cancelHide();
   const el = this.elNode;
   this.hideTimeout = setTimeout(() => {

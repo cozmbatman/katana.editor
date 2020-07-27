@@ -8,13 +8,12 @@ function Embed(opts) {
 }
 
 Embed.prototype.initialize = function () {
-  const opts = this.opts;
   this.icon = 'mfi-embed';
   this.title = 'embed';
   this.action = 'embed';
 };
 
-Embed.prototype.handleClick = function (ev, matched) {
+Embed.prototype.handleClick = function () {
   console.log('embed click');
 };
 
