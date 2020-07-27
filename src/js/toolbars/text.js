@@ -139,7 +139,8 @@ TextToolbar.prototype.handleClick = function(ev, matched) {
   const element = matched ? matched.querySelector('.mf-icon') : ev.currentTarget.querySelector('.mf-icon');
   
   if(element != null) {
-    const action = element.attr("data-action");
+    let action = element.attr("data-action");
+    if(action) { action = action.trim(); }
     const s = Utils.saveSelection();
     if(s != null) {
       this.savedSel = s;

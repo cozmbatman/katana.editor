@@ -2201,8 +2201,8 @@ Editor.prototype.handleKeyPress = function({which}) {
   }
 };
 
-Editor.prototype.handleShortCutKeys = function ({which}) {
-  
+Editor.prototype.handleShortCutKeys = function (e) {
+  const which = e.which;
   this.current_node = this.getNode();
   let node = this.current_node;
 

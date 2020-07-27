@@ -582,7 +582,7 @@ Images.prototype.addImagesOnScene = function () {
     if (!cont) {
       cont = this.pushMultipleImageContainer(size);  
     }
-    k = 0;
+    let k = 0;
     while (k < size) {
       const l = ((k + 3) > size) ? size : k + 3;
 
@@ -661,7 +661,7 @@ Images.prototype.fixPositioningForMultipleImages = function (cont, figures, coun
   for (i; i < len; i = i + 1) {
     const fig = figures[i];
     const ig = fig.querySelector('img')
-    let nw = nh = 0;
+    let nw = 0, nh = 0;
     if(ig != null) {
       if (ig.hasAttribute('data-width')) {
         nw = parseInt(ig.attr('data-width'));
@@ -680,7 +680,7 @@ Images.prototype.fixPositioningForMultipleImages = function (cont, figures, coun
   for (i = 0; i < len; i = i +1 ) {
     const ig = figures[i].querySelector('img');
     if(ig != null) {
-      r = parseFloat(ig.attr('data-width')) / parseFloat(ig.attr('data-height'));
+      let r = parseFloat(ig.attr('data-width')) / parseFloat(ig.attr('data-height'));
       rsum += r;
       ratios[i] = r;
     }

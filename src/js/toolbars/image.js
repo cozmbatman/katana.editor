@@ -108,7 +108,7 @@ ImageToolbar.prototype._show = function () {
 ImageToolbar.prototype.handleClick = function (ev, matched) {
   const element = matched ? matched.querySelector('.mf-icon') : ev.currentTarget.querySelector('.mf-icon');
   if(element != null) {
-    const action = element.attr("data-action");
+    let action = element.attr("data-action");
     if(action) {action = action.trim();}
     if (/(?:createlink)/.test(action)) {
       this.actionIsLink(element, ev);
@@ -395,8 +395,7 @@ ImageToolbar.prototype._commandStretchImageInGrid = function(figure) {
     });
   }
 
-  const stretchRow = this.current_editor.templates.gridRowTemplate("1");
-  stretchRow = Utils.generateElement(stretchRow);
+  const stretchRow = Utils.generateElement(this.current_editor.templates.gridRowTemplate("1"));
   stretchRow.appendChild(figure);
   currentRow.insertAdjacentElement('afterend', stretchRow);
 
@@ -545,7 +544,7 @@ ImageToolbar.prototype._commandGoUpInGrid = function (figure) {
 
 /** commands **/
 ImageToolbar.prototype.commandPositionSwitch = function (direction, figure) {
-  const sel = document.querySelector('.item-figure.item-selected');
+  let sel = document.querySelector('.item-figure.item-selected');
   if (typeof figure != 'undefined') {
     sel = figure;
   }
