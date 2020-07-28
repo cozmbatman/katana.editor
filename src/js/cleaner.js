@@ -1,7 +1,7 @@
 import Utils from './utils';
-import Sanitize from './lib/sanitize.js';
+import Sanitize from './lib/sanitize';
 
-function clean() {
+function Clean() {
   this.it = (element) => {
     const s = new Sanitize({
       elements: ['strong', 'img', 'em', 'br', 'a', 'blockquote', 'b', 'u', 'i', 'pre', 'p', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'iframe', 'figcaption', 'cite'],
@@ -18,7 +18,7 @@ function clean() {
         },
       },
       transformers: [
-        function (input) {
+        function ytVmIframe(input) {
           if (input.node_name === 'iframe') {
             const src = input.node.attr('src');
             if (Utils.urlIsFromDomain(src, 'youtube.com') || Utils.urlIsFromDomain(src, 'vimeo.com')) {
@@ -26,23 +26,23 @@ function clean() {
                 whitelist_nodes: [input.node],
               };
             }
-            return null;
           }
-        }, function (input) {
+          return null;
+        }, function placeHolderSpan(input) {
           if (input.node_name === 'span' && input.node.hasClass('placeholder-text')) {
             return {
               whitelist_nodes: [input.node],
             };
           }
           return null;
-        }, function (input) {
+        }, function figureElements(input) {
           const kls = input.node.classList ? input.node.classList : [];
 
           if (input.node_name === 'div' && (kls.contains('item-mixtapeEmbed') || kls.contains('padding-cont') || kls.contains('block-grid-row') || kls.contains('ignore-block'))) {
             return {
               whitelist_nodes: [input.node],
             };
-          } if (input.node_name == 'div' && (kls.contains('item-controls-cont') || kls.contains('item-controls-inner')) && input.node.closest('.item-figure') != null) {
+          } if (input.node_name === 'div' && (kls.contains('item-controls-cont') || kls.contains('item-controls-inner')) && input.node.closest('.item-figure') !== null) {
             return {
               whitelist_nodes: [input.node],
             };
@@ -52,7 +52,7 @@ function clean() {
             };
           }
           return null;
-        }, function (input) {
+        }, function misc(input) {
           const kls = input.node.classList ? input.node.classList : [];
           const prntNode = input.node.parentNode ? input.node.parentNode : false;
           const prntKls = prntNode ? prntNode.classList : [];
@@ -79,7 +79,7 @@ function clean() {
             };
           }
           return null;
-        }, function (input) {
+        }, function figureElementMore(input) {
           const kls = input.node.classList ? input.node.classList : [];
           const prntNode = input.node.parentNode ? input.node.parentNode : false;
           const prntKls = prntNode ? prntNode.classList : [];
@@ -136,4 +136,4 @@ function clean() {
   };
 }
 
-export default new clean();
+export default new Clean();
