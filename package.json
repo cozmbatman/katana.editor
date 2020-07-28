@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "pretest": "eslint .",
-    "lint": "eslint $LINT",
+    "lint": "eslint --fix $LINT",
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "NODE_ENV=development webpack-dev-server --config webpack.dev.js --mode=development --hot",
     "dev-build": "webpack --config webpack.build.js --mode development"
@@ -25,6 +25,9 @@
     "eslint-config-airbnb-babel": "^0.2.0",
     "eslint-loader": "^4.0.2",
     "eslint-plugin-babel": "^5.3.1",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jsx-a11y": "^6.3.1",
+    "eslint-plugin-react": "^7.20.4",
     "extract-loader": "^5.1.0",
     "file-loader": "^6.0.0",
     "html-webpack-plugin": "^4.3.0",

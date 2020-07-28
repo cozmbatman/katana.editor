@@ -1,4 +1,3 @@
-
 import Utils from '../utils';
 import Stream from '../stream';
 
@@ -22,7 +21,6 @@ function ModelFactory(opts) {
   this.errorCallback = this.errorCallback.bind(this);
   this.cache = {};
   this.addTo = {};
-
 }
 
 ModelFactory.prototype.warmupOnly = false;
@@ -30,7 +28,7 @@ ModelFactory.prototype.goingForUnload = false;
 
 ModelFactory.prototype.manage = function (warmup) {
   if (this.mode == 'write') {
-    if (typeof warmup != 'undefined') {
+    if (typeof warmup !== 'undefined') {
       this.warmupOnly = true;
       setTimeout(() => {
         this._build();
@@ -57,20 +55,19 @@ ModelFactory.prototype._cache = {};
 
 ModelFactory.prototype._fixNames = function () {
   const items = this.elNode.querySelectorAll('[name]');
-      
-  for (let i = 0; i < items.length; i = i + 1) {
-    const it = items[i],
-          name = it.attr('name'),
-          duplicates = this.elNode.querySelectorAll('[name="' + name + '"]');
+
+  for (let i = 0; i < items.length; i += 1) {
+    const it = items[i];
+    const name = it.attr('name');
+    const duplicates = this.elNode.querySelectorAll(`[name="${name}"]`);
 
     if (duplicates && duplicates.length > 1) {
-      for( let k = 1; k < duplicates.length; k = k +1) {
+      for (let k = 1; k < duplicates.length; k += 1) {
         // make it nine digit in case we end up with some conflicts again
-        duplicates[k].attr('name', Math.random().toString(36).slice(9)); 
+        duplicates[k].attr('name', Math.random().toString(36).slice(9));
       }
     }
   }
-
 };
 
 ModelFactory.prototype.successCallback = function () {
@@ -81,59 +78,59 @@ ModelFactory.prototype.errorCallback = function () {
 
 };
 
-ModelFactory.prototype._build = function() {
+ModelFactory.prototype._build = function () {
   this._fixNames();
 
-  const sections = this.elNode.querySelectorAll('section'),
-    serializer = this.getSerializer('section');
+  const sections = this.elNode.querySelectorAll('section');
+  const serializer = this.getSerializer('section');
 
   if (this.current_editor.currentRequestCount) {
     if (this.goingForUnload) {
       this.goingForUnload = false;
-      this.streamer.notifySubscribers('Katana.Important', {msg: 'Your story has unsaved changes'});
+      this.streamer.notifySubscribers('Katana.Important', { msg: 'Your story has unsaved changes' });
     }
     return;
   }
 
   this.addTo = {};
 
-  for(let i = 0; i < sections.length; i = i + 1) {
+  for (let i = 0; i < sections.length; i += 1) {
     serializer.build(sections[i], i);
   }
 
-/*if (this.warmupOnly) {
+  /* if (this.warmupOnly) {
     this.cache = this.addTo;
     this.warmupOnly = false;
     return;
   } */
 
-  let delta = this.findDelta();
+  const delta = this.findDelta();
 
-  if (delta ) {
-    //TODO generate sequence information here
+  if (delta) {
+    // TODO generate sequence information here
     this.streamer.notifySubscribers('Katana.Commit', {
-      delta: delta,
+      delta,
     });
-    
+
     if (this.goingForUnload) {
       this.goingForUnload = false;
-      this.streamer.notifySubscribers('Katana.Important', {msg: 'Your story has unsaved changes'});
+      this.streamer.notifySubscribers('Katana.Important', { msg: 'Your story has unsaved changes' });
     }
   }
 };
 
 ModelFactory.prototype.findDelta = function () {
-  let deltaOb = {},
-      item,
-      citem,
-      prop,
-      addTo = this.addTo,
-      cache = this.cache,
-      changeCounter = 0;
+  const deltaOb = {};
+  let item;
+  let citem;
+  let prop;
+  const { addTo } = this;
+  const { cache } = this;
+  let changeCounter = 0;
 
   for (prop in addTo) {
     item = addTo[prop];
-    citem = typeof cache[prop] != 'undefined' ? cache[prop] : false;
+    citem = typeof cache[prop] !== 'undefined' ? cache[prop] : false;
     if (citem && !Utils.isEqual(item, citem)) {
       deltaOb[prop] = item;
       changeCounter++;
@@ -145,24 +142,23 @@ ModelFactory.prototype.findDelta = function () {
 
   for (prop in cache) {
     citem = cache[prop];
-    item = typeof addTo[prop] == 'undefined' ? true : false;
+    item = typeof addTo[prop] === 'undefined';
     if (item) {
       changeCounter++;
-      deltaOb[prop] = { 'removed': true };
+      deltaOb[prop] = { removed: true };
     }
   }
 
   if (changeCounter > 0) {
-    return deltaOb;  
-  }else {
-    return false;
+    return deltaOb;
   }
+  return false;
 };
 
-ModelFactory.prototype.getLayoutType = function(element) {
+ModelFactory.prototype.getLayoutType = function (element) {
   if (element.hasClass('full-width-column')) {
     return 6;
-  } else if(element.hasClass('center-column')) {
+  } if (element.hasClass('center-column')) {
     return 5;
   }
 };
@@ -170,14 +166,14 @@ ModelFactory.prototype.getLayoutType = function(element) {
 ModelFactory.prototype.serializers = {};
 
 ModelFactory.prototype.getSerializer = function (name) {
-  if ( !this.serializers[name] ) {
+  if (!this.serializers[name]) {
     let model = null;
-    if(name == 'section') {
-      model = new Section({factory: this, common: Common});
-    } else if(name == 'item') {
-      model = new Item({factory: this, common: Common});
+    if (name == 'section') {
+      model = new Section({ factory: this, common: Common });
+    } else if (name == 'item') {
+      model = new Item({ factory: this, common: Common });
     }
-    if(model != null) {
+    if (model != null) {
       this.serializers[name] = model;
     }
   }
@@ -185,4 +181,3 @@ ModelFactory.prototype.getSerializer = function (name) {
 };
 
 export default ModelFactory;
-  

@@ -1,93 +1,61 @@
 import Utils from './utils';
 
 function Templates() {
-
   let storySectionFilter = null;
 
   this.init = (opts) => {
-    
     const embedPlcStr = opts.embed ? opts.embed : 'Paste a YouTube video link, and press Enter';
     const titlePlcStr = opts.title ? opts.title : 'Title here';
     const subTitlePlcStr = opts.subtitle ? opts.subtitle : 'Start with introduction ..';
 
     storySectionFilter = opts.storySectionFilter;
-    
+
     this.embed_placeholder = `<span class='placeholder-text placeholder-text--root'>${embedPlcStr}</span><br>`;
-    
+
     this.title_placeholder = `<span class="placeholder-text placeholder-text--root" data-placeholder-text="${titlePlcStr}">${titlePlcStr}</span><br>`;
     this.subtitle_placeholder = `<span class="placeholder-text placeholder-text--root" data-placeholder-text="${subTitlePlcStr}">${subTitlePlcStr}</span><br>`;
+  };
 
-  }
+  this.singleItemTemplate = (etype) => `<${etype} class='item item-${etype} item-empty item-selected'><br/></${etype}>`;
 
-  this.singleItemTemplate = (etype) => {
-    return `<${etype} class='item item-${etype} item-empty item-selected'><br/></${etype}>`;
-  }
+  this.canvasTemplate = () => '<canvas class="parallax"></canvas>';
 
-  this.canvasTemplate = () => {
-    return `<canvas class="parallax"></canvas>`;
-  }
+  this.imageToolbarBase = () => this.textToolbarBase('mf-toolbar-base-image');
 
-  this.imageToolbarBase = () => {
-    return this.textToolbarBase('mf-toolbar-base-image');
-  }
+  this.textToolbarBase = (kls = '') => `<div class='mf-menu mf-toolbar-base mf-toolbar ${kls} hide' ></div>`;
 
-  this.textToolbarBase = (kls = '') => {
-    return `<div class='mf-menu mf-toolbar-base mf-toolbar ${kls} hide' ></div>`
-  }
+  this.contentToolbarBase = () => "<div class='inlineContentOptions inlineTooltip' id='mfContentBase'></div>";
 
-  this.contentToolbarBase = () => {
-    return "<div class='inlineContentOptions inlineTooltip' id='mfContentBase'></div>";
-  }
+  this.singleColumnPara = (kls = '') => this.getSingleLayoutTemplate('', `<p class="item item-p ${kls}" name="${Utils.generateId()}"><br /></p>`);
 
-  this.singleColumnPara = (kls = "") => {
-    return this.getSingleLayoutTemplate("", `<p class="item item-p ${kls}" name="${Utils.generateId()}"><br /></p>`);
-  }
+  this.getSingleLayoutTemplate = (kls = '', el = '') => `<div class="block-content-inner ${kls || 'center-column'}">${el}</div>`;
 
-  this.getSingleLayoutTemplate = (kls = "", el = "") => {
-    return `<div class="block-content-inner ${kls ? kls : "center-column"}">${el}</div>`;
-  }
+  this.gridRowTemplate = (para = 0) => `<div class="block-grid-row" data-name="${Utils.generateId()}" ${para ? `data-paragraph-count="${para}"` : ''}></div>`;
 
-  this.gridRowTemplate = (para = 0) => {
-    return `<div class="block-grid-row" data-name="${Utils.generateId()}" ${para ? `data-paragraph-count="${para}"` : ""}></div>`;
-  }
-
-  this.blockGridTemplate = (para = 0) => {
-    return `<figure class="block-content-inner block-grid item-text-default" data-name="${Utils.generateId()}" >
+  this.blockGridTemplate = (para = 0) => `<figure class="block-content-inner block-grid item-text-default" data-name="${Utils.generateId()}" >
     ${this.gridRowTemplate(para)}
     <figcaption class="block-grid-caption" data-name="${Utils.generateId()}" data-placeholder-value="Type caption for image (optional)"><span class="placeholder-text">Type caption for image (optional)</span></figcaption>
-    </figure>`
-  }
+    </figure>`;
 
   this.toolbarTemplate = (buttons = []) => {
     let html = `<div class="mf-menu-linkinput">
         <input class="mf-menu-input" placeholder="https://">
         <div class="mf-menu-button mf-link-close">&#215;</div></div>
         <ul class='mf-menu-buttons'>`;
-  
-    buttons.forEach( item => {
-      return html += `<li class='mf-menu-button'><i class="mf-icon mfi-${item.i}"  data-action="${item.a}"></i></li>`;
-    });
-    
-    html += `</ul>`;
+
+    buttons.forEach((item) => html += `<li class='mf-menu-button'><i class="mf-icon mfi-${item.i}"  data-action="${item.a}"></i></li>`);
+
+    html += '</ul>';
     return html;
-  }
-
-  this.anchorMarkup = (link, kls = "", nofollow = false, content = "") => {
-    return `<a ${nofollow ? 'rel="nofollow"' : ""} href="${link}" data-href="${link}" class="markup-anchor ${kls}">${content}</a>`;
-  }
-
-  this.contentBasicButtonsWrap = (menu) => {
-    return `<button class='inlineTooltip-button control' data-action='inline-menu' title='Content Options'> <span class='tooltip-icon mfi-plus'></span> </button> <div class='inlineTooltip-menu'>${menu}</div>`;
-  }
-  this.contentBasicButton = (b, data_action_value) => {
-    return `<button class="inlineTooltip-button scale" title="${b.title}" data-action="inline-menu-${b.action}" data-action-value="${data_action_value}"> <span class="tooltip-icon ${b.icon}"></span> </button>`;
-  }
-
-  const getPlaceholders = () => {
-    return `<h3 class="item item-h3 item-first" name="${Utils.generateId()}">${this.title_placeholder}</h3>
-    <p class="item item-p item-last" name="${Utils.generateId()}">${this.subtitle_placeholder}</p>`;
   };
 
+  this.anchorMarkup = (link, kls = '', nofollow = false, content = '') => `<a ${nofollow ? 'rel="nofollow"' : ''} href="${link}" data-href="${link}" class="markup-anchor ${kls}">${content}</a>`;
+
+  this.contentBasicButtonsWrap = (menu) => `<button class='inlineTooltip-button control' data-action='inline-menu' title='Content Options'> <span class='tooltip-icon mfi-plus'></span> </button> <div class='inlineTooltip-menu'>${menu}</div>`;
+  this.contentBasicButton = (b, data_action_value) => `<button class="inlineTooltip-button scale" title="${b.title}" data-action="inline-menu-${b.action}" data-action-value="${data_action_value}"> <span class="tooltip-icon ${b.icon}"></span> </button>`;
+
+  const getPlaceholders = () => `<h3 class="item item-h3 item-first" name="${Utils.generateId()}">${this.title_placeholder}</h3>
+    <p class="item item-p item-last" name="${Utils.generateId()}">${this.subtitle_placeholder}</p>`;
 
   this.mainTemplate = (publicationMode = false) => {
     if (publicationMode) {
@@ -101,7 +69,7 @@ function Templates() {
           ${this.getSingleStorySectionTemplate()}
           ${this.getSingleSectionTemplate()}`;
     }
-  
+
     return `<section class='block-content block-first block-last' name='${Utils.generateId()}'>
       <div class='main-divider' contenteditable='false'>
         <hr class='divider-line' tabindex='-1'/>
@@ -112,17 +80,13 @@ function Templates() {
       </section>`;
   };
 
-
-  this.getSingleSectionTemplate = () => {
-    return `<section class="block-content" name="${Utils.generateId()}">
+  this.getSingleSectionTemplate = () => `<section class="block-content" name="${Utils.generateId()}">
       <div class="main-divider" contenteditable="false"><hr class="divider-line" tabindex="-1"></div>
       <div class="main-body">
       </div>
       </section>`;
-  };
 
-  this.getImageFigureControlTemplate = () => {
-    return  `<div class='item-controls-cont'>
+  this.getImageFigureControlTemplate = () => `<div class='item-controls-cont'>
     <div class='item-controls-inner'>
     <i class='mfi-arrow-up action' data-action='goup' title='Move image up'></i>
     <i class='mfi-arrow-left action' data-action='goleft' title='Move image to left'></i>
@@ -133,10 +97,8 @@ function Templates() {
     <div class='extend-button action' data-action='stretch' title='Stretch to full width'><i class='mfi-extend-in-row'></i></div>
     </div>
     </div>`;
-  };
-  
-  this.getFigureTemplate = () => {
-    return  `<figure contenteditable='false' class='item item-figure item-text-default' name='${Utils.generateId()}' tabindex='0'>
+
+  this.getFigureTemplate = () => `<figure contenteditable='false' class='item item-figure item-text-default' name='${Utils.generateId()}' tabindex='0'>
     <div style='' class='padding-cont'> 
     <div style='padding-bottom: 100%;' class='padding-box'></div> 
     <img src='' data-height='' data-width='' data-image-id='' class='item-image' data-delayed-src='' /> 
@@ -146,17 +108,15 @@ function Templates() {
     <span class='placeholder-text'>Type caption for image (optional)</span> <br> 
     </figcaption> 
     </figure>`;
-  };
-  
+
   this.figureCaptionTemplate = (multiple) => {
-    const plc = typeof multiple != 'undefined' ? `Type caption for images(optional)` : `Type caption for image(optional)`;
+    const plc = typeof multiple !== 'undefined' ? 'Type caption for images(optional)' : 'Type caption for image(optional)';
     return `<figcaption contenteditable='true' data-placeholder-value='${plc}' class='figure-caption caption'>
       <span class="placeholder-text">${plc}<span> <br />
       </figcaption>`;
   };
-  
-  this.getFrameTemplate = () => {
-    return `<figure contenteditable='false' class='item item-figure item-iframe item-first item-text-default' name='${Utils.generateId()}' tabindex='0'>
+
+  this.getFrameTemplate = () => `<figure contenteditable='false' class='item item-figure item-iframe item-first item-text-default' name='${Utils.generateId()}' tabindex='0'>
     <div class='iframeContainer'>
     <div style='' class='padding-cont'> 
     <div style='padding-bottom: 100%;' class='padding-box'>
@@ -171,10 +131,8 @@ function Templates() {
     <span class='placeholder-text'>Type caption for video (optional)</span>"
     </figcaption> 
     </figure>`;
-  };
 
-  this.templateBackgroundSectionForImage = () => {
-    return `<section name="${Utils.generateId()}" class="block-content block-image image-in-background with-background">
+  this.templateBackgroundSectionForImage = () => `<section name="${Utils.generateId()}" class="block-content block-image image-in-background with-background">
     <div class="block-background" data-scroll="aspect-ratio-viewport" contenteditable="false" data-image-id="" data-width="" data-height="">
     <div class="block-background-image" style="display:none;"></div>
     </div>
@@ -193,10 +151,8 @@ function Templates() {
     </label>
     </div>
     </section>`;
-  };
-  
-  this.templateBackgroundSectionForVideo = () => {
-    return `<section name="${Utils.generateId()}" class="block-content video-in-background block-image image-in-background with-background">
+
+  this.templateBackgroundSectionForVideo = () => `<section name="${Utils.generateId()}" class="block-content video-in-background block-image image-in-background with-background">
     <div class="block-background" data-scroll="aspect-ratio-viewport" contenteditable="false" data-image-id="" data-width="" data-height="">
     <div class="block-background-image" style="display:none;"></div>
     </div>
@@ -215,32 +171,29 @@ function Templates() {
     </label>
     </div>
     </section>`;
-  };
 
-  this.baseParagraphTmpl = () => {
-    return `<p class='item item-p' name='${Utils.generateId()}'><br></p>`;
-  };
+  this.baseParagraphTmpl = () => `<p class='item item-p' name='${Utils.generateId()}'><br></p>`;
 
-  this.menuOpts = [['featured','Featured'],['latest','Latest'],['tagged','Tagged as']];
+  this.menuOpts = [['featured', 'Featured'], ['latest', 'Latest'], ['tagged', 'Tagged as']];
 
   this.getStoriesSectionMenu = function (forStories, exclude) {
-    const fs = typeof forStories == 'undefined' ? true : forStories;
-    let ht = `<div class="main-controls '${fs ? `story-mode` : `plain-mode`}" contenteditable="false">
+    const fs = typeof forStories === 'undefined' ? true : forStories;
+    let ht = `<div class="main-controls '${fs ? 'story-mode' : 'plain-mode'}" contenteditable="false">
           <div class="main-controls-inner center-column">
           <select data-for="storytype">`;
-  
+
     let opts = '';
-    const excludeOpts = typeof exclude != 'undefined' ? exclude : [];
-  
-    for (let i = 0; i < this.menuOpts.length; i = i + 1) {
+    const excludeOpts = typeof exclude !== 'undefined' ? exclude : [];
+
+    for (let i = 0; i < this.menuOpts.length; i += 1) {
       const menu = this.menuOpts[i];
       if (excludeOpts.indexOf(menu[0]) == -1) {
         opts += `<option value="${menu[0]}">${menu[1]}</option>`;
       }
     }
-  
+
     ht += opts;
-  
+
     ht += `</select>';
       <input type="text" class="text-small autocomplete" data-behave="buttons" data-type="tag" data-for="tagname" placeholder="Tag name here"></input>
       <input type="number" class="text-small" data-for="storycount" value="6" min="4" max="10"></input>
@@ -250,34 +203,31 @@ function Templates() {
       <i class="mfi-photo" data-action="image-grid"></i>
       </div>
       <div class="main-controls-layout">`;
-  
+
     if (!fs) {
-      ht += `<i class="mfi-image-default" data-action="center-width"></i>`;
+      ht += '<i class="mfi-image-default" data-action="center-width"></i>';
     }
-  
+
     ht += `<i class="mfi-image-add-width" data-action="add-width"></i>
       <i class="mfi-image-full-width" data-action="full-width"></i>
       <i class="mfi-cross left-spaced" data-action="remove-block"></i>
       </div>
       </div>
       </div>
-      </div>`
+      </div>`;
     return ht;
   };
 
-
-  this.getStoryPreviewTemplate = () => {
-    return `<div class="st-pre" >
+  this.getStoryPreviewTemplate = () => `<div class="st-pre" >
       <div class="st-img"></div>
       <div class="st-title"></div>
       <div class="st-sub"></div>
       <div class="st-sub2"></div>
       </div>`;
-  };
 
   this.getSingleStorySectionTemplate = () => {
     const excludes = storySectionFilter ? storySectionFilter() : [];
-  
+
     return `<section class="block-stories block-add-width as-image-list" name="${Utils.generateId()}" data-story-count="6">
         <div class="main-divider" contenteditable="false"><hr class="divider-line" tabindex="-1"></div>
         ${this.getStoriesSectionMenu(true, excludes)}
@@ -285,11 +235,6 @@ function Templates() {
         </div>
         </section>`;
   };
-  
 }
 
 export default new Templates();
-
-
-
-

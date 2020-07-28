@@ -1,26 +1,24 @@
-
 function Item(opts) {
   this.common = opts.common;
 }
 
 Item.prototype.getType = function (element) {
   const tagName = element.tagName.toLowerCase();
-  if ( this.contentTags.indexOf(tagName) != -1)  {
+  if (this.contentTags.indexOf(tagName) != -1) {
     return 10;
-  } else {
-    return 11;
   }
+  return 11;
 };
 
 Item.prototype.build = function (element, index, sectionName) {
   this.elNode = element;
   this.index = index;
   const ob = {
-    type : this.getType(element),
-    name : this.elNode.attr('name'),
-    index : this.index,
-    section : sectionName,
-    tag : this.elNode.tagName.toLowerCase()
+    type: this.getType(element),
+    name: this.elNode.attr('name'),
+    index: this.index,
+    section: sectionName,
+    tag: this.elNode.tagName.toLowerCase(),
   };
 
   if (ob.type == 10) {
@@ -31,7 +29,7 @@ Item.prototype.build = function (element, index, sectionName) {
       ob.markups = this.common.readMarkups(this.elNode);
       this.buildList(this.elNode, ob);
     } else {
-      ob.text = this.elNode.textContent;  
+      ob.text = this.elNode.textContent;
       ob.markups = this.common.readMarkups(this.elNode);
       if (this.elNode.hasClass('text-center')) {
         ob.center = this.elNode.hasClass('text-center');
@@ -43,15 +41,14 @@ Item.prototype.build = function (element, index, sectionName) {
           ob.citation = true;
         }
       }
-    }        
-  }else if (ob.type == 11) {
+    }
+  } else if (ob.type == 11) {
     if (ob.tag == 'figure') {
       this.buildFigure(this.elNode, ob);
-    } 
+    }
   }
 
   this.factory.addTo[ob.name] = ob;
-
 };
 
 Item.prototype.buildFigure = function (element, ob) {
@@ -62,40 +59,40 @@ Item.prototype.buildFigure = function (element, ob) {
     const caption = element.querySelector('figcaption');
     if (caption != null && caption.querySelector('.placeholder-text') != null) {
       ob.empty = true;
-    }else {
+    } else {
       ob.text = caption.textContent;
-      ob.markups = this.common.readMarkups(caption);  
+      ob.markups = this.common.readMarkups(caption);
     }
   }
 
   const meta = {};
   const img = element.querySelector('img');
 
-  if(img != null) {
+  if (img != null) {
     meta.resourceId = img.attr('data-image-id');
     meta.resourceUrl = img.attr('data-delayed-src');
     const pboxStyle = element.querySelector('.padding-box') != null ? element.querySelector('.padding-box').attr('style') : '';
     meta.resourceMarkup = {
       w: img.attr('data-width'),
       h: img.attr('data-height'),
-      a: pboxStyle
+      a: pboxStyle,
     };
   } else {
     meta.resourceMarkup = {};
   }
 
-  if(element.hasClass('figure-to-left')) {
+  if (element.hasClass('figure-to-left')) {
     meta.resourceMarkup.s = element.querySelector('.padding-cont')?.attr('style');
     meta.pos = 0;
-  }else if(element.hasClass('figure-full-width')){
+  } else if (element.hasClass('figure-full-width')) {
     meta.resourceMarkup.s = element.querySelector('.padding-cont')?.attr('data-style');
     meta.pos = 2;
-  }else if (element.hasClass('figure-in-row')) {
+  } else if (element.hasClass('figure-in-row')) {
     meta.resourceMarkup.s = element.querySelector('.padding-cont')?.attr('style');
     meta.pos = 3;
     const st = element.attr('style') ? element.attr('style') : '';
-    meta.width = st.replace('width:','').replace('%','').replace(';','');
-  }else {
+    meta.width = st.replace('width:', '').replace('%', '').replace(';', '');
+  } else {
     meta.resourceMarkup.s = element.querySelector('.padding-cont') != null ? element.querySelector('.padding-cont').attr('style') : '';
     meta.pos = 1;
   }
@@ -120,7 +117,7 @@ Item.prototype.buildFigure = function (element, ob) {
 
     if (inner.hasClass('block-grid-full')) {
       meta.grid = 2;
-    } else if(inner.hasClass('block-grid-center')) {
+    } else if (inner.hasClass('block-grid-center')) {
       meta.grid = 0;
     }
 
@@ -128,47 +125,45 @@ Item.prototype.buildFigure = function (element, ob) {
       meta.row = row.attr('data-name');
       meta.rowElementCount = row.attr('data-paragraph-count');
     }
-
   } else {
     meta.partial = false;
   }
 
   if (element.hasClass('item-figure') && !element.hasClass('item-iframe')) {
     ob.type = 12;
-  }else if(element.hasClass('item-iframe')) {
+  } else if (element.hasClass('item-iframe')) {
     ob.type = 13;
     meta.resourceFrame = img.attr('data-frame-url');
     meta.resourceAspect = img.attr('data-frame-aspect');
     meta.resourceUrl = img.attr('src');
     if (element.hasClass('can-go-background')) {
       meta.allowbg = true;
-    }else {
+    } else {
       meta.allowbg = false;
     }
   }
 
   if (img != null && img.parentNode.hasClass('markup-anchor')) {
     meta.link = img.parentNode.attr('href');
-  }else {
+  } else {
     meta.link = false;
   }
 
   ob.meta = meta;
-
 };
 
 Item.prototype.buildList = function (element, ob) {
-  const prnt = element.closest('.postList'),
-      prntTag = prnt != null ? prnt.tagName.toLowerCase() : null;
+  const prnt = element.closest('.postList');
+  const prntTag = prnt != null ? prnt.tagName.toLowerCase() : null;
 
-  if(prntTag == 'ul') {
+  if (prntTag == 'ul') {
     ob.type = 14;
-  }else if(prntTag == 'ol') {
+  } else if (prntTag == 'ol') {
     ob.type = 15;
   }
 
-  if(prnt.length) {
-    if(prnt.attr('type')) {
+  if (prnt.length) {
+    if (prnt.attr('type')) {
       ob.listType = prnt.attr('type');
     }
   }

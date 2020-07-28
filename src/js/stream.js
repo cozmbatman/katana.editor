@@ -1,21 +1,21 @@
-const _SubWrap = function(name, cb, set) {
+const _SubWrap = function (name, cb, set) {
   this.name = name;
   this.cb = cb;
   this.set = set;
-}
-_SubWrap.prototype.execute = function(ev) {
+};
+_SubWrap.prototype.execute = function (ev) {
   this.cb(ev);
-}
-_SubWrap.prototype.release = function() {
+};
+_SubWrap.prototype.release = function () {
   this.cb = null;
   this.set.clear(this);
-}
+};
 
 function Stream() {
   const streamHandlers = {};
-  
+
   this.subscribe = (name, cb) => {
-    if(typeof streamHandlers[name] === 'undefined') {
+    if (typeof streamHandlers[name] === 'undefined') {
       streamHandlers[name] = new Set();
     }
     const sub = new _SubWrap(name, cb, streamHandlers[name]);
@@ -24,14 +24,14 @@ function Stream() {
   };
 
   this.notifySubscribers = (name, ev) => {
-    if(typeof streamHandlers[name] === 'undefined') {
+    if (typeof streamHandlers[name] === 'undefined') {
       return;
     }
     const entries = streamHandlers[name].entries();
-    for(const k of entries) {
+    for (const k of entries) {
       entries[k].execute(ev);
     }
-  }
+  };
 }
 
 export default new Stream();

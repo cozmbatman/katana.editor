@@ -20,24 +20,21 @@ function Section(opts) {
 Section.prototype.contentId = 'SECTION';
 
 Section.prototype.initialize = function () {
-  const opts = this.opts;
+  const { opts } = this;
   this.icon = 'mfi-hyphens';
   this.title = 'section';
   this.action = 'section';
   this.editorType = opts.editorType || 'blog';
 
-  this.publicationMode = this.editorType == 'publication' ? true : false;
+  this.publicationMode = this.editorType == 'publication';
   this.current_editor = opts.editor;
 };
 
-
 Section.prototype.template = function () {
-  const t = (title, action, icon)  => {
-    return this.current_editor.templates.contentBasicButton({title,action,icon}, action);
-  };
+  const t = (title, action, icon) => this.current_editor.templates.contentBasicButton({ title, action, icon }, action);
   if (this.editorType == 'publication') {
     let ht = t(this.title, this.action, this.icon);
-    ht = ht + t('Stories', 'section-stories', 'mfi-grid-icon');
+    ht += t('Stories', 'section-stories', 'mfi-grid-icon');
     return ht;
   }
 
@@ -45,22 +42,22 @@ Section.prototype.template = function () {
 };
 
 Section.prototype.handleClick = function (ev, matched) {
-  const target = matched ? matched : ev.currentTarget,
-    toolTipContainer = target.closest('.inlineContentOptions'),
-    actionValue = target.attr('data-action-value');
+  const target = matched || ev.currentTarget;
+  const toolTipContainer = target.closest('.inlineContentOptions');
+  const actionValue = target.attr('data-action-value');
 
   let storiesSection = false;
   if (this.publicationMode) {
     if (actionValue == 'section' && !toolTipContainer.hasClass('choose-section')) { // show other options
       toolTipContainer.addClass('choose-section');
       return false;
-    } else if(actionValue == 'section-stories' && toolTipContainer.hasClass('choose-section')) { // make a section
+    } if (actionValue == 'section-stories' && toolTipContainer.hasClass('choose-section')) { // make a section
       storiesSection = true;
-    }   
+    }
   }
-  
+
   let anchor_node = this.current_editor.getNode();
-  if(anchor_node == null) {
+  if (anchor_node == null) {
     anchor_node = document.querySelectorAll('.item-selected');
   }
   if (anchor_node != null) {
@@ -73,16 +70,12 @@ Section.prototype.handleClick = function (ev, matched) {
 
 Section.prototype.handleDeleteKey = function (e, node) {
   if (this.current_editor.isLastChar()) {
-
     const sect = node.closest('.block-content');
     if (sect != null && !sect.hasClass('block-last')) {
-
       const cont = node.closest('.block-content-inner');
-      if(cont != null) {
-
+      if (cont != null) {
         const last = cont.querySelector('.item:last-child');
         if (last != null && last.attr('name') == node.attr('name')) {
-
           e.preventDefault();
           this.current_editor.mergeWithUpperSection(sect.next('.block-content'));
           return true;
@@ -98,42 +91,41 @@ Section.prototype.handleBackspaceKey = function (e, node) {
   if (this.current_editor.isFirstChar() && node) {
     const sect = node.closest('.block-content');
 
-    if(sect != null && !sect.hasClass('block-first')) {
+    if (sect != null && !sect.hasClass('block-first')) {
       const cont = node.closest('.block-content-inner');
 
-        if(cont != null) {
-          const first = cont.querySelector('.item:first-child');
+      if (cont != null) {
+        const first = cont.querySelector('.item:first-child');
 
-          if (first != null && first.attr('name') == node.attr('name')) {
-            this.current_editor.mergeWithUpperSection(sect);
-            if (node != null) {
-
-              this.current_editor.setRangeAt(node);  
-              e.preventDefault();
-              if (!node.hasClass('.item-figure')) {
-                Utils.setCaretAtPosition(node);  
-                this.current_editor.markAsSelected(node);
-              }
-            }  else {
-              console.log('node empty');
+        if (first != null && first.attr('name') == node.attr('name')) {
+          this.current_editor.mergeWithUpperSection(sect);
+          if (node != null) {
+            this.current_editor.setRangeAt(node);
+            e.preventDefault();
+            if (!node.hasClass('.item-figure')) {
+              Utils.setCaretAtPosition(node);
+              this.current_editor.markAsSelected(node);
             }
-            return true;
+          } else {
+            console.log('node empty');
           }
-        }          
+          return true;
+        }
+      }
     }
   } else {
     const sect = document.querySelector('.figure-focused.with-background');
     if (sect != null) {
       const sel = this.current_editor.selection();
       if (sel && sel.type == 'Caret') {
-        const anchorNode = sel.anchorNode;
+        const { anchorNode } = sel;
         if (anchorNode.hasClass('block-background')) {
           e.preventDefault();
           this.convertBackgroundSectionToPlain(anchorNode);
           return true;
         }
-      } else if(sel && sel.type == 'None') {
-        const anchorNode = sel.anchorNode;
+      } else if (sel && sel.type == 'None') {
+        const { anchorNode } = sel;
         if (anchorNode.hasClass('block-background')) {
           e.preventDefault();
           this.convertBackgroundSectionToPlain(anchorNode);
@@ -147,10 +139,10 @@ Section.prototype.handleBackspaceKey = function (e, node) {
 
 Section.prototype.convertBackgroundSectionToPlain = function (node) {
   const sect = node?.closest('.block-content');
-  if(sect != null) {
+  if (sect != null) {
     const newContainer = Utils.generateElement(this.current_editor.templates.getSingleSectionTemplate());
     const currentBody = sect.querySelector('.main-body');
-    if(newContainer != null) {
+    if (newContainer != null) {
       const newContainerBody = newContainer.querySelector('.main-body');
       currentBody.parentNode.replaceChild(newContainerBody, currentBody);
       sect.parentNode.replaceChild(newContainer, sect);
@@ -159,10 +151,10 @@ Section.prototype.convertBackgroundSectionToPlain = function (node) {
       this.current_editor.fixSectionClasses();
     }
   }
-}
+};
 
 Section.prototype.handleEnterKey = function (e, node) {
-  if (e.ctrlKey) { // 
+  if (e.ctrlKey) { //
     if (node.querySelector('.placeholder-text') == null) {
       this.splitContainer(node);
       this.current_editor.content_bar.hide();
@@ -176,13 +168,13 @@ Section.prototype.handleEnterKey = function (e, node) {
 };
 
 Section.prototype.fillPreview = function (container, count) {
-  if (typeof count == 'undefined') {
+  if (typeof count === 'undefined') {
     count = 6;
   }
   this.current_editor.fillStoryPreview(container, count);
 };
 
-Section.prototype.handlePreviousStoryTypeOptionsAfterAddition = function (newContainer) { 
+Section.prototype.handlePreviousStoryTypeOptionsAfterAddition = function (newContainer) {
   const stype = newContainer.querySelector('[data-for="storytype"]');
   if (stype != null) {
     const stval = stype.value;
@@ -193,7 +185,7 @@ Section.prototype.handlePreviousStoryTypeOptionsAfterAddition = function (newCon
 
     const others = this.current_editor.elNode.querySelectorAll('.block-stories [data-for="storytype"]');
 
-    for (let i = 0; i < others.length; i = i + 1) {
+    for (let i = 0; i < others.length; i += 1) {
       const ot = others[i];
       if (ot == stype) {
         continue;
@@ -201,7 +193,7 @@ Section.prototype.handlePreviousStoryTypeOptionsAfterAddition = function (newCon
       const curral = ot.value;
       const opts = ot.querySelectorAll('option');
       if (opts.length) {
-        for (let m = 0; m < opts.length; m = m + 1) {
+        for (let m = 0; m < opts.length; m += 1) {
           const kopts = opts[m];
           if (kopts.attr('value') == stval && stval != curral) {
             kopts.parentNode.removeChild(kopts);
@@ -214,25 +206,25 @@ Section.prototype.handlePreviousStoryTypeOptionsAfterAddition = function (newCon
 
 Section.prototype.splitContainer = function (atNode, storiesSection) {
   let newContainer;
-  if (typeof storiesSection != 'undefined' && storiesSection) {
+  if (typeof storiesSection !== 'undefined' && storiesSection) {
     newContainer = Utils.generateElement(this.current_editor.templates.getSingleStorySectionTemplate());
   } else {
     newContainer = Utils.generateElement(this.current_editor.templates.getSingleSectionTemplate());
-  } 
-  
+  }
+
   this.current_editor.splitContainer(atNode);
 
   if (this.publicationMode && storiesSection) {
     if (atNode != null) {
       const sec = atNode.closest('.block-content');
-      if(sec != null) {
+      if (sec != null) {
         sec.insertAdjacentElement('beforebegin', newContainer);
       }
       const ac = newContainer.querySelector('.autocomplete');
-      if(ac != null) {
-        //FIXME autocomplete
-        //(ac).autocomplete();
-        if(ac.closest('.autocomplete-buttons') != null) {
+      if (ac != null) {
+        // FIXME autocomplete
+        // (ac).autocomplete();
+        if (ac.closest('.autocomplete-buttons') != null) {
           ac.closest('.autocomplete-buttons').addClass('hide');
         }
       }
@@ -250,7 +242,7 @@ Section.prototype.splitContainer = function (atNode, storiesSection) {
       this.current_editor.markAsSelected(atNode);
     }
     atNode.parentNode.removeChild(atNode);
-  } else if(atNode.nextElementSibling == null) {
+  } else if (atNode.nextElementSibling == null) {
     this.current_editor.setRangeAt(atNode);
     Utils.setCaretAtPosition(atNode);
     this.current_editor.markAsSelected(atNode);
@@ -263,31 +255,31 @@ Section.prototype.command = function (action, button) {
   if (section == null) {
     section = button.closest('.block-content');
   }
-  if(section == null) {
+  if (section == null) {
     return;
   }
   switch (action) {
     case 'center-width':
       this.commandCenterWidth(section);
-    break;
+      break;
     case 'add-width':
       this.commandAddWidth(section);
       break;
     case 'full-width':
       this.commandFullWidth(section);
-    break;
+      break;
     case 'remove-block':
       this.commandRemoveBlock(section);
-    break;
+      break;
     case 'image-side':
       this.commandStructureImageList(section);
-    break;
+      break;
     case 'image-grid':
       this.commandStructureGrid(section);
-    break;
+      break;
     case 'list-view':
       this.commandStructureListView(section);
-    break;
+      break;
   }
 };
 
@@ -320,8 +312,8 @@ Section.prototype.removeLayoutClasses = function (section) {
 
 Section.prototype.mightAdjustFigures = function (section) {
   section.querySelectorAll('.item-figure:not(.figure-in-row)').forEach((item) => {
-    //FIXME delayed send
-    this.streamer.notifySubscribers('Katana.Images.Refit', {figure: item});  
+    // FIXME delayed send
+    this.streamer.notifySubscribers('Katana.Images.Refit', { figure: item });
   });
 };
 
@@ -335,7 +327,7 @@ Section.prototype.commandAddWidth = function (section) {
   this.removeLayoutClasses(section);
   section.addClass('block-add-width');
   this.mightAdjustFigures(section);
-}
+};
 
 Section.prototype.commandFullWidth = function (section) {
   this.removeLayoutClasses(section);
@@ -369,7 +361,6 @@ Section.prototype.commandRemoveBlock = function (section) {
   if (needRefresh) {
     this.current_editor.refreshStoriesMenus(val);
   }
-
 };
 
 export default Section;

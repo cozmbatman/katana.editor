@@ -1,4 +1,3 @@
-'use strict';
 const is_caret_at_start_of_node = (node, range) => {
   const pre_range = document.createRange();
   pre_range.selectNodeContents(node);
@@ -26,9 +25,9 @@ const Utils = {
   scrollAttached: false,
   LINE_HEIGHT: 20,
   onIOS: () => {
-    const userAgent = window.navigator.userAgent.toLowerCase(),
-      ios = /iphone|ipod|ipad/.test( userAgent );
-      return ios;
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const ios = /iphone|ipod|ipad/.test(userAgent);
+    return ios;
   },
 
   log: (message, force) => {
@@ -38,41 +37,40 @@ const Utils = {
   },
 
   incrementCounter: (index) => {
-    if (typeof index == "number") {
-      index = index + 1;
+    if (typeof index === 'number') {
+      index += 1;
       return index;
-    }else if(typeof index == "string") {
-      return String.fromCharCode(index.charCodeAt(0) + 1);  
+    } if (typeof index === 'string') {
+      return String.fromCharCode(index.charCodeAt(0) + 1);
     }
     return null;
   },
 
-  stopEvent : (event) => {
+  stopEvent: (event) => {
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
   },
 
-  simpleStop : (event) => {
+  simpleStop: (event) => {
     event.stopPropagation();
     event.stopImmediatePropagation();
   },
 
-  getBase64Image : (img) => {
-    const canvas = document.createElement("canvas");
+  getBase64Image: (img) => {
+    const canvas = document.createElement('canvas');
     canvas.width = img.width;
     canvas.height = img.height;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     ctx.drawImage(img, 0, 0);
-    return canvas.toDataURL("image/png");
+    return canvas.toDataURL('image/png');
   },
 
-  generateId : () => {
-    return Math.random().toString(36).slice(8);
-  },
+  generateId: () => Math.random().toString(36).slice(8),
 
-  saveSelection : () => {
-    let i, len, ranges, sel;
+  saveSelection: () => {
+    let i; let len; let ranges; let
+      sel;
     if (window.getSelection) {
       sel = window.getSelection();
       if (sel.getRangeAt && sel.rangeCount) {
@@ -85,16 +83,15 @@ const Utils = {
         }
         return ranges;
       }
-    } else {
-      if (document.selection && document.selection.createRange) {
-        return document.selection.createRange();
-      }
+    } else if (document.selection && document.selection.createRange) {
+      return document.selection.createRange();
     }
     return null;
   },
 
-  restoreSelection : (savedSel) => {
-    let i, len, sel;
+  restoreSelection: (savedSel) => {
+    let i; let len; let
+      sel;
     if (savedSel) {
       if (window.getSelection) {
         sel = window.getSelection();
@@ -105,23 +102,22 @@ const Utils = {
           sel.addRange(savedSel[i]);
           ++i;
         }
-      } else {
-        if (document.selection && savedSel.select) {
-          savedSel.select();
-        }
+      } else if (document.selection && savedSel.select) {
+        savedSel.select();
       }
     }
   },
 
-  getNode : () => {
-    let container, range, sel;
+  getNode: () => {
+    let container; let range; let
+      sel;
     range = void 0;
     sel = void 0;
     container = void 0;
     if (document.selection && document.selection.createRange) {
       range = document.selection.createRange();
       return range.parentElement();
-    } else if (window.getSelection) {
+    } if (window.getSelection) {
       sel = window.getSelection();
       if (sel.getRangeAt) {
         if (sel.rangeCount > 0) {
@@ -140,19 +136,19 @@ const Utils = {
         container = range.commonAncestorContainer;
         if (container.nodeType === 3) {
           return container.parentNode;
-        } else {
-          return container;
         }
+        return container;
       }
     }
   },
 
-  getSelectionDimensions : () => {
-    let height = 0, width = 0, range = void 0,
-      sel = document.selection, rect;
-    
+  getSelectionDimensions: () => {
+    let height = 0; let width = 0; let range = void 0;
+    let sel = document.selection; let
+      rect;
+
     if (sel) {
-      if (sel.type !== "Control") {
+      if (sel.type !== 'Control') {
         range = sel.createRange();
         width = range.boundingWidth;
         height = range.boundingHeight;
@@ -169,34 +165,38 @@ const Utils = {
       }
     }
     return {
-      width: width,
-      height: height,
+      width,
+      height,
       top: rect.top,
-      left: rect.left
+      left: rect.left,
     };
   },
 
-  getImageSelectionDimension : () => {
-    let figure, blockGrid;
+  getImageSelectionDimension: () => {
+    let figure; let
+      blockGrid;
 
     blockGrid = document.querySelector('.grid-focused');
 
-    if(blockGrid != null) {
+    if (blockGrid != null) {
       figure = blockGrid;
     } else {
       figure = document.querySelector('.figure-focused:not(.block-content-inner)');
     }
-    
-    if(figure == null) {
+
+    if (figure == null) {
       return null;
     }
     return figure.getBoundingClientRect();
   },
 
-  getCaretPosition : (editableDiv) => {
-    let caretPos = 0 ,
-    range = void 0, sel = void 0, tempEl, tempRange;
-    
+  getCaretPosition: (editableDiv) => {
+    let caretPos = 0;
+    let range = void 0;
+    let sel = void 0;
+    let tempEl;
+    let tempRange;
+
     if (window.getSelection) {
       sel = window.getSelection();
       if (sel.rangeCount) {
@@ -208,53 +208,53 @@ const Utils = {
     } else if (document.selection && document.selection.createRange) {
       range = document.selection.createRange();
       if (range.parentElement() === editableDiv) {
-        tempEl = document.createElement("span");
+        tempEl = document.createElement('span');
         editableDiv.insertBefore(tempEl, editableDiv.firstChild);
         tempRange = range.duplicate();
         tempRange.moveToElementText(tempEl);
-        tempRange.setEndPoint("EndToEnd", range);
+        tempRange.setEndPoint('EndToEnd', range);
         caretPos = tempRange.text.length;
       }
     }
     return caretPos;
   },
 
-  selection : () => {
+  selection: () => {
     if (window.getSelection) {
       return window.getSelection();
-    } else if (document.selection && document.selection.type !== "Control") {
+    } if (document.selection && document.selection.type !== 'Control') {
       return document.selection;
     }
   },
 
-  elementsHaveSameClasses : (first, second) => {
-    let arr1 = [...first.classList],
-        arr2 = [...second.classList];
-    if(arr1.length != arr2.length) {
+  elementsHaveSameClasses: (first, second) => {
+    const arr1 = [...first.classList];
+    const arr2 = [...second.classList];
+    if (arr1.length != arr2.length) {
       return false;
     }
     arr1.sort();
     arr2.sort();
-    for(let i = 0; i < arr1.length; i++) {
-      if(arr1[i] !== arr2[i]) {
+    for (let i = 0; i < arr1.length; i++) {
+      if (arr1[i] !== arr2[i]) {
         return false;
       }
     }
     return true;
   },
-  
-  urlIsFromDomain : (url, domain) => {
-    let a = document.createElement('a');
+
+  urlIsFromDomain: (url, domain) => {
+    const a = document.createElement('a');
     a.href = url;
-    if (typeof a.hostname != 'undefined' && a.hostname.indexOf(domain) != -1) {
+    if (typeof a.hostname !== 'undefined' && a.hostname.indexOf(domain) != -1) {
       return true;
     }
     return false;
   },
 
-  urlIsForImage : (url) => {
-    let a = document.createElement('a');
-    let path = a.pathname;
+  urlIsForImage: (url) => {
+    const a = document.createElement('a');
+    const path = a.pathname;
 
     a.href = url;
     if (path.indexOf('.jpeg') != -1) {
@@ -272,106 +272,98 @@ const Utils = {
     return false;
   },
 
-  getWindowWidth : () => {
-    return window.innerWidth
+  getWindowWidth: () => window.innerWidth
     || document.documentElement.clientWidth
-    || document.body.clientWidth;
-  },
+    || document.body.clientWidth,
 
-  getWindowHeight : () => {
-    return window.innerHeight
+  getWindowHeight: () => window.innerHeight
     || document.documentElement.clientHeight
-    || document.body.clientHeight;
-  },
+    || document.body.clientHeight,
 
-  generateElement : (txt) => {
+  generateElement: (txt) => {
     const d = document.createElement('div');
     d.innerHTML = txt;
-    if(d.children.length == 0) {
+    if (d.children.length == 0) {
       return null;
     }
-    if( d.children.length == 1 ) {
+    if (d.children.length == 1) {
       return d.firstChild;
-    } else {
-      return d.children;
     }
+    return d.children;
   },
 
-  arrayToNodelist : (arr) => {
+  arrayToNodelist: (arr) => {
     const fragment = document.createDocumentFragment();
-    arr.forEach(function(item){
+    arr.forEach((item) => {
       fragment.appendChild(item.cloneNode());
     });
     return fragment.childNodes;
   },
 
-  insertAfter : (el, referenceNode) => {
-    return referenceNode.parentNode.insertBefore(el, referenceNode.nextSibling);
-  },
+  insertAfter: (el, referenceNode) => referenceNode.parentNode.insertBefore(el, referenceNode.nextSibling),
 
-  prependNode : (el, refNode) => {
-    if(typeof el.length == 'undefined') {
+  prependNode: (el, refNode) => {
+    if (typeof el.length === 'undefined') {
       el = [el];
     }
-    el.forEach(e => {
-      if(refNode != null && refNode.parentNode != null) {
+    el.forEach((e) => {
+      if (refNode != null && refNode.parentNode != null) {
         return refNode.parentNode.insertBefore(e, refNode.parentNode.firstElementChild);
       }
-    })
+    });
     return null;
   },
 
-  scrollToTop : (position) => {
-    const pos = typeof position == 'undefined' ? 0 : position;
+  scrollToTop: (position) => {
+    const pos = typeof position === 'undefined' ? 0 : position;
     const scrollDuration = 1000;
-    const scrollStep = -window.scrollY / (scrollDuration / 15),
-    scrollInterval = setInterval(() => {
-      if ( window.scrollY != 0 ) {
-        window.scrollBy( pos, scrollStep );
-      }
-      else clearInterval(scrollInterval); 
+    const scrollStep = -window.scrollY / (scrollDuration / 15);
+    const scrollInterval = setInterval(() => {
+      if (window.scrollY != 0) {
+        window.scrollBy(pos, scrollStep);
+      } else clearInterval(scrollInterval);
     }, 15);
   },
 
-  isEqual : (obj1, obj2) => {
-    for (let p in obj1) {
+  isEqual: (obj1, obj2) => {
+    for (const p in obj1) {
       if (p in obj1 !== p in obj2) return false;
       switch (typeof (obj1[p])) {
         case 'object':
           if (!Object.compare(obj1[p], obj2[p])) return false;
           break;
         case 'function':
-          if (typeof (obj2[p]) == 'undefined' || (p != 'compare' && obj1[p].toString() != obj2[p].toString())) return false;
+          if (typeof (obj2[p]) === 'undefined' || (p != 'compare' && obj1[p].toString() != obj2[p].toString())) return false;
           break;
         default:
           if (obj1[p] != obj2[p]) return false;
       }
     }
-   
-    for (let p in obj2) {
-      if (typeof (obj1[p]) == 'undefined') return false;
+
+    for (const p in obj2) {
+      if (typeof (obj1[p]) === 'undefined') return false;
     }
     return true;
   },
 
-  getStyle : (el, prop) => {
-    if(el && el.style && el.style[prop] != '') {
+  getStyle: (el, prop) => {
+    if (el && el.style && el.style[prop] != '') {
       return el.style[prop];
     }
     return getComputedStyle(el).getPropertyValue(prop.toDashedProperty());
   },
 
-  setCaretAtPosition : (element, position) => {
+  setCaretAtPosition: (element, position) => {
     if (element == null) {
       return;
     }
-    let pos = typeof position == 'undefined' ? 0 : position,
-        range = document.createRange(),
-        sel = window.getSelection();
+    const pos = typeof position === 'undefined' ? 0 : position;
+    const range = document.createRange();
+    const sel = window.getSelection();
 
     if (element.childNodes && element.childNodes.length > 0) {
       range.setStart(element.childNodes[0], pos);
-    }else {
+    } else {
       range.setStart(element, pos);
     }
     range.collapse(true);
@@ -380,7 +372,8 @@ const Utils = {
   },
 
   editableFocus: (el, at_start) => {
-    let range, sel;
+    let range; let
+      sel;
     if (at_start == null) {
       at_start = true;
     }
@@ -398,13 +391,14 @@ const Utils = {
   },
 
   editableCaretOnLastLine: (el) => {
-    let cbtm, ebtm, range = editableRange();
+    let cbtm; let ebtm; const
+      range = editableRange();
     if (!range) {
       return false;
     }
     if (is_caret_at_end_of_node(el, range)) {
       return true;
-    } else if (is_caret_at_start_of_node(el, range)) {
+    } if (is_caret_at_start_of_node(el, range)) {
       cbtm = el.getBoundingClientRect().top + Utils.LINE_HEIGHT;
     } else {
       cbtm = range.getClientRects()[0].bottom;
@@ -416,7 +410,7 @@ const Utils = {
   outerWidth: (el) => {
     let width = el.offsetWidth;
     const style = getComputedStyle(el);
-  
+
     width += parseInt(style.marginLeft) + parseInt(style.marginRight);
     return width;
   },
@@ -424,42 +418,40 @@ const Utils = {
   outerHeight: (el) => {
     let height = el.offsetHeight;
     const style = getComputedStyle(el);
-  
+
     height += parseInt(style.marginTop) + parseInt(style.marginBottom);
     return height;
   },
 
-  registerForScroll : (key, cb) => {
-    Utils.scrollHandlers[key] = cb;  
+  registerForScroll: (key, cb) => {
+    Utils.scrollHandlers[key] = cb;
   },
 
-  unregisterFromScroll : (key) => {
+  unregisterFromScroll: (key) => {
     if (Utils.scrollHandlers[key]) {
       delete Utils.scrollHandlers[key];
     }
   },
 
-  animationFrame : (() => {
-    return window.requestAnimationFrame ||
-      window.webkitRequestAnimationFrame ||
-      window.mozRequestAnimationFrame ||
-      window.oRequestAnimationFrame ||
-      window.msRequestAnimationFrame ||
-      function (callback) {
+  animationFrame: (() => window.requestAnimationFrame
+      || window.webkitRequestAnimationFrame
+      || window.mozRequestAnimationFrame
+      || window.oRequestAnimationFrame
+      || window.msRequestAnimationFrame
+      || function (callback) {
         window.setTimeout(callback, 1000 / 60);
-      }
-    })(),
+      })(),
 
-  handleScroll : () => {
+  handleScroll: () => {
     if (Utils.scrollAttached) {
       return;
     }
     Utils.scrollAttached = true;
-    let d = document,
-        wHeight = Utils.getWindowHeight(),
-        didScroll = false,
-        body = d.querySelector('body'),
-        _this = Utils;
+    const d = document;
+    const wHeight = Utils.getWindowHeight();
+    let didScroll = false;
+    const body = d.querySelector('body');
+    const _this = Utils;
 
     function hasScrolled() {
       const st = d.body.scrollTop;
@@ -477,41 +469,42 @@ const Utils = {
         Utils.animationFrame(hasScrolled);
       }
     }
-    //TODO pipe debounce
+    // TODO pipe debounce
     window.addEventListener('scroll', checkScroll);
   },
 
-  editableCaretAtStart: (el) =>  {
+  editableCaretAtStart: (el) => {
     const range = editableRange();
     if (!range) {
       return false;
     }
     return is_caret_at_start_of_node(el, range);
   },
-  
-  editableCaretAtEnd: (el) =>  {
+
+  editableCaretAtEnd: (el) => {
     const range = editableRange();
     if (!range) {
       return false;
     }
     return is_caret_at_end_of_node(el, range);
   },
-  
-  editableCaretOnFirstLine : (el) => {
-    let ctop, etop, range = editableRange();
+
+  editableCaretOnFirstLine: (el) => {
+    let ctop; let etop; const
+      range = editableRange();
     if (!range) {
       return false;
     }
     if (is_caret_at_start_of_node(el, range)) {
       return true;
-    } else if (is_caret_at_end_of_node(el, range)) {
+    } if (is_caret_at_end_of_node(el, range)) {
       ctop = el.getBoundingClientRect().bottom - Utils.LINE_HEIGHT;
     } else {
       ctop = range.getClientRects()[0].top;
     }
     etop = el.getBoundingClientRect().top;
     return ctop < etop + Utils.LINE_HEIGHT;
-  }
+  },
 };
 
 export default Utils;

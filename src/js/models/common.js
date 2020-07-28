@@ -1,18 +1,18 @@
 function Common() {
-  const opts = arguments.length ? arguments[0] : {};    
+  const opts = arguments.length ? arguments[0] : {};
   this.factory = opts.factory;
 
-  this.contentTags = ['h1','h2','h3','h4','h5','h6','p','pre','blockquote','li', 'figcaption'];
-  this.markupTags = ['a','b','strong','u','i','em','cite'];  
+  this.contentTags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'pre', 'blockquote', 'li', 'figcaption'];
+  this.markupTags = ['a', 'b', 'strong', 'u', 'i', 'em', 'cite'];
 }
 
 Common.prototype.readMarkups = function (element) {
-  const original = element,
-      markups = [];
+  const original = element;
+  const markups = [];
 
   const workOnChildren = (el) => {
     const children = el.childNodes;
-    for (let i = 0; i < children.length; i = i + 1) {
+    for (let i = 0; i < children.length; i += 1) {
       const node = children[i];
 
       if (node.nodeType == Node.ELEMENT_NODE) {
@@ -22,8 +22,8 @@ Common.prototype.readMarkups = function (element) {
           tagName = tagName == 'b' ? 'strong' : tagName;
           tagName = tagName == 'i' ? 'em' : tagName;
 
-          const o = {tag: tagName};
-          if(o.tag == 'a') {
+          const o = { tag: tagName };
+          if (o.tag == 'a') {
             o.href = node.attr('href');
           }
           o.position = this.findPositionInElement(node, original);
@@ -42,17 +42,20 @@ Common.prototype.readMarkups = function (element) {
 Common.prototype.findPositionInElement = function (positionOf, inElement) {
   let baseElement = positionOf;
 
-  while(baseElement.parentNode != inElement) {
+  while (baseElement.parentNode != inElement) {
     baseElement = baseElement.parentNode;
   }
 
-  let childNodes = inElement.childNodes, start, end , textSoFar = 0;
-  for (let i = 0; i < childNodes.length; i = i + 1) {
+  const { childNodes } = inElement;
+  let start;
+  let end;
+  let textSoFar = 0;
+  for (let i = 0; i < childNodes.length; i += 1) {
     const node = childNodes[i];
     if (baseElement != node) {
       if (node.nodeType == Node.ELEMENT_NODE) {
         textSoFar += node.textContent.length;
-      }else if(node.nodeType == Node.TEXT_NODE) {
+      } else if (node.nodeType == Node.TEXT_NODE) {
         textSoFar += node.nodeValue.length;
       }
     } else {
@@ -61,7 +64,7 @@ Common.prototype.findPositionInElement = function (positionOf, inElement) {
   }
   start = textSoFar;
   end = start + positionOf.textContent.length;
-  return {start: start, end: end};
+  return { start, end };
 };
 
 export default new Common();

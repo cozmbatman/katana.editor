@@ -16,15 +16,14 @@ function Notes(opts) {
   boot.it(this, opts);
 }
 
-
 Notes.prototype.initialize = function () {
-  const opts = this.opts;
+  const { opts } = this;
 
   this.current_editor = opts.editor;
 
   opts.icon = this;
 
-  this.detailsHandler = new Details({...opts, node: document.querySelector('#markers_container')});
+  this.detailsHandler = new Details({ ...opts, node: document.querySelector('#markers_container') });
   this.options = opts;
   this.existing_notes = opts.currentNotes || [];
 
@@ -32,19 +31,19 @@ Notes.prototype.initialize = function () {
 
   this.commentsCloserElement.addEventListener('click', () => {
     this.detailsHandler.closePreviousBox();
-    this.deactivateAll();          
+    this.deactivateAll();
   });
 
   const w = ('innerWidth' in window) ? window.innerWidth : Utils.getWindowWidth();
-  this.smallScreen = w <= 480 ? true : false;
+  this.smallScreen = w <= 480;
   const cc = document.querySelector('.center-column');
   let layoutWidth = 1020;
-  if(cc != null) {
+  if (cc != null) {
     layoutWidth = cc.getBoundingClientRect().width;
   }
 
-  const cen = (w - layoutWidth) / 2,
-      tot = (cen + layoutWidth + 355);
+  const cen = (w - layoutWidth) / 2;
+  const tot = (cen + layoutWidth + 355);
   this.llShift = false;
   if (tot > w) {
     this.llShift = false;
@@ -55,50 +54,51 @@ Notes.prototype.initialize = function () {
 };
 
 Notes.prototype.events = {
-  'click .note-icon' :  'handleNoteIconClick'
+  'click .note-icon': 'handleNoteIconClick',
 };
 
 Notes.prototype.readNotes = function () {
-  const read_url = this.options.info.read_url + '/' + this.options.info.story.id;
+  const read_url = `${this.options.info.read_url}/${this.options.info.story.id}`;
   const xhr = new XMLHttpRequest();
-  xhr.open("GET", read_url, true);
+  xhr.open('GET', read_url, true);
   xhr.onload = () => {
-    if(xhr.status == "200" && xhr.readyState == 4) {
+    if (xhr.status == '200' && xhr.readyState == 4) {
       try {
         const resp = JSON.parse(xhr.responseText);
         this.parseNotes(resp);
-      } catch(e) {
+      } catch (e) {
         console.error(e);
       }
     }
-  }
+  };
   xhr.send(null);
 };
 
 Notes.prototype.parseNotes = function (data) {
   if (data && data.success) {
-    let dt = data.data, notes = [];
+    const dt = data.data; let
+      notes = [];
 
     const pieces = {};
     if (dt.notes) {
       notes = dt.notes;
-      for (let i = 0; i < notes.length;i = i + 1) {
+      for (let i = 0; i < notes.length; i += 1) {
         pieces[notes[i].piece] = notes[i].count;
       }
     }
-    
+
     this.existing_notes = pieces;
     this.refresh();
   }
 };
 
-/** EVENTs handlers **/
+/** EVENTs handlers * */
 Notes.prototype.handleNoteIconClick = function (ev, matched) {
-  const currentHovered = matched ? matched : ev.currentTarget;
-  
+  const currentHovered = matched || ev.currentTarget;
+
   if (currentHovered && currentHovered.nodeType == 1) {
     const name = currentHovered.attr('note-for');
-    const against = document.querySelector('[name="' + name + '"]');
+    const against = document.querySelector(`[name="${name}"]`);
     if (against != null) {
       this.deactivateAll();
       const curr = currentHovered;
@@ -106,41 +106,38 @@ Notes.prototype.handleNoteIconClick = function (ev, matched) {
       curr.addClass('is-clicked');
 
       if (!this.smallScreen) {
-
         setTimeout(() => {
           this.repositionIcon(curr, against);
           this.activateCloser(against);
-          this.detailsHandler.showDetailsFor(name, curr );
+          this.detailsHandler.showDetailsFor(name, curr);
         }, 300);
-
       } else {
-        this.activateCloser(against); 
-        this.detailsHandler.showDetailsFor(name, curr );
+        this.activateCloser(against);
+        this.detailsHandler.showDetailsFor(name, curr);
       }
     }
   }
-
 };
 
 Notes.prototype.commentsCloserElement = document.querySelector('#comments_closer');
 
-Notes.prototype.activateCloser = function(against) {
+Notes.prototype.activateCloser = function (against) {
   this.commentsCloserElement.addClass('active');
   const w = Utils.getWindowWidth();
   const box = against.getBoundingClientRect();
   const o = box.left + box.width;
-  this.commentsCloserElement.style.right = (w - o) + 'px';
+  this.commentsCloserElement.style.right = `${w - o}px`;
 };
 
-Notes.prototype.deactivateCloser = function() {
+Notes.prototype.deactivateCloser = function () {
   this.commentsCloserElement.removeClass('active');
   document.querySelector('body').removeClass('notes-opened');
 };
 
 Notes.prototype.deactivateAll = function () {
-  const clicked = this.elNode.querySelector(".is-clicked");
+  const clicked = this.elNode.querySelector('.is-clicked');
   if (clicked != null) {
-    clicked.removeClass('is-clicked').addClass('hide')
+    clicked.removeClass('is-clicked').addClass('hide');
     setTimeout(() => {
       this.repositionIcon(clicked, undefined);
     }, 240);
@@ -155,8 +152,8 @@ Notes.prototype.hidePreviousVisible = function () {
 
 Notes.prototype.showNoteIcon = function (ob) {
   this._getNoteIcon(ob)?.addClass('is-active');
-  
-  /*if (ob.selection != null) {
+
+  /* if (ob.selection != null) {
     let range,
       selection = ob.selection;
     if (selection.getRangeAt) {
@@ -164,28 +161,28 @@ Notes.prototype.showNoteIcon = function (ob) {
     } else {
       range = selection[0];
     }
-  }*/
+  } */
 };
 
 Notes.prototype._getNoteIcon = function (ob) {
-  const name = ob.node.attr('name'),
-      node = ob.node;
+  const name = ob.node.attr('name');
+  const { node } = ob;
   let onDark = false;
 
   if (node.closest('.with-background') != null) {
     onDark = true;
   }
-  let existing = this.elNode.querySelector('[note-for="' + name + '"]');
+  let existing = this.elNode.querySelector(`[note-for="${name}"]`);
 
-  if (existing ==  null) {
-    if (typeof this.existing_notes[name] == 'undefined') {
-      existing = this._addIcon(name, 0);  
+  if (existing == null) {
+    if (typeof this.existing_notes[name] === 'undefined') {
+      existing = this._addIcon(name, 0);
     } else {
       existing = this._addIcon(name, this.existing_notes[name]);
     }
   }
 
-  if(onDark) {
+  if (onDark) {
     existing.addClass('on-dark');
   } else {
     existing.removeClass('on-dark');
@@ -199,44 +196,44 @@ Notes.prototype.calculateIconPosition = function (against) {
   const box = against.getBoundingClientRect();
   const aoffset = {
     top: box.top + document.body.scrollTop,
-    left: box.left + document.body.scrollLeft
+    left: box.left + document.body.scrollLeft,
   };
 
-  let top = aoffset.top,
-      left = aoffset.left + box.width + 5;
+  let { top } = aoffset;
+  let left = aoffset.left + box.width + 5;
   if (this.smallScreen) {
     if (left < 790) {
       left = 800;
-    }  
+    }
   }
 
   if (against.hasClass('item-h2')) {
     top += 20;
-  } else if(against.hasClass('item-blockquote')) {
+  } else if (against.hasClass('item-blockquote')) {
     left += 42;
   }
 
   return {
-    left: left,
-    top: top
+    left,
+    top,
   };
 };
 
 Notes.prototype.repositionIcon = function (icon, against) {
   const name = icon.attr('note-for');
   let ag;
-  if (typeof against != 'undefined') {
+  if (typeof against !== 'undefined') {
     ag = against;
-  }else {
-    ag = document.querySelector('[name="' + name + '"]');
-  } 
+  } else {
+    ag = document.querySelector(`[name="${name}"]`);
+  }
   if (ag != null) {
     const pos = this.calculateIconPosition(ag);
     const st = icon.style;
-    st.left = pos.left + 'px';
-    st.top = pos.top + 'px';
+    st.left = `${pos.left}px`;
+    st.top = `${pos.top}px`;
     st.position = 'absolute';
-    setTimeout( () => {
+    setTimeout(() => {
       icon.removeClass('hide');
     }, 100);
   }
@@ -247,32 +244,30 @@ Notes.prototype.positionIcon = function (icon, against, show) {
     if (this.smallScreen) {
       document.querySelector('.item-clicked')?.removeClass('item-clicked');
 
-      if (typeof show != 'undefined' && show) {
+      if (typeof show !== 'undefined' && show) {
         this.elNode.removeClass('open');
         setTimeout(() => {
-          this.elNode.addClass('open');  
+          this.elNode.addClass('open');
         }, 200);
       } else {
         this.elNode.removeClass('open');
       }
-      
+
       icon.addClass('item-clicked');
     } else {
       const pos = this.calculateIconPosition(against);
       const ist = icon.style;
-      ist.left = pos.left + 'px';
-      ist.top = pos.top + 'px';
+      ist.left = `${pos.left}px`;
+      ist.top = `${pos.top}px`;
       ist.position = 'absolute';
     }
   }
 };
 
-Notes.prototype.getIconTemplate = () => {
-  return Utils.generateElement(`<div class="notes-marker-container note-icon empty">
+Notes.prototype.getIconTemplate = () => Utils.generateElement(`<div class="notes-marker-container note-icon empty">
   <span class="notes-counter" data-note-count=""></span>
   <i class="mfi-comment"></i>
   </div>`);
-};
 
 Notes.prototype._addIcon = function (name, currentCount) {
   const icon = this.getIconTemplate();
@@ -287,18 +282,18 @@ Notes.prototype._addIcon = function (name, currentCount) {
   return icon;
 };
 
-/** event handlers end **/
+/** event handlers end * */
 
 Notes.prototype.init = function () {
   this.streamer.subscribe('Katana.Event.Notes', (ev) => {
-    const node = ev.node,
-        text = ev.selectedText;
+    const { node } = ev;
+    const text = ev.selectedText;
 
     let selection = null;
-    if (typeof ev.selectedText != 'undefined') {
+    if (typeof ev.selectedText !== 'undefined') {
       selection = Utils.saveSelection();
     }
-    this.showNoteIcon({node, text, selection});
+    this.showNoteIcon({ node, text, selection });
   });
 };
 
@@ -307,17 +302,16 @@ Notes.prototype.existingNotes = function (notes) {
   this.refresh();
 };
 
-
 Notes.prototype.currentHover = null;
 
 // called by editor on mouse over or tap in case of mobile
 Notes.prototype.showNote = function (ev, matched) {
-  const currentHovered = matched ? matched : ev.currentTarget;
+  const currentHovered = matched || ev.currentTarget;
   if (currentHovered && currentHovered.nodeType == 1) {
     const name = currentHovered.attr('name');
     if (name != null && this.currentHover != name && !currentHovered.hasClass('item-empty') && !currentHovered.hasClass('item-figure')) {
       this.hidePreviousVisible();
-      this.showNoteIcon( {node : currentHovered, text: '', show: true} );
+      this.showNoteIcon({ node: currentHovered, text: '', show: true });
       this.currentHover = name;
     }
   }
@@ -326,20 +320,20 @@ Notes.prototype.showNote = function (ev, matched) {
 Notes.prototype.refresh = function () {
   this.deactivateCloser();
   const notes = this.existing_notes;
-  for (let name in notes) {
-    const sel = this.current_editor.elNode.querySelector('[name="' + name + '"]');
+  for (const name in notes) {
+    const sel = this.current_editor.elNode.querySelector(`[name="${name}"]`);
     if (sel != null) {
-      this.showNoteIcon({node: sel, text: ''});
+      this.showNoteIcon({ node: sel, text: '' });
     }
   }
   this.detailsHandler.existingNotes(notes);
 };
 
 Notes.prototype.incrementCounter = function (name) {
-  const icon = this.elNode.querySelector('[note-for="' + name + '"]');
+  const icon = this.elNode.querySelector(`[note-for="${name}"]`);
   if (icon != null) {
     const counter = icon.querySelector('.notes-counter');
-    if(counter != null) {
+    if (counter != null) {
       let currentCount = parseInt(counter.attr('data-note-count'));
       if (isNaN(currentCount)) {
         currentCount = 0;
@@ -353,10 +347,10 @@ Notes.prototype.incrementCounter = function (name) {
 };
 
 Notes.prototype.decrementCounter = function (name) {
-  const icon = this.elNode.querySelector('[note-for="' + name + '"]');
+  const icon = this.elNode.querySelector(`[note-for="${name}"]`);
   if (icon != null) {
     const counter = icon.querySelector('.notes-counter');
-    if(counter != null) {
+    if (counter != null) {
       let currentCount = parseInt(counter.attr('data-note-count'));
       currentCount--;
       counter.text(currentCount);
@@ -366,7 +360,7 @@ Notes.prototype.decrementCounter = function (name) {
       }
       if (currentCount == 0) {
         counter.text('+');
-      }    
+      }
     }
   }
 };

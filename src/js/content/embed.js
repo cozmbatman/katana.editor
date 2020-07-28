@@ -1,4 +1,4 @@
-import boot from "../boot";
+import boot from '../boot';
 
 function Embed(opts) {
   this.opts = opts;

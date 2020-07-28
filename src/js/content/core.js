@@ -16,20 +16,20 @@ Manager.prototype.showedAgainst = null;
 
 Manager.prototype.events = {
   'click .inlineTooltip-button.control': 'toggleOptions',
-  'click .inlineTooltip-menu button': 'handleClick'
+  'click .inlineTooltip-menu button': 'handleClick',
 };
 
 Manager.prototype.initialize = function () {
-  const opts = this.opts;
+  const { opts } = this;
   this.widgets = opts.widgets || [];
   this.current_editor = opts.editor;
 };
 
 Manager.prototype.template = function () {
-  let menu = "";
-  
-  this.widgets.forEach( b => {
-    const data_action_value = b.action ? "data-action-value='" + b.action + "'" : "";
+  let menu = '';
+
+  this.widgets.forEach((b) => {
+    const data_action_value = b.action ? `data-action-value='${b.action}'` : '';
     if (b.template) {
       menu += b.template();
     } else {
@@ -47,7 +47,7 @@ Manager.prototype.render = function () {
 };
 
 Manager.prototype.getView = function () {
-  return 'html'; // 
+  return 'html'; //
 };
 
 Manager.prototype.hide = function () {
@@ -55,7 +55,7 @@ Manager.prototype.hide = function () {
 };
 
 Manager.prototype.show = function (showedAgainst) {
-  document.querySelector('.hide-placeholder')?.removeClass('hide-placeholder')
+  document.querySelector('.hide-placeholder')?.removeClass('hide-placeholder');
 
   this.showedAgainst = showedAgainst;
   this.elNode.addClass('is-active');
@@ -63,25 +63,25 @@ Manager.prototype.show = function (showedAgainst) {
 };
 
 Manager.prototype.move = function (coords) {
-  let control_spacing, control_width, coord_left, coord_top, pull_size, tooltip;
+  let control_spacing; let control_width; let coord_left; let coord_top; let pull_size; let
+    tooltip;
 
   tooltip = this.elNode;
-  control_width = tooltip.querySelector(".control")?.getBoundingClientRect().width;
-  
-  control_spacing = Utils.getStyle( tooltip.querySelector(".inlineTooltip-menu"), 'paddingLeft' );
-  pull_size = parseInt(control_width) + parseInt(control_spacing.replace(/px/, ""));
-  if(isNaN(pull_size)) {
+  control_width = tooltip.querySelector('.control')?.getBoundingClientRect().width;
+
+  control_spacing = Utils.getStyle(tooltip.querySelector('.inlineTooltip-menu'), 'paddingLeft');
+  pull_size = parseInt(control_width) + parseInt(control_spacing.replace(/px/, ''));
+  if (isNaN(pull_size)) {
     pull_size = 0;
   }
   coord_left = coords.left - pull_size;
   coord_top = coords.top;
-  if ( Utils.getWindowWidth() <= 768 ) {
+  if (Utils.getWindowWidth() <= 768) {
     coord_left = 5;
   }
-  const style = this.elNode.style;
-  style.top = coord_top + 'px';
-  style.left = coord_left + 'px';
-  return;
+  const { style } = this.elNode;
+  style.top = `${coord_top}px`;
+  style.left = `${coord_left}px`;
 };
 
 Manager.prototype.toggleOptions = function () {
@@ -100,17 +100,15 @@ Manager.prototype.toggleOptions = function () {
   return false;
 };
 
-Manager.prototype.findWidgetByAction = function(name) {
-  return this.widgets.filter( (e) => {
-    return e.action === name || name.indexOf(e.action) != -1;
-  });
+Manager.prototype.findWidgetByAction = function (name) {
+  return this.widgets.filter((e) => e.action === name || name.indexOf(e.action) != -1);
 };
 
 Manager.prototype.handleClick = function (ev, matched) {
   const name = matched ? matched.attr('data-action') : ev.currentTarget.attr('data-action');
-  const sub_name = name.replace("inline-menu-", "");
+  const sub_name = name.replace('inline-menu-', '');
   const detected_widget = this.findWidgetByAction(sub_name);
-  
+
   if (detected_widget != null && detected_widget.length > 0) {
     detected_widget[0].handleClick(ev, matched);
   }
