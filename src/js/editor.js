@@ -313,7 +313,7 @@ Editor.prototype.init = function (cb) {
   }
 
   if (this.mode == 'read') {
-    Player.manage(this.opts.video);
+    Player.manage({videos: this.opts.video, editor: this});
   }
 
   if (this.mode == 'write') {

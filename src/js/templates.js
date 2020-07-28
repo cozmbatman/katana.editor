@@ -238,6 +238,10 @@ function Templates() {
         </section>`;
   };
 
+  this.videoBackgroundContainerTemplate = () => `<div class="video-container container-fixed in-background" name="${Utils.generateId()}">
+  <div class="actual-wrapper" id="${Utils.generateId()}"></div>
+  </div>`;
+
   this.getTooltipTemplate = () => `<div class='popover popover-tooltip popover-bottom active'> 
     <div class='popover-inner'>
       <a href='#' target='_blank'> Link </a>
