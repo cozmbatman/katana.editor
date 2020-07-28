@@ -1,21 +1,21 @@
-const is_caret_at_start_of_node = (node, range) => {
-  const pre_range = document.createRange();
-  pre_range.selectNodeContents(node);
-  pre_range.setEnd(range.startContainer, range.startOffset);
-  return pre_range.toString().trim().length === 0;
+const isCaretAtStartOfNode = (node, range) => {
+  const preRange = document.createRange();
+  preRange.selectNodeContents(node);
+  preRange.setEnd(range.startContainer, range.startOffset);
+  return preRange.toString().trim().length === 0;
 };
 
-const is_caret_at_end_of_node = (node, range) => {
-  const post_range = document.createRange();
-  post_range.selectNodeContents(node);
-  post_range.setStart(range.endContainer, range.endOffset);
-  return post_range.toString().trim().length === 0;
+const isCaretAtEndOfNode = (node, range) => {
+  const postRange = document.createRange();
+  postRange.selectNodeContents(node);
+  postRange.setStart(range.endContainer, range.endOffset);
+  return postRange.toString().trim().length === 0;
 };
 
 const editableRange = () => {
   const sel = window.getSelection();
   if (!(sel.rangeCount > 0)) {
-    return;
+    return null;
   }
   return sel.getRangeAt(0);
 };
@@ -32,14 +32,15 @@ const Utils = {
 
   log: (message, force) => {
     if (window.debugMode || force) {
-      return console.log(message);
+      console.log(message); // eslint-disable-line no-console
     }
   },
 
   incrementCounter: (index) => {
+    let ind;
     if (typeof index === 'number') {
-      index += 1;
-      return index;
+      ind = index + 1;
+      return ind;
     } if (typeof index === 'string') {
       return String.fromCharCode(index.charCodeAt(0) + 1);
     }
@@ -111,9 +112,9 @@ const Utils = {
   getNode: () => {
     let container; let range; let
       sel;
-    range = void 0;
-    sel = void 0;
-    container = void 0;
+    range = undefined;
+    sel = undefined;
+    container = undefined;
     if (document.selection && document.selection.createRange) {
       range = document.selection.createRange();
       return range.parentElement();
@@ -140,12 +141,13 @@ const Utils = {
         return container;
       }
     }
+    return null;
   },
 
   getSelectionDimensions: () => {
-    let height = 0; let width = 0; let range = void 0;
-    let sel = document.selection; let
-      rect;
+    let height = 0; let width = 0; let range;
+    let sel = document.selection;
+    let rect;
 
     if (sel) {
       if (sel.type !== 'Control') {
@@ -173,10 +175,9 @@ const Utils = {
   },
 
   getImageSelectionDimension: () => {
-    let figure; let
-      blockGrid;
+    let figure;
 
-    blockGrid = document.querySelector('.grid-focused');
+    const blockGrid = document.querySelector('.grid-focused');
 
     if (blockGrid != null) {
       figure = blockGrid;
@@ -192,8 +193,8 @@ const Utils = {
 
   getCaretPosition: (editableDiv) => {
     let caretPos = 0;
-    let range = void 0;
-    let sel = void 0;
+    let range;
+    let sel;
     let tempEl;
     let tempRange;
 
@@ -225,12 +226,13 @@ const Utils = {
     } if (document.selection && document.selection.type !== 'Control') {
       return document.selection;
     }
+    return null;
   },
 
   elementsHaveSameClasses: (first, second) => {
     const arr1 = [...first.classList];
     const arr2 = [...second.classList];
-    if (arr1.length != arr2.length) {
+    if (arr1.length !== arr2.length) {
       return false;
     }
     arr1.sort();
@@ -246,7 +248,7 @@ const Utils = {
   urlIsFromDomain: (url, domain) => {
     const a = document.createElement('a');
     a.href = url;
-    if (typeof a.hostname !== 'undefined' && a.hostname.indexOf(domain) != -1) {
+    if (typeof a.hostname !== 'undefined' && a.hostname.indexOf(domain) !== -1) {
       return true;
     }
     return false;
@@ -257,16 +259,16 @@ const Utils = {
     const path = a.pathname;
 
     a.href = url;
-    if (path.indexOf('.jpeg') != -1) {
+    if (path.indexOf('.jpeg') !== -1) {
       return true;
     }
-    if (path.indexOf('.jpg') != -1) {
+    if (path.indexOf('.jpg') !== -1) {
       return true;
     }
-    if (path.indexOf('.png') != -1) {
+    if (path.indexOf('.png') !== -1) {
       return true;
     }
-    if (path.indexOf('.gif') != -1) {
+    if (path.indexOf('.gif') !== -1) {
       return true;
     }
     return false;
@@ -283,10 +285,10 @@ const Utils = {
   generateElement: (txt) => {
     const d = document.createElement('div');
     d.innerHTML = txt;
-    if (d.children.length == 0) {
+    if (d.children.length === 0) {
       return null;
     }
-    if (d.children.length == 1) {
+    if (d.children.length === 1) {
       return d.firstChild;
     }
     return d.children;
@@ -300,15 +302,16 @@ const Utils = {
     return fragment.childNodes;
   },
 
-  insertAfter: (el, referenceNode) => referenceNode.parentNode.insertBefore(el, referenceNode.nextSibling),
+  insertAfter: (el, referenceNode) => referenceNode.insertAdjacentElement('afterend', el),
 
   prependNode: (el, refNode) => {
+    let els = el;
     if (typeof el.length === 'undefined') {
-      el = [el];
+      els = [el];
     }
-    el.forEach((e) => {
+    els.forEach((e) => {
       if (refNode != null && refNode.parentNode != null) {
-        return refNode.parentNode.insertBefore(e, refNode.parentNode.firstElementChild);
+        refNode.parentNode.insertBefore(e, refNode.parentNode.firstElementChild);
       }
     });
     return null;
@@ -319,35 +322,39 @@ const Utils = {
     const scrollDuration = 1000;
     const scrollStep = -window.scrollY / (scrollDuration / 15);
     const scrollInterval = setInterval(() => {
-      if (window.scrollY != 0) {
+      if (window.scrollY !== 0) {
         window.scrollBy(pos, scrollStep);
       } else clearInterval(scrollInterval);
     }, 15);
   },
 
   isEqual: (obj1, obj2) => {
-    for (const p in obj1) {
+    const obOneKeys = Object.keys(obj1);
+    for (let i = 0; i < obOneKeys.length; i++) {
+      const p = obOneKeys[i];
       if (p in obj1 !== p in obj2) return false;
       switch (typeof (obj1[p])) {
         case 'object':
           if (!Object.compare(obj1[p], obj2[p])) return false;
           break;
         case 'function':
-          if (typeof (obj2[p]) === 'undefined' || (p != 'compare' && obj1[p].toString() != obj2[p].toString())) return false;
+          if (typeof (obj2[p]) === 'undefined' || (p !== 'compare' && obj1[p].toString() !== obj2[p].toString())) return false;
           break;
         default:
-          if (obj1[p] != obj2[p]) return false;
+          if (obj1[p] !== obj2[p]) return false;
       }
     }
 
-    for (const p in obj2) {
+    const obTwoKeys = Object.keys(obj2);
+    for (let i = 0; i < obTwoKeys.length; i++) {
+      const p = obTwoKeys[i];
       if (typeof (obj1[p]) === 'undefined') return false;
     }
     return true;
   },
 
   getStyle: (el, prop) => {
-    if (el && el.style && el.style[prop] != '') {
+    if (el && el.style && el.style[prop] !== '') {
       return el.style[prop];
     }
     return getComputedStyle(el).getPropertyValue(prop.toDashedProperty());
@@ -371,39 +378,38 @@ const Utils = {
     sel.addRange(range);
   },
 
-  editableFocus: (el, at_start) => {
-    let range; let
-      sel;
-    if (at_start == null) {
-      at_start = true;
+  editableFocus: (el, atStart) => {
+    let atTheStart = atStart;
+    if (!atStart) {
+      atTheStart = true;
     }
     if (!el.hasAttribute('contenteditable')) {
       return;
     }
-    sel = window.getSelection();
+    const sel = window.getSelection();
     if (sel.rangeCount > 0) {
       sel.removeAllRanges();
     }
-    range = document.createRange();
+    const range = document.createRange();
     range.selectNodeContents(el);
-    range.collapse(at_start);
-    return sel.addRange(range);
+    range.collapse(atTheStart);
+    sel.addRange(range);
   },
 
   editableCaretOnLastLine: (el) => {
-    let cbtm; let ebtm; const
-      range = editableRange();
+    let cbtm;
+    const range = editableRange();
     if (!range) {
       return false;
     }
-    if (is_caret_at_end_of_node(el, range)) {
+    if (isCaretAtEndOfNode(el, range)) {
       return true;
-    } if (is_caret_at_start_of_node(el, range)) {
+    } if (isCaretAtStartOfNode(el, range)) {
       cbtm = el.getBoundingClientRect().top + Utils.LINE_HEIGHT;
     } else {
       cbtm = range.getClientRects()[0].bottom;
     }
-    ebtm = el.getBoundingClientRect().bottom;
+    const ebtm = el.getBoundingClientRect().bottom;
     return cbtm > ebtm - Utils.LINE_HEIGHT;
   },
 
@@ -451,13 +457,14 @@ const Utils = {
     const wHeight = Utils.getWindowHeight();
     let didScroll = false;
     const body = d.querySelector('body');
-    const _this = Utils;
+    const self = Utils;
 
     function hasScrolled() {
       const st = d.body.scrollTop;
-      const cbs = _this.scrollHandlers;
-      for (const key of Object.entries(cbs)) {
-        const fn = cbs[key];
+      const cbs = self.scrollHandlers;
+      const cbKeys = Object.keys(cbs);
+      for (let i = 0; i < cbKeys.length; i++) {
+        const fn = cbKeys[i];
         fn(st, body, d.documentElement.scrollHeight, wHeight);
       }
       didScroll = false;
@@ -478,7 +485,7 @@ const Utils = {
     if (!range) {
       return false;
     }
-    return is_caret_at_start_of_node(el, range);
+    return isCaretAtStartOfNode(el, range);
   },
 
   editableCaretAtEnd: (el) => {
@@ -486,23 +493,23 @@ const Utils = {
     if (!range) {
       return false;
     }
-    return is_caret_at_end_of_node(el, range);
+    return isCaretAtEndOfNode(el, range);
   },
 
   editableCaretOnFirstLine: (el) => {
-    let ctop; let etop; const
-      range = editableRange();
+    let ctop;
+    const range = editableRange();
     if (!range) {
       return false;
     }
-    if (is_caret_at_start_of_node(el, range)) {
+    if (isCaretAtStartOfNode(el, range)) {
       return true;
-    } if (is_caret_at_end_of_node(el, range)) {
+    } if (isCaretAtEndOfNode(el, range)) {
       ctop = el.getBoundingClientRect().bottom - Utils.LINE_HEIGHT;
     } else {
       ctop = range.getClientRects()[0].top;
     }
-    etop = el.getBoundingClientRect().top;
+    const etop = el.getBoundingClientRect().top;
     return ctop < etop + Utils.LINE_HEIGHT;
   },
 };

@@ -12,6 +12,8 @@
     "YoutubeScriptLoaded": true
   },
   "rules": {
-    "default-case": "off"
+    "default-case": "off",
+    "no-plusplus": "warn",
+    "radix": "warn"
   }
 }
