@@ -1,12 +1,12 @@
-const _SubWrap = function (name, cb, set) {
+const SubWrap = function SubWrap(name, cb, set) {
   this.name = name;
   this.cb = cb;
   this.set = set;
 };
-_SubWrap.prototype.execute = function (ev) {
+SubWrap.prototype.execute = function execute(ev) {
   this.cb(ev);
 };
-_SubWrap.prototype.release = function () {
+SubWrap.prototype.release = function release() {
   this.cb = null;
   this.set.clear(this);
 };
@@ -18,7 +18,7 @@ function Stream() {
     if (typeof streamHandlers[name] === 'undefined') {
       streamHandlers[name] = new Set();
     }
-    const sub = new _SubWrap(name, cb, streamHandlers[name]);
+    const sub = new SubWrap(name, cb, streamHandlers[name]);
     streamHandlers[name].add(sub);
     return sub;
   };
@@ -27,9 +27,10 @@ function Stream() {
     if (typeof streamHandlers[name] === 'undefined') {
       return;
     }
-    const entries = streamHandlers[name].entries();
-    for (const k of entries) {
-      entries[k].execute(ev);
+    const handlers = streamHandlers[name];
+    const keys = Object.keys(handlers);
+    for (let i = 0; i < keys.length; i += 1) {
+      handlers[keys[i]].execute(ev);
     }
   };
 }
