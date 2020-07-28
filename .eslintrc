@@ -10,5 +10,8 @@
   "globals" : {
     "YT": true,
     "YoutubeScriptLoaded": true
+  },
+  "rules": {
+    "default-case": "off"
   }
 }

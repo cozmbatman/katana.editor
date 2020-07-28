@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "pretest": "eslint .",
-    "lint": "eslint --fix $LINT",
+    "lint": "eslint $LINT",
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "NODE_ENV=development webpack-dev-server --config webpack.dev.js --mode=development --hot",
     "dev-build": "webpack --config webpack.build.js --mode development"

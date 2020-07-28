@@ -55,7 +55,7 @@ TextToolbar.prototype.initialize = function initialize() {
   };
   this.lineBreakReg = /^(?:blockquote|pre|div|p)$/i;
   this.effectNodeReg = /(?:[pubia]|h[1-6]|blockquote|[uo]l|li|strong|em)/i;
-  return this.strReg = {
+  this.strReg = {
     whiteSpace: /(^\s+)|(\s+$)/g,
     mailTo: /^(?!mailto:|.+\/|.+#|.+\?)(.*@.*\..+)$/,
     http: /^(?!\w+?:\/\/|mailto:|\/|\.\/|\?|#)(.*)$/,
@@ -63,7 +63,7 @@ TextToolbar.prototype.initialize = function initialize() {
 };
 
 TextToolbar.prototype.defaultConfig = function defaultConfig() {
-  if (this.mode == 'write') {
+  if (this.mode === 'write') {
     const o = {
       buttons: [
         { a: 'bold', i: 'bold' },
@@ -83,7 +83,7 @@ TextToolbar.prototype.defaultConfig = function defaultConfig() {
       o.buttons.push({ a: 'buttontrans', i: 'button-trans' });
     }
     return o;
-  } if (this.mode == 'edit') {
+  } if (this.mode === 'edit') {
     return {
       buttons: [
         { a: 'highlight', i: 'highlight' },
@@ -100,7 +100,7 @@ TextToolbar.prototype.defaultConfig = function defaultConfig() {
 };
 
 TextToolbar.prototype.template = function template() {
-  if (this.cachedTemplate == null) {
+  if (!this.cachedTemplate) {
     this.cachedTemplate = this.current_editor.templates.toolbarTemplate(this.config.buttons);
   }
   return this.cachedTemplate;
@@ -124,10 +124,10 @@ TextToolbar.prototype.refresh = function refresh() {
 };
 
 TextToolbar.prototype.show = function show() {
-  this.current_editor.toolbar._show();
+  this.current_editor.toolbar.show$();
 };
 
-TextToolbar.prototype._show = function _show() {
+TextToolbar.prototype.show$ = function show$() {
   this.elNode.addClass('mf-menu--active');
   this.elNode.removeClass('hide');
   return this.displayHighlights();
@@ -169,13 +169,12 @@ TextToolbar.prototype.actionIsLink = function actionIsLink(target, event) {
 };
 
 TextToolbar.prototype.shortCutKey = function shortCutKey(key, event) {
-  const _this = this;
-  const shouldOpenLink = function shouldOpenLink() {
-    const text = _this.current_editor.getSelectedText();
+  const shouldOpenLink = () => {
+    const text = this.current_editor.getSelectedText();
     return !!text.length;
   };
 
-  if (this.mode == 'write') {
+  if (this.mode === 'write') {
     let action = '';
     const node = this.current_editor.elNode.querySelector('.item-selected');
     if (node && !node.hasClass('item-figure')) {
@@ -208,15 +207,16 @@ TextToolbar.prototype.shortCutKey = function shortCutKey(key, event) {
           break;
       }
 
-      if (action != '') {
+      if (action) {
         this.menuApply(action);
         return false;
       }
-      if (key == CHAR_LINK) {
+      if (key === CHAR_LINK) {
         return false;
       }
     }
   }
+  return true;
 };
 
 TextToolbar.prototype.closeInput = function closeInput() {
@@ -225,7 +225,7 @@ TextToolbar.prototype.closeInput = function closeInput() {
 };
 
 TextToolbar.prototype.handleKeyDown = function handleKeyDown(e) {
-  if (e.which == 27) {
+  if (e.which === 27) {
     this.hide();
     Utils.restoreSelection(this.savedSel);
   }
@@ -235,9 +235,10 @@ TextToolbar.prototype.handleInputEnter = function handleInputEnter(e, matched) {
   if (e.which === 13) {
     Utils.restoreSelection(this.savedSel);
     if (matched) {
-      return this.createlink(matched);
+      this.createlink(matched);
+      return;
     }
-    return this.createlink(e.target);
+    this.createlink(e.target);
   }
 };
 
@@ -264,13 +265,13 @@ TextToolbar.prototype.menuApply = function menuApply(action, value) {
     this.commandInsert(action);
   } else if (this.commandsReg.wrap.test(action)) {
     this.commandWrap(action);
-  } else if (action == 'center') {
+  } else if (action === 'center') {
     this.commandCenter(action);
-  } else if (action == 'buttontrans' || action == 'buttonprimary') {
+  } else if (action === 'buttontrans' || action === 'buttonprimary') {
     this.commandButton(action);
-  } else if (action == 'comment' || action == 'share') {
+  } else if (action === 'comment' || action === 'share') {
     this.readModeItemClick(action);
-  } else if (action == 'cite') {
+  } else if (action === 'cite') {
     this.commandCite();
   }
   return false;
@@ -278,7 +279,7 @@ TextToolbar.prototype.menuApply = function menuApply(action, value) {
 
 TextToolbar.prototype.commandCite = function commandCite() {
   const nd = Utils.getNode();
-  if (nd.tagName == 'CITE') {
+  if (nd.tagName === 'CITE') {
     nd.closest('blockquote')?.removeClass('with-cite');
     nd.children?.unwrap();
   } else if (nd.hasClass('with-cite')) {
@@ -298,8 +299,8 @@ TextToolbar.prototype.commandCite = function commandCite() {
 
 TextToolbar.prototype.commandButton = function commandButton(action) {
   const nd = Utils.getNode();
-  if (nd != null && nd.tagName.toLowerCase() == 'a') {
-    if (action == 'buttonprimary') {
+  if (nd != null && nd.tagName.toLowerCase() === 'a') {
+    if (action === 'buttonprimary') {
       if (nd.hasClass('trans')) {
         nd.removeClass('trans');
       } else if (nd.hasClass('btn')) {
@@ -307,7 +308,7 @@ TextToolbar.prototype.commandButton = function commandButton(action) {
       } else {
         nd.addClass('btn');
       }
-    } else if (action == 'buttontrans') {
+    } else if (action === 'buttontrans') {
       if (nd.hasClass('trans')) {
         nd.removeClass('btn trans');
       } else {
@@ -320,12 +321,12 @@ TextToolbar.prototype.commandButton = function commandButton(action) {
 
 TextToolbar.prototype.readModeItemClick = function readModeItemClick(action) {
   const sel = document.querySelector('.item-selected');
-  if (action == 'comment') {
+  if (action === 'comment') {
     this.streamer.notifySubscribers('Katana.Event.Nodes', {
       selectedText: this.current_editor.getSelectedText(),
       node: sel,
     });
-  } else if (action == 'share') {
+  } else if (action === 'share') {
     this.streamer.notifySubscribers('Katana.Event.Share', {
       selectedText: this.current_editor.getSelectedText(),
       node: sel,
@@ -358,20 +359,20 @@ TextToolbar.prototype.commandOverall = function commandOverall(cmd, val) {
     extrakls = 'text-center';
   }
 
-  if (val == 'blockquote' && origNode.tagName == 'BLOCKQUOTE') {
+  if (val === 'blockquote' && origNode.tagName === 'BLOCKQUOTE') {
     extrakls = 'pullquote';
   }
-
+  let value = val;
   if (!val) {
-    val = null;
+    value = null;
   }
 
-  if (document.execCommand(cmd, false, val)) {
+  if (document.execCommand(cmd, false, value)) {
     n = this.current_editor.getNode();
 
     this.current_editor.setupLinks(n.querySelectorAll('a'));
 
-    if (cmd == 'createlink' || cmd == 'bold' || cmd == 'italic') {
+    if (cmd === 'createlink' || cmd === 'bold' || cmd === 'italic') {
       const nn = this.current_editor.getTextNodeParent();
       if (nn != null) {
         this.current_editor.addClassesToElement(nn);
@@ -401,7 +402,7 @@ TextToolbar.prototype.commandInsert = function commandInsert(name) {
   }
   this.current_editor.current_range.selectNode(node);
   this.current_editor.current_range.collapse(false);
-  return this.commandOverall(node, name);
+  this.commandOverall(node, name);
 };
 
 TextToolbar.prototype.commandBlock = function commandBlock(name) {
@@ -411,15 +412,17 @@ TextToolbar.prototype.commandBlock = function commandBlock(name) {
   }
   const list = this.effectNode(this.current_editor.getNode(node), true);
 
-  if (node.tagName == 'BLOCKQUOTE' && !node.hasClass('pullquote')) {
+  let nameVal = name;
+
+  if (node.tagName === 'BLOCKQUOTE' && !node.hasClass('pullquote')) {
     // leave it.. as it is
-  } else if (node.tagName == 'BLOCKQUOTE' && node.hasClass('pullquote')) {
-    name = 'p';
+  } else if (node.tagName === 'BLOCKQUOTE' && node.hasClass('pullquote')) {
+    nameVal = 'p';
   } else if (list.indexOf(name) !== -1) {
-    name = 'p';
+    nameVal = 'p';
   }
 
-  return this.commandOverall('formatblock', name);
+  this.commandOverall('formatblock', nameVal);
 };
 
 TextToolbar.prototype.commandWrap = function commandWrap(tag) {
@@ -429,12 +432,12 @@ TextToolbar.prototype.commandWrap = function commandWrap(tag) {
 
 TextToolbar.prototype.effectNode = function effectNode(el, returnAsNodeName) {
   const nodes = [];
-  el = el || this.current_editor.elNode;
-  while (!el.hasClass('block-content-inner')) {
-    if (el.nodeName.match(this.effectNodeReg)) {
-      nodes.push((returnAsNodeName ? el.nodeName.toLowerCase() : el));
+  let element = el || this.current_editor.elNode;
+  while (!element.hasClass('block-content-inner')) {
+    if (element.nodeName.match(this.effectNodeReg)) {
+      nodes.push((returnAsNodeName ? element.nodeName.toLowerCase() : element));
     }
-    el = el.parentNode;
+    element = element.parentNode;
   }
   return nodes;
 };
@@ -455,10 +458,10 @@ TextToolbar.prototype.displayHighlights = function displayHighlights() {
 
   nodes.forEach((node) => {
     let tag = node.nodeName.toLowerCase();
-    const _thisEl = this.elNode;
+    const thisEl = this.elNode;
     switch (tag) {
       case 'a':
-        _thisEl.querySelector('input').value = node.attr('href');
+        thisEl.querySelector('input').value = node.attr('href');
         tag = 'link';
         break;
       case 'i':
@@ -487,22 +490,22 @@ TextToolbar.prototype.displayHighlights = function displayHighlights() {
     }
 
     if (tag.match(/(?:h[1-6])/i)) {
-      _thisEl.querySelectorAll('.mfi-bold, .mfi-italic, .mfi-quote').forEach((el) => el.closest('li')?.addClass('hide'));
+      thisEl.querySelectorAll('.mfi-bold, .mfi-italic, .mfi-quote').forEach((el) => el.closest('li')?.addClass('hide'));
     } else if (tag === 'indent') {
-      _thisEl.querySelectorAll('.mfi-H2, .mfi-H3, .mfi-H4, .mfi-quote').forEach((el) => el.closest('li')?.addClass('hide'));
-    } else if (tag == 'figcaption' || tag == 'label') {
-      _thisEl.querySelectorAll('.mfi-H2, .mfi-H3, .mfi-H4, .mfi-quote, .mfi-text-center').forEach((el) => el.closest('li')?.addClass('hide'));
-    } else if (tag == 'blockquote') {
-      _thisEl.querySelectorAll('.mfi-H2, .mfi-H3, .mfi-H4').forEach((el) => el.closest('li')?.addClass('hide'));
+      thisEl.querySelectorAll('.mfi-H2, .mfi-H3, .mfi-H4, .mfi-quote').forEach((el) => el.closest('li')?.addClass('hide'));
+    } else if (tag === 'figcaption' || tag === 'label') {
+      thisEl.querySelectorAll('.mfi-H2, .mfi-H3, .mfi-H4, .mfi-quote, .mfi-text-center').forEach((el) => el.closest('li')?.addClass('hide'));
+    } else if (tag === 'blockquote') {
+      thisEl.querySelectorAll('.mfi-H2, .mfi-H3, .mfi-H4').forEach((el) => el.closest('li')?.addClass('hide'));
     }
 
-    if (tag == 'link') {
-      _thisEl.querySelectorAll('.mfi-button, .mfi-button-trans').forEach((el) => el.closest('li')?.removeClass('hide'));
-      if (node.hasClass('btn') & !node.hasClass('trans')) {
+    if (tag === 'link') {
+      thisEl.querySelectorAll('.mfi-button, .mfi-button-trans').forEach((el) => el.closest('li')?.removeClass('hide'));
+      if (node.hasClass('btn') && !node.hasClass('trans')) {
         this.highlight('button');
-        _thisEl.querySelectorAll('.mfi-button-trans').forEach((el) => el.closest('li')?.removeClass('active'));
+        thisEl.querySelectorAll('.mfi-button-trans').forEach((el) => el.closest('li')?.removeClass('active'));
       } else if (node.hasClass('trans')) {
-        _thisEl.querySelectorAll('.mfi-button').forEach((el) => el.closest('li')?.removeClass('active'));
+        thisEl.querySelectorAll('.mfi-button').forEach((el) => el.closest('li')?.removeClass('active'));
         this.highlight('button-trans');
       }
     }
@@ -513,11 +516,11 @@ TextToolbar.prototype.displayHighlights = function displayHighlights() {
     const hasH4 = prev?.hasClass('item-h4');
 
     if (hasH2) {
-      _thisEl.querySelectorAll('.mfi-H2, .mfi-quote').forEach((el) => el.closest('li')?.addClass('hide'));
+      thisEl.querySelectorAll('.mfi-H2, .mfi-quote').forEach((el) => el.closest('li')?.addClass('hide'));
     } else if (hasH3) {
-      _thisEl.querySelectorAll('.mfi-H3, .mfi-H2, .mfi-quote').forEach((el) => el.closest('li')?.addClass('hide'));
+      thisEl.querySelectorAll('.mfi-H3, .mfi-H2, .mfi-quote').forEach((el) => el.closest('li')?.addClass('hide'));
     } else if (hasH4) {
-      _thisEl.querySelectorAll('.mfi-H2, .mfi-H3, .mfi-H4, .mfi-quote').forEach((el) => el.closest('li')?.addClass('hide'));
+      thisEl.querySelectorAll('.mfi-H2, .mfi-H3, .mfi-H4, .mfi-quote').forEach((el) => el.closest('li')?.addClass('hide'));
     }
 
     if (node.hasClass('text-center')) {
@@ -529,20 +532,20 @@ TextToolbar.prototype.displayHighlights = function displayHighlights() {
 
     if (node.hasClass('pullquote')) {
       this.highlight('quote', true);
-      _thisEl.querySelectorAll('.mfi-italic, .mfi-text-center').forEach((el) => el.closest('li')?.addClass('hide'));
+      thisEl.querySelectorAll('.mfi-italic, .mfi-text-center').forEach((el) => el.closest('li')?.addClass('hide'));
 
       if (Utils.editableCaretAtEnd(node)) {
-        _thisEl.querySelectorAll('.mfi-cite').forEach((el) => el.closest('li')?.removeClass('hide'));
+        thisEl.querySelectorAll('.mfi-cite').forEach((el) => el.closest('li')?.removeClass('hide'));
       }
     }
 
-    if (tag == 'cite') {
-      _thisEl.querySelectorAll('.mfi-italic, .mfi-text-center, .mfi-bold').forEach((el) => el.closest('li')?.addClass('hide'));
-      _thisEl.querySelectorAll('.mfi-cite').forEach((el) => el.closest('li')?.removeClass('hide'));
+    if (tag === 'cite') {
+      thisEl.querySelectorAll('.mfi-italic, .mfi-text-center, .mfi-bold').forEach((el) => el.closest('li')?.addClass('hide'));
+      thisEl.querySelectorAll('.mfi-cite').forEach((el) => el.closest('li')?.removeClass('hide'));
       tag = 'cite';
     }
 
-    if (tag == 'blockquote') {
+    if (tag === 'blockquote') {
       tag = 'quote';
     }
 
@@ -551,10 +554,11 @@ TextToolbar.prototype.displayHighlights = function displayHighlights() {
 };
 
 TextToolbar.prototype.highlight = function highlight(tag, double) {
-  if (['h4', 'h3', 'h2', 'h1'].indexOf(tag) != -1) {
-    tag = tag.toUpperCase();
+  let tg = tag;
+  if (['h4', 'h3', 'h2', 'h1'].indexOf(tag) !== -1) {
+    tg = tag.toUpperCase();
   }
-  const icl = this.elNode.querySelector(`.mfi-${tag}`)?.closest('li');
+  const icl = this.elNode.querySelector(`.mfi-${tg}`)?.closest('li');
   if (double) {
     icl?.addClass('doble');
   }
