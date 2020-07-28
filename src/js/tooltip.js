@@ -13,60 +13,50 @@ Tooltip.prototype.events = {
   'mouseout  .popover': 'hide',
 };
 
-Tooltip.prototype.initialize = function () {
+Tooltip.prototype.initialize = function initialize() {
   this.editor = this.opts.editor;
-  this.hideTimeout;
-  return this.settings = {
+  this.hideTimeout = null;
+  this.settings = {
     timeout: 300,
   };
 };
 
-Tooltip.prototype.template = function () {
-  return `<div class='popover popover-tooltip popover-bottom active'> 
-      <div class='popover-inner'>
-        <a href='#' target='_blank'> Link </a>
-      </div> 
-      <div class='popover-arrow'> </div> </div>`;
-};
-
-Tooltip.prototype.positionAt = function (ev, matched) {
-  let left_value; let popover_width;
-  let target; let target_height; let target_offset;
-  let target_width; let top_value; let
-    target_is_figure;
+Tooltip.prototype.positionAt = function positionAt(ev, matched) {
+  let leftValue; let popoverWidth;
+  let target; let topValue;
 
   target = matched || ev.currentTarget;
 
   const o = this.resolveTargetPosition(target);
   target = o.target;
-  target_is_figure = o.figure;
+  const targetIsFigure = o.figure;
 
-  target_offset = target.getBoundingClientRect();
-  target_width = target_offset.width;
-  target_height = target_offset.height;
+  const targetOffset = target.getBoundingClientRect();
+  const targetWidth = targetOffset.width;
+  const targetHeight = targetOffset.height;
 
   const popover = this.elNode.querySelector('.popover');
 
   popover.show();
-  popover_width = popover.getBoundingClientRect().width;
-  popover_width /= 2;
+  popoverWidth = popover.getBoundingClientRect().width;
+  popoverWidth /= 2;
 
-  if (target_is_figure) {
+  if (targetIsFigure) {
     popover.addClass('pop-for-figure');
-    top_value = target_offset.top + document.body.scrollTop;
-    left_value = (target_offset.left + (target_width / 2)) - popover_width - 15;
-    popover.style.top = `${top_value}px`;
-    popover.style.left = `${left_value}px`;
+    topValue = targetOffset.top + document.body.scrollTop;
+    leftValue = (targetOffset.left + (targetWidth / 2)) - popoverWidth - 15;
+    popover.style.top = `${topValue}px`;
+    popover.style.left = `${leftValue}px`;
   } else {
     popover.removeClass('pop-for-figure');
-    top_value = target_offset.top + target_height + document.body.scrollTop;
-    left_value = target_offset.left + (target_width / 2) - popover_width;
-    popover.style.top = `${top_value}px`;
-    popover.style.left = `${left_value}px`;
+    topValue = targetOffset.top + targetHeight + document.body.scrollTop;
+    leftValue = targetOffset.left + (targetWidth / 2) - popoverWidth;
+    popover.style.top = `${topValue}px`;
+    popover.style.left = `${leftValue}px`;
   }
 };
 
-Tooltip.prototype.displayAt = function (ev, matched) {
+Tooltip.prototype.displayAt = function displayAt(ev, matched) {
   this.cancelHide();
   const target = matched || ev.currentTarget;
   const el = this.elNode;
@@ -84,11 +74,11 @@ Tooltip.prototype.displayAt = function (ev, matched) {
   return elNT.show();
 };
 
-Tooltip.prototype.cancelHide = function () {
+Tooltip.prototype.cancelHide = function cancelHide() {
   return clearTimeout(this.hideTimeout);
 };
 
-Tooltip.prototype.hide = function () {
+Tooltip.prototype.hide = function hide() {
   this.cancelHide();
   const el = this.elNode;
   this.hideTimeout = setTimeout(() => {
@@ -99,7 +89,7 @@ Tooltip.prototype.hide = function () {
   }, this.settings.timeout);
 };
 
-Tooltip.prototype.resolveTargetPosition = function (target) {
+Tooltip.prototype.resolveTargetPosition = function resolveTargetPosition(target) {
   if (target.closest('.item-figure') != null) {
     const tg = target.closest('.item-figure');
     return { position: { top: tg.offsetTop, left: tg.offsetLeft }, target: tg, figure: true };
@@ -107,9 +97,10 @@ Tooltip.prototype.resolveTargetPosition = function (target) {
   return { position: { top: target.offsetTop, left: target.offsetLeft }, target, figure: false };
 };
 
-Tooltip.prototype.render = function () {
+Tooltip.prototype.render = function render() {
   if (document.querySelector('.popover.popover-tooltip') == null) {
-    Utils.generateElement(this.template()).insertAfter(this.editor.elNode);
+    const tmpl = this.editor.templates.getTooltipTemplate();
+    Utils.generateElement(tmpl).insertAfter(this.editor.elNode);
   }
   return document.querySelector('.popover.popover-tooltip');
 };

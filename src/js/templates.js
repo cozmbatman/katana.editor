@@ -42,8 +42,10 @@ function Templates() {
         <input class="mf-menu-input" placeholder="https://">
         <div class="mf-menu-button mf-link-close">&#215;</div></div>
         <ul class='mf-menu-buttons'>`;
-
-    buttons.forEach((item) => html += `<li class='mf-menu-button'><i class="mf-icon mfi-${item.i}"  data-action="${item.a}"></i></li>`);
+    for (let i = 0; i < buttons.length; i += 1) {
+      const item = buttons[i];
+      html += `<li class='mf-menu-button'><i class="mf-icon mfi-${item.i}"  data-action="${item.a}"></i></li>`;
+    }
 
     html += '</ul>';
     return html;
@@ -52,7 +54,7 @@ function Templates() {
   this.anchorMarkup = (link, kls = '', nofollow = false, content = '') => `<a ${nofollow ? 'rel="nofollow"' : ''} href="${link}" data-href="${link}" class="markup-anchor ${kls}">${content}</a>`;
 
   this.contentBasicButtonsWrap = (menu) => `<button class='inlineTooltip-button control' data-action='inline-menu' title='Content Options'> <span class='tooltip-icon mfi-plus'></span> </button> <div class='inlineTooltip-menu'>${menu}</div>`;
-  this.contentBasicButton = (b, data_action_value) => `<button class="inlineTooltip-button scale" title="${b.title}" data-action="inline-menu-${b.action}" data-action-value="${data_action_value}"> <span class="tooltip-icon ${b.icon}"></span> </button>`;
+  this.contentBasicButton = (b, dataActionValue) => `<button class="inlineTooltip-button scale" title="${b.title}" data-action="inline-menu-${b.action}" data-action-value="${dataActionValue}"> <span class="tooltip-icon ${b.icon}"></span> </button>`;
 
   const getPlaceholders = () => `<h3 class="item item-h3 item-first" name="${Utils.generateId()}">${this.title_placeholder}</h3>
     <p class="item item-p item-last" name="${Utils.generateId()}">${this.subtitle_placeholder}</p>`;
@@ -176,7 +178,7 @@ function Templates() {
 
   this.menuOpts = [['featured', 'Featured'], ['latest', 'Latest'], ['tagged', 'Tagged as']];
 
-  this.getStoriesSectionMenu = function (forStories, exclude) {
+  this.getStoriesSectionMenu = function getStoriesSectionMenu(forStories, exclude) {
     const fs = typeof forStories === 'undefined' ? true : forStories;
     let ht = `<div class="main-controls '${fs ? 'story-mode' : 'plain-mode'}" contenteditable="false">
           <div class="main-controls-inner center-column">
@@ -187,7 +189,7 @@ function Templates() {
 
     for (let i = 0; i < this.menuOpts.length; i += 1) {
       const menu = this.menuOpts[i];
-      if (excludeOpts.indexOf(menu[0]) == -1) {
+      if (excludeOpts.indexOf(menu[0]) === -1) {
         opts += `<option value="${menu[0]}">${menu[1]}</option>`;
       }
     }
@@ -235,6 +237,12 @@ function Templates() {
         </div>
         </section>`;
   };
+
+  this.getTooltipTemplate = () => `<div class='popover popover-tooltip popover-bottom active'> 
+    <div class='popover-inner'>
+      <a href='#' target='_blank'> Link </a>
+    </div> 
+    <div class='popover-arrow'> </div> </div>`;
 }
 
 export default new Templates();
