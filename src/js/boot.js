@@ -1,4 +1,5 @@
 import Poly from './polyfills'; // eslint-disable-line no-unused-vars
+import Utils from './utils';
 
 function Boot() {
   const addEventForChild = (parent, eventName, childSelector, cb) => {
@@ -10,36 +11,38 @@ function Boot() {
   };
 
   const attachEvents = (obj, node, events) => {
-    for (const [key, f] of Object.entries(events)) {
-      let element; let func; let
-        key_arr;
-      key_arr = key.split(' ');
+    const keys = Object.keys(events);
+    for (let i = 0; i < keys.length; i += 1) {
+      const key = keys[i];
+      const f = events[key];
+      const keyArr = key.split(' ');
+      let func;
 
       if (f && {}.toString.call(f) === '[object Function]') {
         func = f;
       } else if (Object.prototype.toString.call(f) === '[object String]') {
         func = obj[f];
       } else {
-        throw 'error event needs a function or string';
+        throw new Error('error event needs a function or string');
       }
 
-      element = key_arr.length > 1 ? key_arr.splice(1, 3).join(' ') : null;
+      const element = keyArr.length > 1 ? keyArr.splice(1, 3).join(' ') : null;
       if (element != null) {
-        addEventForChild(node, key_arr[0], element, func);
+        addEventForChild(node, keyArr[0], element, func);
       } else {
-        node.addEventListener(key_arr[0], func);
+        node.addEventListener(keyArr[0], func);
       }
     }
   };
 
   this.it = (comp, opts) => {
     if (typeof opts.node !== 'undefined') {
-      comp.elNode = opts.node;
+      comp.elNode = opts.node; // eslint-disable-line no-param-reassign
     }
     if (typeof comp.initialize !== 'undefined') {
-      comp.initialize.apply(comp, opts);
+      comp.initialize(...opts);
     } else {
-      console.warn(`Initialize method not found on ${opts.name}`);
+      Utils.log(`Initialize method not found on ${opts.name}`);
     }
 
     if (typeof comp.elNode !== 'undefined' && typeof comp.events !== 'undefined') {
