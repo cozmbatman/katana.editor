@@ -247,6 +247,11 @@ function Templates() {
       <a href='#' target='_blank'> Link </a>
     </div> 
     <div class='popover-arrow'> </div> </div>`;
+
+  this.getNoteIconTemplate = () => `<div class="notes-marker-container note-icon empty">
+  <span class="notes-counter" data-note-count=""></span>
+  <i class="mfi-comment"></i>
+  </div>`;
 }
 
 export default new Templates();

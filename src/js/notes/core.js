@@ -16,7 +16,7 @@ function Notes(opts) {
   boot.it(this, opts);
 }
 
-Notes.prototype.initialize = function () {
+Notes.prototype.initialize = function initialize() {
   const { opts } = this;
 
   this.current_editor = opts.editor;
@@ -57,24 +57,24 @@ Notes.prototype.events = {
   'click .note-icon': 'handleNoteIconClick',
 };
 
-Notes.prototype.readNotes = function () {
-  const read_url = `${this.options.info.read_url}/${this.options.info.story.id}`;
+Notes.prototype.readNotes = function readNotes() {
+  const readUrl = `${this.options.info.read_url}/${this.options.info.story.id}`;
   const xhr = new XMLHttpRequest();
-  xhr.open('GET', read_url, true);
+  xhr.open('GET', readUrl, true);
   xhr.onload = () => {
-    if (xhr.status == '200' && xhr.readyState == 4) {
+    if (xhr.status === '200' && xhr.readyState === 4) {
       try {
         const resp = JSON.parse(xhr.responseText);
         this.parseNotes(resp);
       } catch (e) {
-        console.error(e);
+        this.streamer.notifySubscribers('Katana.Error', e);
       }
     }
   };
   xhr.send(null);
 };
 
-Notes.prototype.parseNotes = function (data) {
+Notes.prototype.parseNotes = function parseNotes(data) {
   if (data && data.success) {
     const dt = data.data; let
       notes = [];
@@ -93,13 +93,13 @@ Notes.prototype.parseNotes = function (data) {
 };
 
 /** EVENTs handlers * */
-Notes.prototype.handleNoteIconClick = function (ev, matched) {
+Notes.prototype.handleNoteIconClick = function handleNoteIconClick(ev, matched) {
   const currentHovered = matched || ev.currentTarget;
 
-  if (currentHovered && currentHovered.nodeType == 1) {
+  if (currentHovered && currentHovered.nodeType === 1) {
     const name = currentHovered.attr('note-for');
     const against = document.querySelector(`[name="${name}"]`);
-    if (against != null) {
+    if (against) {
       this.deactivateAll();
       const curr = currentHovered;
       document.body.addClass('notes-opened');
@@ -121,7 +121,7 @@ Notes.prototype.handleNoteIconClick = function (ev, matched) {
 
 Notes.prototype.commentsCloserElement = document.querySelector('#comments_closer');
 
-Notes.prototype.activateCloser = function (against) {
+Notes.prototype.activateCloser = function activateCloser(against) {
   this.commentsCloserElement.addClass('active');
   const w = Utils.getWindowWidth();
   const box = against.getBoundingClientRect();
@@ -129,12 +129,12 @@ Notes.prototype.activateCloser = function (against) {
   this.commentsCloserElement.style.right = `${w - o}px`;
 };
 
-Notes.prototype.deactivateCloser = function () {
+Notes.prototype.deactivateCloser = function deactivateCloser() {
   this.commentsCloserElement.removeClass('active');
   document.querySelector('body').removeClass('notes-opened');
 };
 
-Notes.prototype.deactivateAll = function () {
+Notes.prototype.deactivateAll = function deactivateAll() {
   const clicked = this.elNode.querySelector('.is-clicked');
   if (clicked != null) {
     clicked.removeClass('is-clicked').addClass('hide');
@@ -145,26 +145,16 @@ Notes.prototype.deactivateAll = function () {
   this.deactivateCloser();
 };
 
-Notes.prototype.hidePreviousVisible = function () {
+Notes.prototype.hidePreviousVisible = function hidePreviousVisible() {
   this.elNode.querySelector('.note-icon.empty:not(.is-clicked)')?.removeClass('is-active');
   this.deactivateCloser();
 };
 
-Notes.prototype.showNoteIcon = function (ob) {
-  this._getNoteIcon(ob)?.addClass('is-active');
-
-  /* if (ob.selection != null) {
-    let range,
-      selection = ob.selection;
-    if (selection.getRangeAt) {
-      range = selection.getRangeAt(0);
-    } else {
-      range = selection[0];
-    }
-  } */
+Notes.prototype.showNoteIcon = function showNoteIcon(ob) {
+  this.getNoteIcon(ob)?.addClass('is-active');
 };
 
-Notes.prototype._getNoteIcon = function (ob) {
+Notes.prototype.getNoteIcon = function getNoteIcon(ob) {
   const name = ob.node.attr('name');
   const { node } = ob;
   let onDark = false;
@@ -176,9 +166,9 @@ Notes.prototype._getNoteIcon = function (ob) {
 
   if (existing == null) {
     if (typeof this.existing_notes[name] === 'undefined') {
-      existing = this._addIcon(name, 0);
+      existing = this.addIcon(name, 0);
     } else {
-      existing = this._addIcon(name, this.existing_notes[name]);
+      existing = this.addIcon(name, this.existing_notes[name]);
     }
   }
 
@@ -192,7 +182,7 @@ Notes.prototype._getNoteIcon = function (ob) {
   return existing;
 };
 
-Notes.prototype.calculateIconPosition = function (against) {
+Notes.prototype.calculateIconPosition = function calculateIconPosition(against) {
   const box = against.getBoundingClientRect();
   const aoffset = {
     top: box.top + document.body.scrollTop,
@@ -219,7 +209,7 @@ Notes.prototype.calculateIconPosition = function (against) {
   };
 };
 
-Notes.prototype.repositionIcon = function (icon, against) {
+Notes.prototype.repositionIcon = function repositionIcon(icon, against) {
   const name = icon.attr('note-for');
   let ag;
   if (typeof against !== 'undefined') {
@@ -239,7 +229,7 @@ Notes.prototype.repositionIcon = function (icon, against) {
   }
 };
 
-Notes.prototype.positionIcon = function (icon, against, show) {
+Notes.prototype.positionIcon = function positionIcon(icon, against, show) {
   if (against.length) {
     if (this.smallScreen) {
       document.querySelector('.item-clicked')?.removeClass('item-clicked');
@@ -264,13 +254,8 @@ Notes.prototype.positionIcon = function (icon, against, show) {
   }
 };
 
-Notes.prototype.getIconTemplate = () => Utils.generateElement(`<div class="notes-marker-container note-icon empty">
-  <span class="notes-counter" data-note-count=""></span>
-  <i class="mfi-comment"></i>
-  </div>`);
-
-Notes.prototype._addIcon = function (name, currentCount) {
-  const icon = this.getIconTemplate();
+Notes.prototype.addIcon = function addIcon(name, currentCount) {
+  const icon = Utils.generateElement(this.current_editor.templates.getNoteIconTemplate());
   const iconSpan = icon.querySelector('.notes-counter');
   if (currentCount > 0) {
     icon.removeClass('empty');
@@ -284,7 +269,7 @@ Notes.prototype._addIcon = function (name, currentCount) {
 
 /** event handlers end * */
 
-Notes.prototype.init = function () {
+Notes.prototype.init = function init() {
   this.streamer.subscribe('Katana.Event.Notes', (ev) => {
     const { node } = ev;
     const text = ev.selectedText;
@@ -297,7 +282,7 @@ Notes.prototype.init = function () {
   });
 };
 
-Notes.prototype.existingNotes = function (notes) {
+Notes.prototype.existingNotes = function existingNotes(notes) {
   this.existing_notes = notes;
   this.refresh();
 };
@@ -305,11 +290,11 @@ Notes.prototype.existingNotes = function (notes) {
 Notes.prototype.currentHover = null;
 
 // called by editor on mouse over or tap in case of mobile
-Notes.prototype.showNote = function (ev, matched) {
+Notes.prototype.showNote = function showNote(ev, matched) {
   const currentHovered = matched || ev.currentTarget;
-  if (currentHovered && currentHovered.nodeType == 1) {
+  if (currentHovered && currentHovered.nodeType === 1) {
     const name = currentHovered.attr('name');
-    if (name != null && this.currentHover != name && !currentHovered.hasClass('item-empty') && !currentHovered.hasClass('item-figure')) {
+    if (name && this.currentHover !== name && !currentHovered.hasClass('item-empty') && !currentHovered.hasClass('item-figure')) {
       this.hidePreviousVisible();
       this.showNoteIcon({ node: currentHovered, text: '', show: true });
       this.currentHover = name;
@@ -317,28 +302,29 @@ Notes.prototype.showNote = function (ev, matched) {
   }
 };
 
-Notes.prototype.refresh = function () {
+Notes.prototype.refresh = function refresh() {
   this.deactivateCloser();
   const notes = this.existing_notes;
-  for (const name in notes) {
-    const sel = this.current_editor.elNode.querySelector(`[name="${name}"]`);
-    if (sel != null) {
+  const notesKeys = Object.keys(notes);
+  for (let i = 0; i < notesKeys.length; i += 1) {
+    const sel = this.current_editor.elNode.querySelector(`[name="${notesKeys[i]}"]`);
+    if (sel) {
       this.showNoteIcon({ node: sel, text: '' });
     }
   }
   this.detailsHandler.existingNotes(notes);
 };
 
-Notes.prototype.incrementCounter = function (name) {
+Notes.prototype.incrementCounter = function incrementCounter(name) {
   const icon = this.elNode.querySelector(`[note-for="${name}"]`);
   if (icon != null) {
     const counter = icon.querySelector('.notes-counter');
     if (counter != null) {
-      let currentCount = parseInt(counter.attr('data-note-count'));
-      if (isNaN(currentCount)) {
+      let currentCount = parseInt(counter.attr('data-note-count')); // eslint-disable-line radix
+      if (Number.isNaN(currentCount)) {
         currentCount = 0;
       }
-      currentCount++;
+      currentCount += 1;
       counter.text(currentCount);
       counter.attr('data-note-count', currentCount);
       icon.removeClass('empty');
@@ -346,19 +332,19 @@ Notes.prototype.incrementCounter = function (name) {
   }
 };
 
-Notes.prototype.decrementCounter = function (name) {
+Notes.prototype.decrementCounter = function decrementCounter(name) {
   const icon = this.elNode.querySelector(`[note-for="${name}"]`);
   if (icon != null) {
     const counter = icon.querySelector('.notes-counter');
     if (counter != null) {
-      let currentCount = parseInt(counter.attr('data-note-count'));
-      currentCount--;
+      let currentCount = parseInt(counter.attr('data-note-count')); // eslint-disable-line radix
+      currentCount -= 1;
       counter.text(currentCount);
       counter.attr('data-note-count', currentCount);
-      if (currentCount == 0) {
+      if (currentCount === 0) {
         icon.addClass('empty');
       }
-      if (currentCount == 0) {
+      if (currentCount === 0) {
         counter.text('+');
       }
     }
