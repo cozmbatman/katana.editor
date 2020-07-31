@@ -252,6 +252,55 @@ function Templates() {
   <span class="notes-counter" data-note-count=""></span>
   <i class="mfi-comment"></i>
   </div>`;
+
+  this.noteReplyFormTemplate = () => ` 
+    <div class="notes-form">
+    <textarea id="notes_textarea" class="camouflaged editable text-autogrow notes-textarea text-small" placeholder="Type here.."></textarea>
+    <div>
+    <a class="note-update-link notes-form-link" data-progress="Saving.." tabindex="0">Save</a>
+    <a class="note-save-link notes-form-link" data-progress="Saving.." tabindex="0">Save</a>
+    <a class="note-delete-link notes-form-link danger" data-progress="Deleting.." tabindex="0">Delete</a>
+    <a class="note-cancel-link  notes-form-link plain" tabindex="0">Cancel</a>
+    </div>
+    </div>`;
+
+  this.notesContainerTemplate = (name) => `<div class="notes-list-wrapper" data-cont-for="${name}">
+    <div class="loading-notes"> <span class="loader dark small ib"></span>loading..</div>
+    <ul class="notes-list no-margin"></ul>
+    <div class="notes-form-container"></div>
+    </div>`;
+
+  this.getNotesSignInLink = () => '<a href="javascript::;" class="note-login-btn">Login to leave a note</a><a class="note-close-btn">Close</a>';
+
+  this.getSingleNoteTemplate = (ob, currentUserIsOwner = false) => {
+    let ht = `<li class="post-note-item clearfix" data-note-id="${ob.noteId}">
+      <div class="post-note-avatar smarty-photo rounded thumb bordered left">
+        <div class="profile-pic-bg" style="background-image:url('${ob.avatarUrl}');" ></div>
+      </div>
+      <div class="post-note-content-wrap">
+        <span class="post-note-author-name">
+          <a href="${ob.authorUrl}" title="${ob.authorName}" > ${ob.authorName} </a>
+        </span>
+        <span class="post-note-content">
+          ${ob.content}
+        </span>`;
+    if (ob.edit && currentUserIsOwner) {
+      if (typeof ob.changeTo !== 'undefined') {
+        ht += `<div data-editor-actions data-note="${ob.noteId}" data-change-visibility="${ob.changeTo}">
+            <a class="note-edit text-small" data-note-id="${ob.noteId}" tabindex="0">Edit</a>
+            <a class="note-edit-editor" data-edit-btn  tabindex="0">More</a>
+            </div>`;
+      } else {
+        ht += `<div><a class="note-edit text-small" data-note-id="${ob.noteId}"  tabindex="0">Edit</a></div>`;
+      }
+    } else if (ob.edit && typeof ob.changeTo === 'undefined') {
+      ht += `<div><a class="note-edit text-small" data-note-id="${ob.noteId}" tabindex="0">Edit</a></div>`;
+    } else if (ob.edit && typeof ob.changeTo !== 'undefined') {
+      ht += `<div data-editor-actions data-note="${ob.noteId}" data-change-visibility="${ob.changeTo}"><a class="note-edit-editor" data-edit-btn  tabindex="0">Edit</a></div>`;
+    }
+    ht += '</div></li>';
+    return ht;
+  };
 }
 
 export default new Templates();

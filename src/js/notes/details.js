@@ -13,7 +13,7 @@ function Details(opts) {
   boot.it(this, opts);
 }
 
-Details.prototype.initialize = function () {
+Details.prototype.initialize = function initialize() {
   const { opts } = this;
 
   this.current_editor = opts.editor;
@@ -34,7 +34,7 @@ Details.prototype.initialize = function () {
   this.currentUser = false;
 };
 
-Details.prototype.isLoggedIn = function () {
+Details.prototype.isLoggedIn = function isLoggedIn() {
   if (typeof this.story.user_name === 'undefined') {
     return false;
   }
@@ -58,7 +58,7 @@ Details.prototype.events = {
   'click .note-close-btn': 'handleCancelClick',
 };
 
-Details.prototype.handleLoginAttempt = function () {
+Details.prototype.handleLoginAttempt = function handleLoginAttempt() {
   this.elNode.trigger({
     type: 'Mefacto.UserRequired',
     from: 'notes',
@@ -66,29 +66,11 @@ Details.prototype.handleLoginAttempt = function () {
   return false;
 };
 
-Details.prototype.replyFormTemplate = function () {
-  return ` 
-  <div class="notes-form">
-  <textarea id="notes_textarea" class="camouflaged editable text-autogrow notes-textarea text-small" placeholder="Type here.."></textarea>
-  <div>
-  <a class="note-update-link notes-form-link" data-progress="Saving.." tabindex="0">Save</a>
-  <a class="note-save-link notes-form-link" data-progress="Saving.." tabindex="0">Save</a>
-  <a class="note-delete-link notes-form-link danger" data-progress="Deleting.." tabindex="0">Delete</a>
-  <a class="note-cancel-link  notes-form-link plain" tabindex="0">Cancel</a>
-  </div>
-  </div>`;
-};
-
-Details.prototype.containerTemplate = (name) => `<div class="notes-list-wrapper" data-cont-for="${name}">
-    <div class="loading-notes"> <span class="loader dark small ib"></span>loading..</div>
-    <ul class="notes-list no-margin"></ul>
-    <div class="notes-form-container"></div>
-    </div>`;
-
-Details.prototype.getForm = function (mode) {
+Details.prototype.getForm = function getForm(mode) {
   let textArea = null;
   if (this.replyForm == null) {
-    this.replyForm = Utils.generateElement(this.replyFormTemplate());
+    const rfTmpl = this.current_editor.templates.noteReplyFormTemplate();
+    this.replyForm = Utils.generateElement(rfTmpl);
     textArea = this.replyForm.querySelector('.notes-textarea');
     if (textArea != null) {
       textArea.value = '';
@@ -101,12 +83,12 @@ Details.prototype.getForm = function (mode) {
   this.replyForm.removeAttribute('disabled');
 
   const updater = this.updateButtonClasses(this.replyForm);
-  if (mode == 'new') {
+  if (mode === 'new') {
     updater.element('.note-delete-link').add('hide').remove('show');
     updater.element('.note-save-link').add('show').remove('hide');
     updater.element('.note-update-link').add('hide').remove('show');
     updater.element('.note-cancel-link').add('show').remove('hide');
-  } else if (mode == 'edit') {
+  } else if (mode === 'edit') {
     updater.element('.note-delete-link').remove('hide').add('show');
     updater.element('.note-update-link').add('show').remove('hide');
     updater.element('.note-save-link').add('hide').remove('show');
@@ -122,31 +104,31 @@ Details.prototype.getForm = function (mode) {
   return this.replyForm;
 };
 
-Details.prototype.updateButtonClasses = function (form) {
-  const handler = function () {
+Details.prototype.updateButtonClasses = function updateButtonClasses(form) {
+  const Handler = function Handler() {
     let el = null;
     const element = (sel) => {
       el = form.querySelector(sel);
       return this;
     };
     const add = (kls) => {
-      if (el != null) {
+      if (el) {
         el.addClass(kls);
       }
       return this;
     };
     const remove = (kls) => {
-      if (el != null) {
+      if (el) {
         el.removeClass(kls);
       }
       return this;
     };
     return { element, add, remove };
   };
-  return new handler();
+  return new Handler();
 };
 
-Details.prototype.getNotesList = function (notes) {
+Details.prototype.getNotesList = function getNotesList(notes) {
   let ht = '';
   for (let i = 0; i < notes.length; i += 1) {
     ht += this.getSingleNoteTemplate(notes[i]);
@@ -154,8 +136,8 @@ Details.prototype.getNotesList = function (notes) {
   return ht;
 };
 
-Details.prototype.createContainer = function (name, notes) {
-  const wrap = Utils.generateElement(this.containerTemplate(name));
+Details.prototype.createContainer = function createContainer(name, notes) {
+  const wrap = Utils.generateElement(this.current_editor.templates.notesContainerTemplate(name));
   if (notes.length) {
     const eNotes = this.getNotesList(notes);
     wrap.querySelector('.notes-list')?.append(Utils.generateElement(eNotes));
@@ -166,7 +148,7 @@ Details.prototype.createContainer = function (name, notes) {
   return wrap;
 };
 
-Details.prototype.getContainer = function (name) {
+Details.prototype.getContainer = function getContainer(name) {
   let cont = this.elNode.querySelector(`[data-cont-for="${name}"]`);
   if (cont != null) {
     const notes = typeof this.existing_notes[name] === 'undefined' ? [] : this.existing_notes[name];
@@ -175,37 +157,12 @@ Details.prototype.getContainer = function (name) {
   return cont;
 };
 
-Details.prototype.getSingleNoteTemplate = function (ob) {
-  let ht = `<li class="post-note-item clearfix" data-note-id="${ob.noteId}">
-    <div class="post-note-avatar smarty-photo rounded thumb bordered left">
-      <div class="profile-pic-bg" style="background-image:url('${ob.avatarUrl}');" ></div>
-    </div>
-    <div class="post-note-content-wrap">
-      <span class="post-note-author-name">
-        <a href="${ob.authorUrl}" title="${ob.authorName}" > ${ob.authorName} </a>
-      </span>
-      <span class="post-note-content">
-        ${ob.content}
-      </span>`;
-  if (ob.edit && this.currentUser && this.currentUser == ob.user) {
-    if (typeof ob.changeTo !== 'undefined') {
-      ht += `<div data-editor-actions data-note="${ob.noteId}" data-change-visibility="${ob.changeTo}">
-          <a class="note-edit text-small" data-note-id="${ob.noteId}" tabindex="0">Edit</a>
-          <a class="note-edit-editor" data-edit-btn  tabindex="0">More</a>
-          </div>`;
-    } else {
-      ht += `<div><a class="note-edit text-small" data-note-id="${ob.noteId}"  tabindex="0">Edit</a></div>`;
-    }
-  } else if (ob.edit && typeof ob.changeTo === 'undefined') {
-    ht += `<div><a class="note-edit text-small" data-note-id="${ob.noteId}" tabindex="0">Edit</a></div>`;
-  } else if (ob.edit && typeof ob.changeTo !== 'undefined') {
-    ht += `<div data-editor-actions data-note="${ob.noteId}" data-change-visibility="${ob.changeTo}"><a class="note-edit-editor" data-edit-btn  tabindex="0">Edit</a></div>`;
-  }
-  ht += '</div></li>';
-  return ht;
+Details.prototype.getSingleNoteTemplate = function getSingleNoteTemplate(ob) {
+  return this.current_editor.templates.getSingleNoteTemplate(ob,
+    (this.currentUser && this.currentUser === ob.user));
 };
 
-Details.prototype.handleUpdateClick = function (ev, matched) {
+Details.prototype.handleUpdateClick = function handleUpdateClick(ev, matched) {
   const form = matched ? matched.closest('.notes-form') : ev.currentTarget.closest('.notes-form');
   if (form != null) {
     const textArea = form.querySelector('textarea');
@@ -215,7 +172,7 @@ Details.prototype.handleUpdateClick = function (ev, matched) {
     }
 
     let deleting = false;
-    if (!text || text.trim().length == 0) {
+    if (!text || text.trim().length === 0) {
       // this.removeNote();
       deleting = true;
     }
@@ -223,7 +180,7 @@ Details.prototype.handleUpdateClick = function (ev, matched) {
     const noteId = form.attr('data-note-id');
     const container = form.closest('.notes-list-wrapper');
     const list = container.querySelector('.notes-list');
-    const note = list != null ? list.querySelector(`.post-note-item[data-note-id="${noteId}"]`) : null;
+    const note = list?.querySelector(`.post-note-item[data-note-id="${noteId}"]`);
     const piece = container.attr('data-cont-for');
     if (deleting) {
       form.attr('disabled', 'disabled');
@@ -231,7 +188,7 @@ Details.prototype.handleUpdateClick = function (ev, matched) {
         if (sresp && sresp.success) {
           this.iconHandler.decrementCounter(piece);
           form.unwrap();
-          if (note != null) {
+          if (note) {
             note.remove();
           }
           container.querySelector('.notes-form-container')?.append(this.getForm('new'));
@@ -248,7 +205,7 @@ Details.prototype.handleUpdateClick = function (ev, matched) {
         note: text,
         piece,
         post: this.story.id,
-        draft: this.story.type != 'story',
+        draft: this.story.type !== 'story',
       };
 
       form.attr('disabled', 'disabled');
@@ -256,7 +213,7 @@ Details.prototype.handleUpdateClick = function (ev, matched) {
       this.makeRequest(this.edit_url, 'POST', sob, (sresp) => {
         if (sresp && sresp.success) {
           const pnc = note.querySelector('.post-note-content');
-          if (pnc != null) {
+          if (pnc) {
             pnc.innerHTML = text;
           }
           note.show();
@@ -270,23 +227,23 @@ Details.prototype.handleUpdateClick = function (ev, matched) {
         form.removeAttribute('disabled');
       });
     }
-    if (textArea != null) {
+    if (textArea) {
       textArea.value = '';
     }
   }
   return false;
 };
 
-Details.prototype.handleEditorEditClick = function (ev, matched) {
+Details.prototype.handleEditorEditClick = function handleEditorEditClick(ev, matched) {
   const tg = matched || ev.currentTarget;
-  if (tg != null && tg.matches.call(tg, '[data-edit-btn]')) {
+  if (tg && tg.matches.call(tg, '[data-edit-btn]')) {
     const actionWrap = tg.closest('[data-editor-actions]');
     // noteId = actionWrap.attr('data-note');
 
-    if (actionWrap != null) {
+    if (actionWrap) {
       const currentHTML = `<div class="hide">${actionWrap.innerHTML}</div>`;
       const changeToVisibilty = actionWrap.attr('data-change-visibility');
-      const visibilityChangeText = changeToVisibilty == 'public' ? 'Make Public' : 'Make Private';
+      const visibilityChangeText = changeToVisibilty === 'public' ? 'Make Public' : 'Make Private';
       let links = `<a class="note-visibility-change " data-changeTo="${changeToVisibilty}" tabindex="0">${visibilityChangeText}</a> &nbsp;<a class="note-delete-editor-link danger"  data-progress="Deleting.." tabindex="0">Delete</a> &nbsp;
       <a class="note-cancel-editor-link plain"  tabindex="0">Cancel</a> &nbsp;`;
       links += currentHTML;
@@ -296,11 +253,11 @@ Details.prototype.handleEditorEditClick = function (ev, matched) {
   return false;
 };
 
-Details.prototype.handleEditClick = function (ev, matched) {
+Details.prototype.handleEditClick = function handleEditClick(ev, matched) {
   const tg = matched || ev.currentTarget;
-  if (tg != null && tg.matches.call(tg, '[data-note-id]')) {
+  if (tg && tg.matches.call(tg, '[data-note-id]')) {
     const alreadyOpen = document.querySelector('.notes-form.for-editing');
-    if (alreadyOpen != null) {
+    if (alreadyOpen) {
       const ta = alreadyOpen.querySelector('textarea');
       ta.focus();
       ta.addClass('blinkOnce');
@@ -314,9 +271,9 @@ Details.prototype.handleEditClick = function (ev, matched) {
 
       const pNoteContent = li.querySelector('.post-note-content');
       const textArea = form.querySelector('textarea');
-      if (pNoteContent != null && textArea != null) {
+      if (pNoteContent && textArea) {
         textArea.value = pNoteContent.innerText;
-      } else if (textArea != null) {
+      } else if (textArea) {
         textArea.value = '';
       }
 
@@ -332,16 +289,16 @@ Details.prototype.handleEditClick = function (ev, matched) {
   return false;
 };
 
-Details.prototype.handleSaveClick = function (ev, matched) {
+Details.prototype.handleSaveClick = function handleSaveClick(ev, matched) {
   const form = matched ? matched.closest('.notes-form') : ev.currentTarget.closest('.notes-form');
   if (form != null) {
     const textArea = form.querySelector('textarea'); let
       text = '';
-    if (textArea != null) {
+    if (textArea) {
       text = textArea.value;
     }
 
-    if (!text || text.trim().length == 0) {
+    if (!text || text.trim().length === 0) {
       return false;
     }
 
@@ -362,14 +319,14 @@ Details.prototype.handleSaveClick = function (ev, matched) {
       note: text,
       piece: container.attr('data-cont-for'),
       post: this.story.id,
-      draft: this.story.type != 'story',
+      draft: this.story.type !== 'story',
     };
     form.attr('disabled', 'disabled');
 
     this.saveRequest(sob, (sresp) => {
       if (sresp && sresp.success) {
         const list = container.querySelector('.notes-list');
-        if (list != null) {
+        if (list) {
           list.append(note);
           list.removeClass('notes-list-empty');
           this.iconHandler.incrementCounter(sob.piece);
@@ -388,18 +345,17 @@ Details.prototype.handleSaveClick = function (ev, matched) {
   return false;
 };
 
-Details.prototype.saveRequest = function (ob, successCallback, errorCallback) {
+Details.prototype.saveRequest = function saveRequest(ob, successCallback, errorCallback) {
   const xhr = new XMLHttpRequest();
   xhr.open('POST', this.save_url, true);
   xhr.onload = () => {
-    if (xhr.status == '200' && xhr.readyState == 4) {
+    if (xhr.status === '200' && xhr.readyState === 4) {
       try {
         const response = JSON.parse(xhr.responseText);
         if (successCallback) {
           successCallback(response);
         }
       } catch (e) {
-        console.error(e);
         this.streamer.notifySubscribers('Katana.Error', e);
       }
     }
@@ -413,7 +369,7 @@ Details.prototype.saveRequest = function (ob, successCallback, errorCallback) {
   xhr.send(ob);
 };
 
-Details.prototype.handleCancelClick = function (ev, matched) {
+Details.prototype.handleCancelClick = function handleCancelClick(ev, matched) {
   const tg = matched || ev.currentTarget;
   let dontClose = false;
 
@@ -439,7 +395,7 @@ Details.prototype.handleCancelClick = function (ev, matched) {
   return false;
 };
 
-Details.prototype.handleEditorCancelClick = function (ev, matched) {
+Details.prototype.handleEditorCancelClick = function handleEditorCancelClick(ev, matched) {
   const tg = matched || ev.currentTarget;
   if (tg != null) {
     const actionWrap = tg.closest('[data-editor-actions]');
@@ -451,19 +407,19 @@ Details.prototype.handleEditorCancelClick = function (ev, matched) {
   return false;
 };
 
-Details.prototype.handleVisibilityChangeClick = function (ev, matched) {
+Details.prototype.handleVisibilityChangeClick = function handleVisibilityChangeClick(ev, matched) {
   const tg = matched || ev.currentTarget;
   const actionWrap = tg.closest('[data-editor-actions]');
   if (actionWrap != null) {
     const noteId = actionWrap.attr('data-note');
     const changeTo = tg.attr('data-changeTo');
-    const futureIfSuccess = changeTo == 'public' ? 'private' : 'public';
-    const futureTextIfSuccess = changeTo == 'public' ? 'Make Private' : 'Make Public';
+    const futureIfSuccess = changeTo === 'public' ? 'private' : 'public';
+    const futureTextIfSuccess = changeTo === 'public' ? 'Make Private' : 'Make Public';
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', this.privacy_url, true);
     xhr.onload = () => {
-      if (xhr.status == '200' && xhr.readyState == 4) {
+      if (xhr.status === '200' && xhr.readyState === 4) {
         try {
           const resp = JSON.parse(xhr.responseText);
           if (resp && resp.success) {
@@ -472,7 +428,6 @@ Details.prototype.handleVisibilityChangeClick = function (ev, matched) {
             actionWrap.attr('data-change-visibility', futureIfSuccess);
           }
         } catch (e) {
-          console.error(e);
           this.streamer.notifySubscribers('Katana.Error', e);
         }
       }
@@ -482,7 +437,7 @@ Details.prototype.handleVisibilityChangeClick = function (ev, matched) {
   return false;
 };
 
-Details.prototype.handleEditorDeleteClick = function (ev, matched) {
+Details.prototype.handleEditorDeleteClick = function handleEditorDeleteClick(ev, matched) {
   const tg = matched || ev.currentTarget;
   const actionWrap = tg.closest('[data-editor-actions]');
 
@@ -495,7 +450,7 @@ Details.prototype.handleEditorDeleteClick = function (ev, matched) {
     noteItem.attr('disabled', 'disabled');
 
     this.deleteRequest(noteId, () => {
-      if (container.querySelectorAll('.post-note-item').length == 0) {
+      if (container.querySelectorAll('.post-note-item').length === 0) {
           container.querySelector('.notes-list')?.addClass('notes-list-empty');
       }
 
@@ -510,7 +465,7 @@ Details.prototype.handleEditorDeleteClick = function (ev, matched) {
   }
 };
 
-Details.prototype.handleDeleteClick = function (ev, matched) {
+Details.prototype.handleDeleteClick = function handleDeleteClick(ev, matched) {
   const tg = matched || ev.currentTarget;
   const editMode = tg.closest('.for-editing');
 
@@ -527,7 +482,7 @@ Details.prototype.handleDeleteClick = function (ev, matched) {
         container.querySelector(`.post-note-item[data-note-id="${noteId}"]`)?.remove();
         this.iconHandler.decrementCounter(piece);
 
-        if (container.querySelectorAll('.post-note-item').length == 0) {
+        if (container.querySelectorAll('.post-note-item').length === 0) {
           container.querySelector('.notes-list')?.addClass('notes-list-empty');
         }
 
@@ -540,12 +495,12 @@ Details.prototype.handleDeleteClick = function (ev, matched) {
   return false;
 };
 
-Details.prototype.deleteRequest = function (noteId, successCallback, errorCallback) {
+Details.prototype.deleteRequest = function deleteRequest(noteId, successCallback, errorCallback) {
   const xhr = new XMLHttpRequest();
   const url = `${this.delete_url}/${noteId}`;
   xhr.open('DELETE', url, true);
   xhr.onload = () => {
-    if (xhr.readyState == 4 && xhr.status == '200') {
+    if (xhr.readyState === 4 && xhr.status === '200') {
       try {
         const resp = JSON.parse(xhr.responseText);
         if (resp) {
@@ -568,30 +523,28 @@ Details.prototype.deleteRequest = function (noteId, successCallback, errorCallba
   xhr.send(null);
 };
 
-Details.prototype.handleReplyClick = function () {
+Details.prototype.handleReplyClick = function handleReplyClick() {
   return false;
 };
 
-Details.prototype.closePreviousBox = function () {
+Details.prototype.closePreviousBox = function closePreviousBox() {
   this.elNode.querySelector('.opened')?.removeClass('opened');
-  this._currentlyOpen = null;
+  this.currentlyOpen = null;
 };
 
-Details.prototype._currentlyOpen = null;
+Details.prototype.currentlyOpen = null;
 
-Details.prototype.showDetailsFor = function (name, icon) {
-  if (name && name != this._currentlyOpen) {
+Details.prototype.showDetailsFor = function showDetailsFor(name, icon) {
+  if (name && name !== this.currentlyOpen) {
     this.closePreviousBox();
     this.openFor(name, icon);
-    this._currentlyOpen = name;
-  } else if (name == this._currentlyOpen) {
+    this.currentlyOpen = name;
+  } else if (name === this.currentlyOpen) {
     this.closePreviousBox();
   }
 };
 
-Details.prototype.getSignInLink = () => '<a href="javascript::;" class="note-login-btn">Login to leave a note</a><a class="note-close-btn">Close</a>';
-
-Details.prototype.loadPreviousNotes = function (ev, matched) {
+Details.prototype.loadPreviousNotes = function loadPreviousNotes(ev, matched) {
   const tg = matched || ev.currentTarget;
   const container = tg.closest('.notes-list-wrapper');
   const name = container.attr('data-cont-for');
@@ -601,12 +554,16 @@ Details.prototype.loadPreviousNotes = function (ev, matched) {
   return false;
 };
 
-Details.prototype.loadNotesDetails = function (name, icon, container, loadUrl) {
+Details.prototype.loadNotesDetails = function loadNotesDetails(name, icon, container, loadUrl) {
   let url = `${this.read_url}/${this.story.id}/${name}`;
   const mergeUserObject = (note, user) => {
-    note.authorName = user.name;
-    note.authorUrl = user.link;
-    note.avatarUrl = user.avatarUrl;
+    const nt = {
+      ...note,
+      authorName: user.name,
+      authorUrl: user.link,
+      avatarUrl: user.avatarUrl,
+    };
+    return nt;
   };
 
   if (typeof loadUrl !== 'undefined') {
@@ -618,7 +575,7 @@ Details.prototype.loadNotesDetails = function (name, icon, container, loadUrl) {
   const xhr = new XMLHttpRequest();
   xhr.open('GET', url, true);
   xhr.onload = () => {
-    if (xhr.status == '200' && xhr.readyState == 4) {
+    if (xhr.status === '200' && xhr.readyState === 4) {
       try {
         container.querySelectorAll('.loading-notes').forEach((el) => el.remove());
         container.querySelectorAll('.read-prev-notes').forEach((el) => el.remove());
@@ -634,7 +591,7 @@ Details.prototype.loadNotesDetails = function (name, icon, container, loadUrl) {
             for (let i = 0; i < notes.length; i += 1) {
               const { user } = notes[i];
               if (dt.users[user]) {
-                mergeUserObject(notes[i], dt.users[user]);
+                notes[i] = mergeUserObject(notes[i], dt.users[user]);
               }
             }
 
@@ -654,7 +611,6 @@ Details.prototype.loadNotesDetails = function (name, icon, container, loadUrl) {
           }
         }
       } catch (e) {
-        console.error(e);
         this.streamer.notifySubscribers('Katana.Error', e);
       }
     }
@@ -665,17 +621,20 @@ Details.prototype.loadNotesDetails = function (name, icon, container, loadUrl) {
   xhr.send(null);
 };
 
-Details.prototype.openFor = function (name, icon) {
+Details.prototype.openFor = function openFor(name, icon) {
   const container = this.getContainer(name);
   const isLoggedIn = this.isLoggedIn();
-  const form = isLoggedIn ? this.getForm('new') : Utils.generateElement(this.getSignInLink());
+
+  const form = isLoggedIn
+    ? this.getForm('new')
+    : Utils.generateElement(this.current_editor.templates.getNotesSignInLink());
 
   if (!icon.hasClass('notes-loaded')) {
     const notesCounter = icon.querySelector('.notes-counter');
     if (notesCounter != null) {
       let count = notesCounter.attr('data-note-count');
-      count = parseInt(count);
-      if (!isNaN(count) && count > 0) {
+      count = parseInt(count); // eslint-disable-line radix
+      if (!Number.isNaN(count) && count > 0) {
         this.loadNotesDetails(name, icon, container);
       } else {
         container.querySelectorAll('.loading-notes').forEach((el) => el.remove());
@@ -703,7 +662,7 @@ Details.prototype.openFor = function (name, icon) {
   }
 };
 
-Details.prototype.positionContainer = function (container, name) {
+Details.prototype.positionContainer = function positionContainer(container, name) {
   const against = document.querySelector(`[name="${name}"]`);
   if (against != null && !this.smallScreen) {
     const rect = against.getBoundingClientRect();
@@ -719,18 +678,17 @@ Details.prototype.positionContainer = function (container, name) {
   }
 };
 
-Details.prototype.makeRequest = function (url, method, params, scallback, ecallback) {
+Details.prototype.makeRequest = function makeRequest(url, method, params, scallback, ecallback) {
   const xhr = new XMLHttpRequest();
   xhr.open(method, url, true);
   xhr.onload = () => {
-    if (xhr.status == '200' && xhr.readyState == 4) {
+    if (xhr.status === '200' && xhr.readyState === 4) {
       try {
         const response = JSON.parse(xhr.responseText);
         if (typeof scallback !== 'undefined') {
           scallback(response);
         }
       } catch (e) {
-        console.error(e);
         this.streamer.notifySubscribers('Katana.Error', e);
       }
     }
@@ -743,7 +701,7 @@ Details.prototype.makeRequest = function (url, method, params, scallback, ecallb
   xhr.send(params);
 };
 
-Details.prototype.existingNotes = function (notes) {
+Details.prototype.existingNotes = function existingNotes(notes) {
   this.existing_notes = notes;
   this.elNode.innerHTML = ''; // remove all existing notes..
   this.replyForm = null;
