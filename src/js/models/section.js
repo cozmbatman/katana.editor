@@ -5,7 +5,7 @@ function Section(opts) {
   this.build = this.build.bind(this);
 }
 
-Section.prototype.handleSelf = function () {
+Section.prototype.handleSelf = function handleSelf() {
   const name = this.elNode.attr('name');
   const ob = {};
   let grounded;
@@ -68,13 +68,13 @@ Section.prototype.handleSelf = function () {
     const storyType = this.elNode.querySelector('[data-for="storytype"]');
     let storyCount = this.elNode.attr('data-story-count');
 
-    if (storyType != null) {
+    if (storyType) {
       markup.storyType = storyType.value;
     }
 
-    if (markup.storyType == 'tagged') {
+    if (markup.storyType === 'tagged') {
       const auto = this.elNode.querySelector('.autocomplete');
-      if (auto != null) {
+      if (auto) {
         // FIXME autocomplete
         // const tagData = (auto).autocomplete('read');
         // markup.storyTag = tagData;
@@ -85,8 +85,8 @@ Section.prototype.handleSelf = function () {
       storyCount = 6;
     }
 
-    storyCount = parseInt(storyCount);
-    if (isNaN(storyCount) || storyCount > 10) {
+    storyCount = parseInt(storyCount); // eslint-disable-line radix
+    if (Number.isNaN(storyCount) || storyCount > 10) {
       storyCount = 6;
     }
 
@@ -113,7 +113,7 @@ Section.prototype.handleSelf = function () {
   this.factory.addTo[name] = ob;
 };
 
-Section.prototype.build = function (element, index) {
+Section.prototype.build = function build(element, index) {
   this.elNode = element;
   this.index = index;
   const sectionName = this.elNode.attr('name');
@@ -125,7 +125,7 @@ Section.prototype.build = function (element, index) {
     const layout = layouts[i];
     const items = layout.querySelectorAll('.item');
     const serializer = this.factory.getSerializer('item');
-    if (items.length == 0) {
+    if (items.length === 0) {
       layout.parentNode.removeChild(layout);
     }
     for (let k = 0; k < items.length; k += 1) {
