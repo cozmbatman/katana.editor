@@ -2179,7 +2179,8 @@ Editor.prototype.handleShortCutKeys = function (e) {
 
   if (e.ctrlKey && which == CHAR_LINK) {
     if (this.image_toolbar && (node.hasClass('item-figure') || node.hasClass('item-iframe'))) {
-      return this.image_toolbar.addLink(e);
+      this.image_toolbar.addLink(e);
+      return;
     }
   }
 
