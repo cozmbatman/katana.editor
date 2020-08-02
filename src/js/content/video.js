@@ -13,7 +13,7 @@ function Video(opts) {
   boot.it(this, opts);
 }
 
-Video.prototype.initialize = function () {
+Video.prototype.initialize = function initialize() {
   const { opts } = this;
   this.icon = opts.icon || 'mfi-video';
   this.title = opts.title || 'Add a video';
@@ -23,11 +23,11 @@ Video.prototype.initialize = function () {
 
 Video.prototype.contentId = 'VIDEO';
 
-Video.prototype.handleClick = function (ev) {
+Video.prototype.handleClick = function handleClick(ev) {
   return this.displayEmbedPlaceHolder(ev);
 };
 
-Video.prototype.isYoutubeLink = function (url) {
+Video.prototype.isYoutubeLink = function isYoutubeLink(url) {
   const p = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
   const m = url.match(p);
   if (url.match(p)) {
@@ -36,25 +36,26 @@ Video.prototype.isYoutubeLink = function (url) {
   return false;
 };
 
-Video.prototype.handleEnterKey = function (ev, node) {
+Video.prototype.handleEnterKey = function handleEnterKey(ev, node) {
   if (node.hasClass('is-embedable')) {
-    return this.getEmbedFromNode(node);
+    this.getEmbedFromNode(node);
+    return;
   }
   const text = node.textContent;
   const texts = text.split(' ');
-  if (texts.length == 1) {
+  if (texts.length === 1) {
     const validLink = this.isYoutubeLink(texts[0]);
     if (validLink) {
-      return this.getEmbedFromNode(node, validLink);
+      this.getEmbedFromNode(node, validLink);
     }
   }
 };
 
-Video.prototype.hide = function () {
+Video.prototype.hide = function hide() {
   this.current_editor.content_bar.hide();
 };
 
-Video.prototype.uploadExistentIframe = function (iframe) {
+Video.prototype.uploadExistentIframe = function uploadExistentIframe(iframe) {
   const src = iframe.attr('src');
 
   if (src) {
@@ -68,7 +69,7 @@ Video.prototype.uploadExistentIframe = function (iframe) {
   }
 };
 
-Video.prototype.displayEmbedPlaceHolder = function () {
+Video.prototype.displayEmbedPlaceHolder = function displayEmbedPlaceHolder() {
   const ph = this.current_editor.embed_placeholder;
   this.node = this.current_editor.getNode();
   this.node.innerHTML = ph;
@@ -78,24 +79,24 @@ Video.prototype.displayEmbedPlaceHolder = function () {
   return false;
 };
 
-Video.prototype.loadEmbedDetailsFromServer = function (url, current_node, callback) {
+Video.prototype.loadEmbedDetailsFromServer = function lFromServer(url, currentNode, callback) {
   if (!this.current_editor.video_options || !this.current_editor.video_options.upload) {
     return;
   }
   const urll = `${encodeURIComponent(url)}&luxe=1`;
 
-  this.current_editor.currentRequestCount++;
+  this.current_editor.currentRequestCount += 1;
   const xhr = new XMLHttpRequest();
   xhr.open('POST', this.current_editor.video_options.url, true);
   xhr.onload = () => {
-    if (xhr.status == '200' && xhr.readyState == 4) {
-      this.current_editor.currentRequestCount--;
+    if (xhr.status === '200' && xhr.readyState === 4) {
+      this.current_editor.currentRequestCount -= 1;
       try {
         const resp = JSON.parse(xhr.responseText);
         if (resp && resp.success) {
           const dt = resp.data;
           if (dt.video) {
-            this.embedFramePlaceholder(dt, current_node, callback);
+            this.embedFramePlaceholder(dt, currentNode, callback);
           }
         }
       } catch (e) {
@@ -104,12 +105,12 @@ Video.prototype.loadEmbedDetailsFromServer = function (url, current_node, callba
     }
   };
   xhr.onerror = () => {
-    this.current_editor.currentRequestCount--;
+    this.current_editor.currentRequestCount -= 1;
   };
   xhr.send({ url: urll });
 };
 
-Video.prototype.embedFramePlaceholder = function (ob, current_node, callback) {
+Video.prototype.embedFramePlaceholder = function embedFramePlc(ob, currentNode, callback) {
   const thumb = ob.thumbUrl;
   const { frameUrl } = ob;
   const { captionHref } = ob;
@@ -117,32 +118,32 @@ Video.prototype.embedFramePlaceholder = function (ob, current_node, callback) {
   const canGoBackground = ob.fs;
   let { captionTitle } = ob;
 
-  if (thumb != '') {
+  if (thumb) {
     const figure = Utils.generateElement(this.current_editor.templates.getFrameTemplate());
-    const _this = this;
+    const self = this;
     const src = thumb;
     const img = new Image();
 
     img.src = src;
 
-    img.onload = function () {
-      const ar = _this.getAspectRatio(this.width, this.height);
+    img.onload = function onload() {
+      const ar = self.getAspectRatio(this.width, this.height);
       const pdc = figure.querySelector('.padding-cont');
       const fim = figure.querySelector('.item-image');
       const fpb = figure.querySelector('.padding-box');
 
-      if (pdc != null) {
+      if (pdc) {
         const pdcStyle = pdc.style;
         pdcStyle.maxWidth = `${ar.width}px`;
         pdcStyle.maxHeight = `${ar.height}px`;
       }
 
-      if (fim != null) {
+      if (fim) {
         fim.attr('data-height', this.height);
         fim.attr('data-width', this.width);
       }
 
-      if (fpb != null) {
+      if (fpb) {
         fpb.style.paddingBotom = `${ar.ratio}%`;
       }
 
@@ -151,7 +152,7 @@ Video.prototype.embedFramePlaceholder = function (ob, current_node, callback) {
       }
 
       const ig = figure.querySelector('img');
-      if (ig != null) {
+      if (ig) {
         ig.attr('src', src);
         ig.attr('data-frame-url', frameUrl);
         ig.attr('data-frame-aspect', aspectRatio);
@@ -162,18 +163,20 @@ Video.prototype.embedFramePlaceholder = function (ob, current_node, callback) {
         figure.addClass('can-go-background');
       }
 
-      figure.insertBefore(current_node);
-      current_node.parentNode.removeChild(current_node);
-      // current_node.replaceWith(figure);
+      figure.insertBefore(currentNode);
+      currentNode.parentNode.removeChild(currentNode);
+      // currentNode.replaceWith(figure);
 
       const caption = figure.querySelector('figcaption');
-      if (caption != null) {
-        let capth = this.current_editor.templates.anchorMarkup(captionHref, 'markup-figure-anchor', true, 'Watch Video here'); let
-          lastChar;
+      if (caption) {
+        let capth = this.current_editor.templates.anchorMarkup(
+          captionHref, 'markup-figure-anchor', true, 'Watch Video here',
+        );
+        let lastChar;
         if (captionTitle) {
           captionTitle = captionTitle.trim();
           lastChar = captionTitle.charAt(captionTitle.length - 1);
-          if (lastChar != '.') {
+          if (lastChar !== '.') {
             captionTitle += '.';
           }
           capth = captionTitle + capth;
@@ -186,12 +189,12 @@ Video.prototype.embedFramePlaceholder = function (ob, current_node, callback) {
         callback(figure);
       }
 
-      _this.current_editor.selectFigure(figure);
+      self.current_editor.selectFigure(figure);
     };
   }
 };
 
-Video.prototype.getEmbedFromNode = function (node, extractedUrl) {
+Video.prototype.getEmbedFromNode = function getEmbedFromNode(node, extractedUrl) {
   this.node = node;
   this.node_name = this.node.attr('name');
   this.node.addClass('loading-embed');
@@ -201,10 +204,10 @@ Video.prototype.getEmbedFromNode = function (node, extractedUrl) {
   let url = typeof extractedUrl !== 'undefined' ? extractedUrl : this.node.textContent;
   // canGoBackground = false;
 
-  if (url.indexOf('vimeo') != -1) {
+  if (url.indexOf('vimeo') !== -1) {
     url += '?badge=0&byline=0&portrait=0&title=0';
     // canGoBackground = true;
-  } else if (url.indexOf('youtube') != -1) {
+  } else if (url.indexOf('youtube') !== -1) {
     // canGoBackground = true;
   }
 
@@ -213,10 +216,10 @@ Video.prototype.getEmbedFromNode = function (node, extractedUrl) {
 };
 
 Video.prototype.getAspectRatio = (w, h) => {
-  let fill_ratio; let height; let maxHeight; let maxWidth; let ratio; let result; let
-    width;
-  maxWidth = 760;
-  maxHeight = 700;
+  let height;
+  let ratio; let width;
+  const maxWidth = 760;
+  const maxHeight = 700;
   ratio = 0;
   width = w;
   height = h;
@@ -236,11 +239,11 @@ Video.prototype.getAspectRatio = (w, h) => {
     width *= ratio;
     height *= ratio;
   }
-  fill_ratio = height / width * 100;
-  result = {
+  const fillRatio = (height / width) * 100;
+  const result = {
     width,
     height,
-    ratio: fill_ratio,
+    ratio: fillRatio,
   };
 
   return result;
