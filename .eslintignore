@@ -4,5 +4,6 @@ dist/
 postcss.*.*
 src/js/builder/core.js
 src/js/lib/*.js
+src/js/polyfills.js
 .vscode
 webpack.*.*

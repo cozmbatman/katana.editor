@@ -1,3 +1,4 @@
+/* eslint-disable */
 String.prototype.killWhiteSpace = function () {
   return this.replace(/\s/g, '');
 };
