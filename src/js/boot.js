@@ -40,7 +40,8 @@ function Boot() {
       comp.elNode = opts.node; // eslint-disable-line no-param-reassign
     }
     if (typeof comp.initialize !== 'undefined') {
-      comp.initialize(...opts);
+      comp.initialize.apply(comp, opts); // eslint-disable-line prefer-spread
+      // comp.initialize(...opts);
     } else {
       Utils.log(`Initialize method not found on ${opts.name}`);
     }
