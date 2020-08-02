@@ -19,21 +19,21 @@ Manager.prototype.events = {
   'click .inlineTooltip-menu button': 'handleClick',
 };
 
-Manager.prototype.initialize = function () {
+Manager.prototype.initialize = function initialize() {
   const { opts } = this;
   this.widgets = opts.widgets || [];
   this.current_editor = opts.editor;
 };
 
-Manager.prototype.template = function () {
+Manager.prototype.template = function template() {
   let menu = '';
 
   this.widgets.forEach((b) => {
-    const data_action_value = b.action ? `data-action-value='${b.action}'` : '';
+    const dataActionValue = b.action ? `data-action-value='${b.action}'` : '';
     if (b.template) {
       menu += b.template();
     } else {
-      menu += this.current_editor.templates.contentBasicButton(b, data_action_value);
+      menu += this.current_editor.templates.contentBasicButton(b, dataActionValue);
     }
     return menu;
   });
@@ -41,20 +41,20 @@ Manager.prototype.template = function () {
   return this.current_editor.templates.contentBasicButtonsWrap(menu);
 };
 
-Manager.prototype.render = function () {
+Manager.prototype.render = function render() {
   this.elNode.innerHTML = this.template();
   return this;
 };
 
-Manager.prototype.getView = function () {
+Manager.prototype.getView = function getView() {
   return 'html'; //
 };
 
-Manager.prototype.hide = function () {
+Manager.prototype.hide = function hide() {
   this.elNode.removeClass('is-active is-scaled').addClass('hide');
 };
 
-Manager.prototype.show = function (showedAgainst) {
+Manager.prototype.show = function show(showedAgainst) {
   document.querySelector('.hide-placeholder')?.removeClass('hide-placeholder');
 
   this.showedAgainst = showedAgainst;
@@ -62,55 +62,55 @@ Manager.prototype.show = function (showedAgainst) {
   this.elNode.removeClass('hide');
 };
 
-Manager.prototype.move = function (coords) {
-  let control_spacing; let control_width; let coord_left; let coord_top; let pull_size; let
-    tooltip;
+Manager.prototype.move = function move(coords) {
+  let coordLeft; let pullSize;
 
-  tooltip = this.elNode;
-  control_width = tooltip.querySelector('.control')?.getBoundingClientRect().width;
+  const tooltip = this.elNode;
+  const controlWidth = tooltip.querySelector('.control')?.getBoundingClientRect().width;
 
-  control_spacing = Utils.getStyle(tooltip.querySelector('.inlineTooltip-menu'), 'paddingLeft');
-  pull_size = parseInt(control_width) + parseInt(control_spacing.replace(/px/, ''));
-  if (isNaN(pull_size)) {
-    pull_size = 0;
+  const controlSpacing = Utils.getStyle(tooltip.querySelector('.inlineTooltip-menu'), 'paddingLeft');
+  // eslint-disable-next-line radix
+  pullSize = parseInt(controlWidth) + parseInt(controlSpacing.replace(/px/, ''));
+  if (Number.isNaN(pullSize)) {
+    pullSize = 0;
   }
-  coord_left = coords.left - pull_size;
-  coord_top = coords.top;
+  coordLeft = coords.left - pullSize;
+  const coordTop = coords.top;
   if (Utils.getWindowWidth() <= 768) {
-    coord_left = 5;
+    coordLeft = 5;
   }
   const { style } = this.elNode;
-  style.top = `${coord_top}px`;
-  style.left = `${coord_left}px`;
+  style.top = `${coordTop}px`;
+  style.left = `${coordLeft}px`;
 };
 
-Manager.prototype.toggleOptions = function () {
+Manager.prototype.toggleOptions = function toggleOptions() {
   this.elNode.removeClass('choose-section');
   if (this.elNode.hasClass('is-scaled')) {
     this.elNode.removeClass('is-scaled');
-    if (this.showedAgainst && this.showedAgainst.querySelector('.placeholder-text') != null) {
+    if (this.showedAgainst && this.showedAgainst.querySelector('.placeholder-text')) {
       this.showedAgainst.removeClass('hide-placeholder');
     }
   } else {
     this.elNode.addClass('is-scaled');
-    if (this.showedAgainst && this.showedAgainst.querySelector('.placeholder-text') != null) {
+    if (this.showedAgainst && this.showedAgainst.querySelector('.placeholder-text')) {
       this.showedAgainst.addClass('hide-placeholder');
     }
   }
   return false;
 };
 
-Manager.prototype.findWidgetByAction = function (name) {
-  return this.widgets.filter((e) => e.action === name || name.indexOf(e.action) != -1);
+Manager.prototype.findWidgetByAction = function findWidgetByAction(name) {
+  return this.widgets.filter((e) => e.action === name || name.indexOf(e.action) !== -1);
 };
 
-Manager.prototype.handleClick = function (ev, matched) {
+Manager.prototype.handleClick = function handleClick(ev, matched) {
   const name = matched ? matched.attr('data-action') : ev.currentTarget.attr('data-action');
-  const sub_name = name.replace('inline-menu-', '');
-  const detected_widget = this.findWidgetByAction(sub_name);
+  const subName = name.replace('inline-menu-', '');
+  const detectedWidget = this.findWidgetByAction(subName);
 
-  if (detected_widget != null && detected_widget.length > 0) {
-    detected_widget[0].handleClick(ev, matched);
+  if (detectedWidget && detectedWidget.length > 0) {
+    detectedWidget[0].handleClick(ev, matched);
   }
   return false;
 };

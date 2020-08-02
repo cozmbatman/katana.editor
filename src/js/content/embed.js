@@ -7,14 +7,14 @@ function Embed(opts) {
   boot.it(this, opts);
 }
 
-Embed.prototype.initialize = function () {
+Embed.prototype.initialize = function initialize() {
   this.icon = 'mfi-embed';
   this.title = 'embed';
   this.action = 'embed';
 };
 
-Embed.prototype.handleClick = function () {
-  console.log('embed click');
+Embed.prototype.handleClick = function handleClick() {
+
 };
 
 export default Embed;

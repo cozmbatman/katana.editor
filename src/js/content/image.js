@@ -32,7 +32,7 @@ function Images(opts) {
 
 Images.prototype.contentId = 'IMAGES';
 
-Images.prototype.initialize = function () {
+Images.prototype.initialize = function initialize() {
   const { opts } = this;
   this.icon = 'mfi-photo';
   this.title = 'image';
@@ -59,11 +59,11 @@ Images.prototype.initialize = function () {
   return this;
 };
 
-Images.prototype.handleClick = function (ev) {
+Images.prototype.handleClick = function handleClick(ev) {
   this.imageSelect(ev);
 };
 
-Images.prototype.createRowAroundFigure = function (figure) {
+Images.prototype.createRowAroundFigure = function createRowAroundFigure(figure) {
   const row = this.pushMultipleImageContainer(2, figure);
   figure.addClass('figure-in-row');
   const img = figure.querySelector('.item-image');
@@ -80,84 +80,83 @@ Images.prototype.thirdPartyQueue = {};
 
 Images.prototype.queueProcessTimer = null;
 
-Images.prototype.thirdPartyImageProcessed = function (image_element, key) {
+Images.prototype.thirdPartyImageProcessed = function thirdPtyIgProcessed(imageElement, key) {
   delete this.thirdPartyQueue[key];
-  if (Object.keys(this.thirdPartyQueue).length == 0) {
+  if (Object.keys(this.thirdPartyQueue).length === 0) {
     clearInterval(this.queueProcessTimer);
   }
 };
 
-Images.prototype.processSingleImageElement = function (image_element, opts, key) {
-  const url = image_element.attr('src');
+Images.prototype.processSingleImageElement = function proSingleIgElm(imageElement, opts, key) {
+  const url = imageElement.attr('src');
   const formData = new FormData();
-  const _this = this;
+  const self = this;
 
-  if (url.indexOf('data:image') == 0) {
+  if (url.indexOf('data:image') === 0) {
     formData.append('image', url);
   } else {
     formData.append('url', url);
   }
 
-  this.current_editor.currentRequestCount++;
+  this.current_editor.currentRequestCount += 1;
 
   const oReq = new XMLHttpRequest();
   oReq.open('POST', '/upload-url', true);
-  oReq.onload = function () {
-    if (oReq.status == 200) {
+  oReq.onload = function onload() {
+    if (oReq.status === '200' && oReq.readyState === 4) {
       try {
         const data = JSON.parse(oReq.responseText);
         if (data.success) {
           const imgSrc = data.file;
           const imageId = data.id;
-          _this.thirdPartyImageLoaded({
+          self.thirdPartyImageLoaded({
             url, imageId, key, file: imgSrc,
           });
-          _this.current_editor.currentRequestCount--;
+          self.current_editor.currentRequestCount -= 1;
         }
       } catch (e) {
-        console.log('While uploading image');
-        console.error(e);
-        _this.current_editor.currentRequestCount--;
+        self.current_editor.currentRequestCount -= 1;
         this.streamer.notifySubscribers('Katana.Error', e);
       }
     } else {
-      _this.current_editor.currentRequestCount--;
+      self.current_editor.currentRequestCount -= 1;
     }
   };
   oReq.send(formData);
 };
 
-Images.prototype.processThirdPartyQueue = function () {
+Images.prototype.processThirdPartyQueue = function processThirdPartyQueue() {
   let currentlyProcessing = 0;
   const toProcess = [];
-
-  for (const prop in this.thirdPartyQueue) {
+  const tpKeys = Object.keys(this.thirdPartyQueue);
+  for (let i = 0; i < tpKeys.length; i += 1) {
+    const prop = tpKeys[i];
     const item = this.thirdPartyQueue[prop];
     if (item && item.processing) {
-      currentlyProcessing++;
+      currentlyProcessing += 1;
     } else if (item && !item.processing) {
       toProcess.push(item);
     }
   }
 
-  if (currentlyProcessing == 2) {
+  if (currentlyProcessing === 2) {
     return;
   }
 
   for (let i = 0; i < toProcess.length; i += 1) {
     toProcess[i].processing = true;
     this.processSingleImageElement(toProcess[i].element, toProcess[i].opts, toProcess[i].key);
-    if (i == 1) {
+    if (i === 1) {
       break;
     }
   }
 };
 
-Images.prototype.handleThirdPartyImage = function (image_element, opts) {
-  const url = image_element.attr('src');
+Images.prototype.handleThirdPartyImage = function handleThirdPartyImage(imageElement, opts) {
+  const url = imageElement.attr('src');
   const key = url + Math.random(0, Math.random()).toString(32).substring(0, 8);
-  image_element.attr('data-key', key);
-  this.thirdPartyQueue[url] = { element: image_element, opts, key };
+  imageElement.attr('data-key', key);
+  this.thirdPartyQueue[url] = { element: imageElement, opts, key };
 
   if (this.queueProcessTimer == null) {
     this.queueProcessTimer = setInterval(() => {
@@ -166,7 +165,7 @@ Images.prototype.handleThirdPartyImage = function (image_element, opts) {
   }
 };
 
-Images.prototype.thirdPartyImageLoaded = function (ob) {
+Images.prototype.thirdPartyImageLoaded = function thirdPartyImageLoaded(ob) {
   const oldImg = document.querySelector(`[src="${ob.url}"]`);
   const newUrl = `${this.image_cdn_path}/fullsize/${ob.file}`;
   const tmpl = Utils.generateElement(this.current_editor.templates.getFigureTemplate());
@@ -178,8 +177,8 @@ Images.prototype.thirdPartyImageLoaded = function (ob) {
 
   img.closest('.item-figure')?.removeClass('item-uploading');
 
-  this.replaceImg(oldImg, tmpl, newUrl, (figure, image_element) => {
-    this.thirdPartyImageProcessed(image_element, ob.key);
+  this.replaceImg(oldImg, tmpl, newUrl, (figure, imageElement) => {
+    this.thirdPartyImageProcessed(imageElement, ob.key);
 
     let insideGraf = figure.closest('.item:not(".item-figure")');
     if (insideGraf != null) {
@@ -190,69 +189,67 @@ Images.prototype.thirdPartyImageLoaded = function (ob) {
     }
 
     figure.closest('.ignore-block.item-uploading')?.unwrap();
-    image_element.parentNode.removeChild(image_element);
+    imageElement.parentNode.removeChild(imageElement);
   });
 };
 
 Images.prototype.pastedImagesCache = {};
 
-Images.prototype.uploadExistentImage = function (image_element, opts) {
-  const src = image_element.attr('src');
+Images.prototype.uploadExistentImage = function uploadExistentImage(imageElement, opts = {}) {
+  const src = imageElement.attr('src');
 
   let name;
-  if (image_element.hasAttribute('name')) {
-    name = image_element.attr('name');
+  if (imageElement.hasAttribute('name')) {
+    name = imageElement.attr('name');
   }
 
   if (name) {
     if (typeof this.pastedImagesCache[name] !== 'undefined') {
       return;
     }
-  } else if (image_element.hasClass('marked')) {
+  } else if (imageElement.hasClass('marked')) {
     return;
   }
 
-  image_element.addClass('marked');
+  imageElement.addClass('marked');
 
   if (name) {
     this.pastedImagesCache[name] = true;
   }
 
   if (!Utils.urlIsFromDomain(src, 'mefacto.com')) {
-    const div = Utils.generateElement('<div class="ignore-block item-uploading" contenteditable="false"></div>');
-    image_element.parentNode.insertBefore(div, image_element);
-    div.appendChild(image_element);
-    return this.handleThirdPartyImage(image_element, opts);
+    const igBlock = '<div class="ignore-block item-uploading" contenteditable="false"></div>';
+    const div = Utils.generateElement(igBlock);
+    imageElement.parentNode.insertBefore(div, imageElement);
+    div.appendChild(imageElement);
+    this.handleThirdPartyImage(imageElement, opts);
+    return;
   }
 
-  let img; let n; let node; let tmpl; let _i; let _ref;
+  let img; let n; let node; let i; let ref;
   let pasting = false;
 
-  if (opts == null) {
-    opts = {};
-  }
-
-  tmpl = Utils.generateElement(this.current_editor.templates.getFigureTemplate());
+  const tmpl = Utils.generateElement(this.current_editor.templates.getFigureTemplate());
 
   if (this.addImagesInContainer) {
     tmpl.addClass('figure-in-row');
   }
 
-  if (image_element.closest('.item') != null) {
-    if (image_element.closest('.item').hasClass('item-figure')) {
+  if (imageElement.closest('.item') != null) {
+    if (imageElement.closest('.item').hasClass('item-figure')) {
       return;
     }
-    const itm = image_element.closest('.item');
+    const itm = imageElement.closest('.item');
     itm.parentNode.insertBefore(tmpl, itm);
     node = this.current_editor.getNode();
     if (node) {
       this.current_editor.addClassesToElement(node);
     }
-  } else if (image_element.closest(this.current_editor.paste_element_id) != null) {
+  } else if (imageElement.closest(this.current_editor.paste_element_id) != null) {
     pasting = true;
-    image_element.parentNode.insertBefore(tmpl, image_element);
+    imageElement.parentNode.insertBefore(tmpl, imageElement);
   } else {
-    img = image_element.parentsUntil('.block-content-inner');
+    img = imageElement.parentsUntil('.block-content-inner');
     if (img != null) {
       img = img.firstChild;
       img.parentNode.insertBefore(tmpl, img);
@@ -261,35 +258,35 @@ Images.prototype.uploadExistentImage = function (image_element, opts) {
   }
 
   if (!pasting) {
-    this.replaceImg(image_element, document.querySelector(`[name='${tmpl.attr('name')}']`));
+    this.replaceImg(imageElement, document.querySelector(`[name='${tmpl.attr('name')}']`));
     n = document.querySelector(`[name='${tmpl.attr('name')}']`);
     if (n != null) {
       n = n.parentsUntil('.block-content-inner');
       if (n != null) {
-        for (_i = 0, _ref = n - 1; _i <= _ref; _i++) {
+        for (i = 0, ref = n - 1; i <= ref; i += 1) {
           document.querySelector(`[name='${tmpl.attr('name')}']`).unwrap();
         }
       }
     }
   } else {
-    this.replaceImg(image_element, document.querySelector(`[name='${tmpl.attr('name')}']`));
+    this.replaceImg(imageElement, document.querySelector(`[name='${tmpl.attr('name')}']`));
   }
 };
 
-Images.prototype.replaceImg = function (image_element, figure, srcToUse, callback) {
-  const img = new Image(); const self = this; let
-    sr;
+Images.prototype.replaceImg = function replaceImg(imageElement, figure, srcToUse, callback) {
+  const img = new Image(); const self = this;
+  let sr;
 
   if (typeof srcToUse === 'undefined' && typeof callback === 'undefined') {
-    img.attr('src', image_element.attr('src'));
-    sr = image_element.attr('src');
-    const fig = image_element.closest('figure');
-    if (fig != null) {
+    img.attr('src', imageElement.attr('src'));
+    sr = imageElement.attr('src');
+    const fig = imageElement.closest('figure');
+    if (fig) {
       fig.parentNode.removeChild(fig);
     }
-    image_element.parentNode.removeChild(image_element);
+    imageElement.parentNode.removeChild(imageElement);
     const ig = figure.querySelector('img');
-    if (ig != null) {
+    if (ig) {
       ig.attr('src', sr);
       ig.attr('data-delayed-src', sr);
     }
@@ -300,11 +297,11 @@ Images.prototype.replaceImg = function (image_element, figure, srcToUse, callbac
 
   img.attr('data-delayed-src', sr);
 
-  return img.onload = function () {
+  img.onload = function onload() {
     self.setAspectRatio(figure, this.width, this.height);
 
     const fig = figure.querySelector('.item-image');
-    if (fig != null) {
+    if (fig) {
       fig.attr('data-height', this.height);
       fig.attr('data-width', this.width);
     }
@@ -316,38 +313,30 @@ Images.prototype.replaceImg = function (image_element, figure, srcToUse, callbac
     }
 
     if (typeof srcToUse === 'undefined') {
-      const ig = figure.querySelector('img');
-      if (ig != null) {
-        return ig.attr('src', sr);
-      }
-      return null;
+      figure.querySelector('img')?.attr('src', sr);
+      return;
     }
-    const ig = figure.querySelector('img');
-    if (ig != null) {
-      ig.attr('src', srcToUse);
-    }
-    image_element.parentNode.insertBefore(figure, image_element);
-    image_element.parentNode.removeChild(image_element);
+    figure.querySelector('img')?.attr('src', srcToUse);
+    imageElement.parentNode.insertBefore(figure, imageElement);
+    imageElement.parentNode.removeChild(imageElement);
 
     if (typeof callback !== 'undefined') {
-      callback(figure, image_element);
+      callback(figure, imageElement);
     }
   };
 };
 
-Images.prototype.displayAndUploadImages = function (file, cont, callback) {
+Images.prototype.displayAndUploadImages = function displayAndUploadImages(file, cont, callback) {
   this.displayCachedImage(file, cont, callback);
 };
 
 Images.prototype.viaDrop = false;
 
-Images.prototype.imageSelect = function (ev) {
-  let selectFile; let
-    self;
-  selectFile = Utils.generateElement('<input type="file" multiple="multiple">');
+Images.prototype.imageSelect = function imageSelect(ev) {
+  const selectFile = Utils.generateElement('<input type="file" multiple="multiple">');
   selectFile.click();
-  self = this;
-  return selectFile.addEventListener('change', function () {
+  const self = this;
+  return selectFile.addEventListener('change', function selectUplListener() {
     const t = this;
     self.viaDrop = false;
     if (ev.row) {
@@ -362,93 +351,93 @@ Images.prototype.imageSelect = function (ev) {
       self.wrapFigureWithAdditions = false;
     }
     self.addImagesInContainer = false;
-    return self.uploadFiles(t.files);
+    self.uploadFiles(t.files);
   });
 };
 
-Images.prototype.displayCachedImage = function (file, cont, callback) {
+Images.prototype.displayCachedImage = function displayCachedImage(file, cont, callback) {
   this.current_editor.content_bar.hide();
   window.URL = window.webkitURL || window.URL; // Vendor prefixed in Chrome.
 
   const img = document.createElement('img');
-  const _this = this;
-  img.onload = function (e) {
-    if (_this.droppedCount) {
-      _this.droppedCount--;
+  const self = this;
+  img.onload = function onload(e) {
+    if (self.droppedCount) {
+      self.droppedCount -= 1;
     }
 
-    const node = _this.viaDrop ? document.querySelector('.drop-placeholder') : _this.current_editor.getNode();
-    const self = _this;
+    const node = self.viaDrop
+      ? document.querySelector('.drop-placeholder')
+      : self.current_editor.getNode();
 
-    let img_tag; let new_tmpl; let
-      replaced_node;
-    new_tmpl = Utils.generateElement(self.current_editor.templates.getFigureTemplate());
+    let replacedNode;
+    const newTmpl = Utils.generateElement(self.current_editor.templates.getFigureTemplate());
 
-    if (typeof cont !== 'undefined' && cont != null) {
-      new_tmpl.addClass('figure-in-row');
+    if (typeof cont !== 'undefined' && cont) {
+      newTmpl.addClass('figure-in-row');
 
       if (cont.contains(node)) {
-        node.insertAdjacentElement('afterend', new_tmpl);
-        replaced_node = new_tmpl; // node.parentNode.insertBefore(new_tmpl, node);
+        node.insertAdjacentElement('afterend', newTmpl);
+        replacedNode = newTmpl; // node.parentNode.insertBefore(newTmpl, node);
       } else {
-        replaced_node = new_tmpl;
-        cont.appendChild(replaced_node);
+        replacedNode = newTmpl;
+        cont.appendChild(replacedNode);
       }
     } else {
-      replaced_node = node.parentNode.insertBefore(new_tmpl, node);
+      replacedNode = node.parentNode.insertBefore(newTmpl, node);
     }
 
-    img_tag = new_tmpl.querySelector('img.item-image');
-    if (img_tag != null) {
-      img_tag.attr('src', e.target.currentSrc ? e.target.currentSrc : e.target.result);
+    const imgTag = newTmpl.querySelector('img.item-image');
+    if (imgTag) {
+      imgTag.attr('src', e.target.currentSrc ? e.target.currentSrc : e.target.result);
     }
-    img_tag.height = this.height;
-    img_tag.width = this.width;
+    imgTag.height = this.height;
+    imgTag.width = this.width;
 
-    self.setAspectRatio(replaced_node, this.width, this.height);
+    self.setAspectRatio(replacedNode, this.width, this.height);
 
-    const rig = replaced_node.querySelector('.item-image');
+    const rig = replacedNode.querySelector('.item-image');
 
-    if (rig != null) {
+    if (rig) {
       rig.attr('data-height', this.height);
       rig.attr('data-width', this.width);
     }
 
     if (this.naturalWidth < 700) {
-      replaced_node.addClass('n-fullSize');
+      replacedNode.addClass('n-fullSize');
     } else {
-      replaced_node.removeClass('n-fullSize');
+      replacedNode.removeClass('n-fullSize');
     }
 
     if (self.current_editor.image_options && self.current_editor.image_options.upload) {
-      new_tmpl.addClass('item-uploading');
+      newTmpl.addClass('item-uploading');
       // release blob when actual image uploads starts
       window.URL.revokeObjectURL(this.src); // Clean up after yourself
     }
 
     if (typeof callback !== 'undefined') {
-      callback(replaced_node); // let the callback know the image has been places, we need to adjust width incase of multiple images select
+      // let the callback know the image has been places,
+      // we need to adjust width incase of multiple images select
+      callback(replacedNode);
     }
-    if (_this.droppedCount == 0) {
+    if (self.droppedCount === 0) {
       const dp = document.querySelector('.drop-placeholder');
-      if (dp != null) {
+      if (dp) {
         dp.parentNode.removeChild(dp);
       }
     }
-    self.uploadFile(file, replaced_node);
+    self.uploadFile(file, replacedNode);
   };
 
   img.src = window.URL.createObjectURL(file);
 };
 
-Images.prototype.setAspectRatio = function (figure, w, h) {
-  let fill_ratio; let height; let maxHeight; let maxWidth; let ratio; let
-    width;
-  maxWidth = 760;
-  maxHeight = 700;
-  ratio = 0;
-  width = w;
-  height = h;
+Images.prototype.setAspectRatio = function setAspectRatio(figure, w, h) {
+  let maxHeight = 700;
+  let maxWidth = 760;
+  let ratio = 0;
+  let width = w;
+  let height = h;
 
   if (figure.hasClass('figure-in-row')) {
     maxWidth = figure.closest('.block-grid-row').getBoundingClientRect().width;
@@ -465,17 +454,17 @@ Images.prototype.setAspectRatio = function (figure, w, h) {
     height *= ratio;
   }
 
-  fill_ratio = height / width * 100;
+  const fillRatio = (height / width) * 100;
 
   const pc = figure.querySelector('.padding-cont');
-  if (pc != null) {
+  if (pc) {
     pc.style.maxWidth = `${width}px`;
     pc.style.maxHeight = `${height}px`;
   }
 
   const pb = figure.querySelector('.padding-box');
-  if (pb != null) {
-    pb.style.paddingBottom = `${fill_ratio}%`;
+  if (pb) {
+    pb.style.paddingBottom = `${fillRatio}%`;
   }
 };
 
@@ -487,7 +476,7 @@ Images.prototype.formatData = (file) => {
 
 Images.prototype.droppedCount = -1;
 
-Images.prototype.uploadFiles = function (files, viaDrop) {
+Images.prototype.uploadFiles = function uploadFiles(files, viaDrop) {
   this.batchesFiles = [];
   if (typeof viaDrop !== 'undefined' && viaDrop) {
     this.viaDrop = true;
@@ -495,22 +484,18 @@ Images.prototype.uploadFiles = function (files, viaDrop) {
 
   const sizeLimit = 17900000; // 8 MB
 
-  let acceptedTypes; let file; let i; let _results; let
-    sizeError;
+  let i = 0;
+  const results = [];
+  let sizeError = false;
 
-  acceptedTypes = {
+  const acceptedTypes = {
     'image/png': true,
     'image/jpeg': true,
     'image/gif': true,
   };
 
-  i = 0;
-  _results = [],
-
-  sizeError = false;
-
   while (i < files.length) {
-    file = files[i];
+    const file = files[i];
     if (acceptedTypes[file.type] === true) {
       if (file.size <= sizeLimit) {
         this.batchesFiles.push(file);
@@ -518,7 +503,8 @@ Images.prototype.uploadFiles = function (files, viaDrop) {
         sizeError = true;
       }
     }
-    _results.push(i++);
+    i += 1;
+    results.push(i);
   }
 
   if (sizeError) {
@@ -529,9 +515,9 @@ Images.prototype.uploadFiles = function (files, viaDrop) {
     return;
   }
 
-  if (this.batchesFiles.length == 0) {
+  if (this.batchesFiles.length === 0) {
     const dp = document.querySelector('.drop-placeholder');
-    if (dp != null) {
+    if (dp) {
       dp.parentNode.removeChild(dp);
     }
     this.viaDrop = false;
@@ -539,10 +525,9 @@ Images.prototype.uploadFiles = function (files, viaDrop) {
   }
 
   this.addImagesOnScene();
-  return _results;
 };
 
-Images.prototype.addImagesOnScene = function () {
+Images.prototype.addImagesOnScene = function addImagesOnScene() {
   const batch = this.batchesFiles;
   const size = batch.length;
   let cont = false;
@@ -572,9 +557,9 @@ Images.prototype.addImagesOnScene = function () {
     return;
   }
 
-  if (size == 1 && !cont) {
+  if (size === 1 && !cont) {
     this.displayAndUploadImages(this.batchesFiles[0], null, this.imageUploadCallback);
-  } else if (size > 1 && size < 9 || cont) {
+  } else if ((size > 1 && size < 9) || cont) {
     if (!cont) {
       cont = this.pushMultipleImageContainer(size);
     }
@@ -584,7 +569,7 @@ Images.prototype.addImagesOnScene = function () {
 
       for (let i = k; i < l; i += 1) {
         this.displayAndUploadImages(batch[i], cont, this.imageUploadCallback);
-        k++;
+        k += 1;
       }
 
       if (k >= size) {
@@ -599,37 +584,36 @@ Images.prototype.addImagesOnScene = function () {
   }
 };
 
-Images.prototype.imageUploadCallback = function (figure) {
-  let node; let
-    parentNode;
-  node = figure;
-  parentNode = node.parentNode;
+Images.prototype.imageUploadCallback = function imageUploadCallback(figure) {
+  const node = figure;
+  const { parentNode } = node;
 
-  if (parentNode != null && parentNode.hasClass('block-grid-row')) {
+  if (parentNode && parentNode.hasClass('block-grid-row')) {
     const count = parentNode.attr('data-paragraph-count');
     const figures = parentNode.querySelectorAll('.figure-in-row');
     this.fixPositioningForMultipleImages(parentNode, figures, count);
 
-    if (figures.length == count) {
-      if (parentNode.querySelector('.item-selected') != null) { // move to next section , so that its width doesn't change
+    if (figures.length === count) {
+      // move to next section , so that its width doesn't change
+      if (parentNode.querySelector('.item-selected')) {
         const selected = parentNode.querySelector('.item-selected');
-        const next_cont = parentNode.next('.block-content-inner');
-        let first_child = null;
+        const nextCont = parentNode.next('.block-content-inner');
+        let firstChild = null;
 
-        if (next_cont != null) {
-          for (let i = 0; i < next_cont.children.length; i++) {
-            const ncc = next_cont.children[i];
+        if (nextCont) {
+          for (let i = 0; i < nextCont.children.length; i += 1) {
+            const ncc = nextCont.children[i];
             if (ncc.hasClass('item')) {
-              first_child = ncc;
+              firstChild = ncc;
               break;
             }
           }
         }
 
-        if (first_child != null) {
-          first_child.parentNode.insertBefore(selected, first_child);
+        if (firstChild) {
+          firstChild.parentNode.insertBefore(selected, firstChild);
         } else {
-          next_cont.appendChild(selected);
+          nextCont.appendChild(selected);
         }
       }
 
@@ -642,13 +626,12 @@ Images.prototype.imageUploadCallback = function (figure) {
   }
 };
 
-Images.prototype.fixPositioningForMultipleImages = function (cont, figures, count) {
-  if (cont == null) {
+Images.prototype.fixPositioningForMultipleImages = function fixPosForMImg(cont, figures, count) {
+  if (!cont) {
     return;
   }
   const ratios = [];
   let rsum = 0;
-  let height;
   const len = figures.length;
   const totalWidth = cont.getBoundingClientRect().width;
   let i = 0;
@@ -660,12 +643,12 @@ Images.prototype.fixPositioningForMultipleImages = function (cont, figures, coun
       nh = 0;
     if (ig != null) {
       if (ig.hasAttribute('data-width')) {
-        nw = parseInt(ig.attr('data-width'));
+        nw = parseInt(ig.attr('data-width')); // eslint-disable-line radix
       } else {
         nw = ig.naturalWidth;
       }
       if (ig.hasAttribute('data-height')) {
-        nh = parseInt(ig.attr('data-height'));
+        nh = parseInt(ig.attr('data-height')); // eslint-disable-line radix
       } else {
         nh = ig.naturalHeight;
       }
@@ -682,7 +665,7 @@ Images.prototype.fixPositioningForMultipleImages = function (cont, figures, coun
     }
   }
 
-  height = totalWidth / rsum;
+  const height = totalWidth / rsum;
 
   for (i = 0; i < len; i += 1) {
     const fig = figures[i];
@@ -690,7 +673,7 @@ Images.prototype.fixPositioningForMultipleImages = function (cont, figures, coun
     fig.style.width = `${wid}%`;
   }
 
-  if (count == 1) {
+  if (count === 1) {
     const pcA = figures[0].querySelectorAll('.padding-cont');
     pcA.forEach((pc) => {
       pc.removeAttribute('style');
@@ -705,7 +688,7 @@ Images.prototype.fixPositioningForMultipleImages = function (cont, figures, coun
   }
 };
 
-Images.prototype.pushMultipleImageContainer = function (count, figure) {
+Images.prototype.pushMultipleImageContainer = function pushMultipleImageContainer(count, figure) {
   let node;
   if (typeof figure !== 'undefined') {
     node = figure;
@@ -714,79 +697,78 @@ Images.prototype.pushMultipleImageContainer = function (count, figure) {
   } else {
     node = this.current_editor.getNode();
   }
-  if (node == null) {
+  if (!node) {
     return;
   }
 
-  const parentContainer = node.closest('.block-content-inner');
+  const prntContainer = node.closest('.block-content-inner');
   const item = node.closest('.item');
 
-  const bottomContainer = Utils.generateElement(`<div class="${parentContainer.attr('class')}"></div>`);
+  const btmContainer = Utils.generateElement(`<div class="${prntContainer.attr('class')}"></div>`);
 
   while (item.nextElementSibling != null) {
-    bottomContainer.append(item.nextElementSibling);
+    btmContainer.append(item.nextElementSibling);
   }
 
-  const new_tmpl = Utils.generateElement(this.current_editor.templates.blockGridTemplate(count));
-  parentContainer.insertAdjacentElement('afterend', new_tmpl);
-  new_tmpl.insertAdjacentElement('afterend', bottomContainer);
+  const newTmpl = Utils.generateElement(this.current_editor.templates.blockGridTemplate(count));
+  prntContainer.insertAdjacentElement('afterend', newTmpl);
+  newTmpl.insertAdjacentElement('afterend', btmContainer);
 
   this.addImagesInContainer = true;
-  bottomContainer.prepend(item);
+  btmContainer.prepend(item);
   this.current_editor.setRangeAt(document.querySelector('.item-selected'));
 
-  return new_tmpl.querySelector('.block-grid-row');
+  newTmpl.querySelector('.block-grid-row');
 };
 
-Images.prototype.uploadFile = function (file, node) {
+Images.prototype.uploadFile = function uploadFile(file, node) {
   if (!this.current_editor.image_options || !this.current_editor.image_options.upload) {
     return;
   }
-  const _this = this;
+  const self = this;
   const formData = this.formatData(file);
 
-  this.current_editor.currentRequestCount++;
+  this.current_editor.currentRequestCount += 1;
 
   const oReq = new XMLHttpRequest();
   oReq.open('POST', this.current_editor.image_options.url, true);
   oReq.onprogress = this.updateProgressBar;
-  oReq.onload = function () {
-    if (oReq.status == 200) {
-      _this.current_editor.currentRequestCount--;
+  oReq.onload = function onload() {
+    if (oReq.status === '200' && oReq.readyState === 4) {
+      self.current_editor.currentRequestCount -= 1;
       try {
         let resp = JSON.parse(oReq.responseText);
-        if (_this.current_editor.upload_callback) {
-          resp = _this.current_editor.upload_callback(resp);
+        if (self.current_editor.upload_callback) {
+          resp = self.current_editor.upload_callback(resp);
         }
-        _this.uploadCompleted(resp, node);
+        self.uploadCompleted(resp, node);
       } catch (e) {
-        console.log('--- image upload issue ---');
-        console.error(e);
-        _this.streamer.notifySubscribers('Katana.Error', e);
+        self.streamer.notifySubscribers('Katana.Error', e);
       }
     } else {
-      _this.current_editor.currentRequestCount--;
+      self.current_editor.currentRequestCount -= 1;
     }
   };
   oReq.send(formData);
 };
 
-Images.prototype.updateProgressBar = function (e) {
+Images.prototype.updateProgressBar = function updateProgressBar(e) {
   let complete = '';
   if (e.lengthComputable) {
-    complete = e.loaded / e.total * 100;
+    complete = (e.loaded / e.total) * 100;
     complete = complete != null ? complete : {
       complete: 0,
     };
-    return Utils.log(complete);
+    Utils.log(complete);
   }
 };
 
-Images.prototype.uploadCompleted = function (ob, node) {
+Images.prototype.uploadCompleted = function uploadCompleted(ob, node) {
   const ig = node.querySelector('img');
-  if (ig != null) {
+  if (ig) {
     ig.attr('data-image-id', ob.id);
-    const path = `${this.image_cdn_path}/fullsize/${ob.file}`;
+    // const path = `${this.image_cdn_path}/fullsize/${ob.file}`;
+    const path = `/fullsize/${ob.file}`;
     node.removeClass('item-uploading');
     ig.attr('data-delayed-src', path);
     return ig.attr('src', path);
@@ -794,27 +776,31 @@ Images.prototype.uploadCompleted = function (ob, node) {
   return null;
 };
 
-Images.prototype._uploadCompleted = function (ob, node) {
+/*
+Images.prototype._uploadCompleted = function _uploadCompleted(ob, node) {
   const ig = node.querySelector('img');
-  if (ig != null) {
+  if (ig) {
     ig.attr('data-image-id', ob.id);
     return ig.attr('src', `${this.image_cdn_path}/fullsize/${ob.file}`);
   }
   return null;
 };
+*/
 
 /*
   * Handles the behavior of deleting images when using the backspace key
   *
   * @param {Event} e    - The backspace event that is being handled
-  * @param {Node}  node - The node the backspace was used in, assumed to be from te editor's getNode() function
+  * @param {Node}  node - The node the backspace was used in,
+  *  assumed to be from te editor's getNode() function
   *
   * @return {Boolean} true if this function handled the backspace event, otherwise false
   */
 
-Images.prototype.handleBackspaceKey = function (e, anchor_node) {
+Images.prototype.handleBackspaceKey = function handleBackspaceKey(e, anchorNode) {
   const figure = document.querySelector('.item-selected');
-  if (figure != null && figure.hasClass('item-figure') && (typeof anchor_node === 'undefined' || anchor_node === null)) {
+  if (figure && figure.hasClass('item-figure')
+    && (typeof anchorNode === 'undefined' || anchorNode === null)) {
     // FIXME check for matched
     if (e.target.hasClass('figure-caption')) {
       return true;
@@ -824,9 +810,11 @@ Images.prototype.handleBackspaceKey = function (e, anchor_node) {
     e.preventDefault();
     this.current_editor.image_toolbar.hide();
     return true;
-  } if (figure.hasClass('item-figure') && anchor_node && anchor_node.hasClass('item-figure') && e.target.tagName == 'FIGCAPTION') {
+  } if (figure.hasClass('item-figure')
+    && anchorNode && anchorNode.hasClass('item-figure')
+    && e.target.tagName === 'FIGCAPTION') {
     const haveTextBefore = this.current_editor.getCharacterPrecedingCaret();
-    if (haveTextBefore.killWhiteSpace().length == 0) {
+    if (haveTextBefore.killWhiteSpace().length === 0) {
       e.preventDefault();
       this.current_editor.image_toolbar.hide();
       this.personal_toolbar.removeFigure(figure);
@@ -837,9 +825,9 @@ Images.prototype.handleBackspaceKey = function (e, anchor_node) {
   return true;
 };
 
-Images.prototype.handleDeleteKey = function (e, node) {
+Images.prototype.handleDeleteKey = function handleDeleteKey(e, node) {
   const sel = document.querySelector('.item-selected');
-  if (sel != null && sel.hasClass('item-figure') && (!node || node.length == 0)) {
+  if (sel && sel.hasClass('item-figure') && (!node || node.length === 0)) {
     this.personal_toolbar.removeFigure(sel);
     e.preventDefault();
     this.current_editor.image_toolbar.hide();
@@ -847,7 +835,7 @@ Images.prototype.handleDeleteKey = function (e, node) {
   }
   if (node && node.length && Utils.editableCaretAtEnd(node)) {
     const next = node.nextElementSibling;
-    if (next != null && next.hasClass('item-figure') && !next.hasClass('figure-in-row')) {
+    if (next && next.hasClass('item-figure') && !next.hasClass('figure-in-row')) {
       this.personal_toolbar.removeFigure(next);
       e.preventDefault();
       this.current_editor.image_toolbar.hide();
@@ -858,27 +846,27 @@ Images.prototype.handleDeleteKey = function (e, node) {
   return false;
 };
 
-Images.prototype.embedParagraphAboveImage = function (figure) {
+Images.prototype.embedParagraphAboveImage = function embedParagraphAboveImage(figure) {
   const cont = figure.closest('.block-content-inner');
   let p = null;
   const createAndAddContainer = (before) => {
     const div = Utils.generateElement(this.current_editor.templates.getSingleLayoutTemplate());
-    const p = Utils.generateElement(this.current_editor.templates.baseParagraphTmpl());
+    p = Utils.generateElement(this.current_editor.templates.baseParagraphTmpl());
     div.appendChild(p);
     before.parentNode.insertBefore(div, before);
   };
 
-  if (cont != null) {
+  if (cont) {
     if (cont.hasClass('center-column')) { // just embed a paragraph above it
       p = Utils.generateElement(this.current_editor.templates.baseParagraphTmpl());
       figure.parentNode.insertBefore(p, figure);
     } else if (cont.hasClass('full-width-column')) {
       const figures = cont.querySelectorAll('.item-figure');
-      if (figures.length == 1) {
+      if (figures.length === 1) {
         createAndAddContainer(cont);
       } else {
         const bottomContainer = Utils.generateElement(this.current_editor.templates.getSingleLayoutTemplate('full-width-column'));
-        while (figure.nextElementSibling != null) {
+        while (figure.nextElementSibling) {
           bottomContainer.appendChild(figure.nextElementSibling);
         }
         Utils.prependNode(figure, bottomContainer);
@@ -890,16 +878,16 @@ Images.prototype.embedParagraphAboveImage = function (figure) {
 
   this.current_editor.mergeInnerSections(figure.closest('section'));
 
-  if (p != null) {
+  if (p) {
     this.current_editor.image_toolbar.hide();
     this.current_editor.markAsSelected(p);
     this.current_editor.setRangeAt(document.querySelector('.item-selected'));
   }
 };
 
-Images.prototype.handleEnterKey = function (e) {
+Images.prototype.handleEnterKey = function handleEnterKey(e) {
   const figure = document.querySelector('.figure-focused');
-  if (figure != null && figure.hasClass('item-figure')) {
+  if (figure && figure.hasClass('item-figure')) {
     e.preventDefault();
     this.embedParagraphAboveImage(figure);
     return true;

@@ -19,20 +19,21 @@ function Section(opts) {
 
 Section.prototype.contentId = 'SECTION';
 
-Section.prototype.initialize = function () {
+Section.prototype.initialize = function initialize() {
   const { opts } = this;
   this.icon = 'mfi-hyphens';
   this.title = 'section';
   this.action = 'section';
   this.editorType = opts.editorType || 'blog';
 
-  this.publicationMode = this.editorType == 'publication';
+  this.publicationMode = this.editorType === 'publication';
   this.current_editor = opts.editor;
 };
 
-Section.prototype.template = function () {
-  const t = (title, action, icon) => this.current_editor.templates.contentBasicButton({ title, action, icon }, action);
-  if (this.editorType == 'publication') {
+Section.prototype.template = function template() {
+  const tmpls = this.current_editor.templates;
+  const t = (title, action, icon) => tmpls.contentBasicButton({ title, action, icon }, action);
+  if (this.editorType === 'publication') {
     let ht = t(this.title, this.action, this.icon);
     ht += t('Stories', 'section-stories', 'mfi-grid-icon');
     return ht;
@@ -41,41 +42,41 @@ Section.prototype.template = function () {
   return t(this.title, this.action, this.icon);
 };
 
-Section.prototype.handleClick = function (ev, matched) {
+Section.prototype.handleClick = function handleClick(ev, matched) {
   const target = matched || ev.currentTarget;
   const toolTipContainer = target.closest('.inlineContentOptions');
   const actionValue = target.attr('data-action-value');
 
   let storiesSection = false;
   if (this.publicationMode) {
-    if (actionValue == 'section' && !toolTipContainer.hasClass('choose-section')) { // show other options
+    if (actionValue === 'section' && !toolTipContainer.hasClass('choose-section')) { // show other options
       toolTipContainer.addClass('choose-section');
       return false;
-    } if (actionValue == 'section-stories' && toolTipContainer.hasClass('choose-section')) { // make a section
+    } if (actionValue === 'section-stories' && toolTipContainer.hasClass('choose-section')) { // make a section
       storiesSection = true;
     }
   }
 
-  let anchor_node = this.current_editor.getNode();
-  if (anchor_node == null) {
-    anchor_node = document.querySelectorAll('.item-selected');
+  let anchorNode = this.current_editor.getNode();
+  if (!anchorNode) {
+    anchorNode = document.querySelectorAll('.item-selected');
   }
-  if (anchor_node != null) {
-    this.splitContainer(anchor_node, storiesSection);
+  if (anchorNode) {
+    this.splitContainer(anchorNode, storiesSection);
     this.current_editor.content_bar.hide();
     return true;
   }
   return false;
 };
 
-Section.prototype.handleDeleteKey = function (e, node) {
+Section.prototype.handleDeleteKey = function handleDeleteKey(e, node) {
   if (this.current_editor.isLastChar()) {
     const sect = node.closest('.block-content');
-    if (sect != null && !sect.hasClass('block-last')) {
+    if (sect && !sect.hasClass('block-last')) {
       const cont = node.closest('.block-content-inner');
-      if (cont != null) {
+      if (cont) {
         const last = cont.querySelector('.item:last-child');
-        if (last != null && last.attr('name') == node.attr('name')) {
+        if (last && last.attr('name') === node.attr('name')) {
           e.preventDefault();
           this.current_editor.mergeWithUpperSection(sect.next('.block-content'));
           return true;
@@ -87,19 +88,19 @@ Section.prototype.handleDeleteKey = function (e, node) {
   return true;
 };
 
-Section.prototype.handleBackspaceKey = function (e, node) {
+Section.prototype.handleBackspaceKey = function handleBackspaceKey(e, node) {
   if (this.current_editor.isFirstChar() && node) {
     const sect = node.closest('.block-content');
 
-    if (sect != null && !sect.hasClass('block-first')) {
+    if (sect && !sect.hasClass('block-first')) {
       const cont = node.closest('.block-content-inner');
 
-      if (cont != null) {
+      if (cont) {
         const first = cont.querySelector('.item:first-child');
 
-        if (first != null && first.attr('name') == node.attr('name')) {
+        if (first && first.attr('name') === node.attr('name')) {
           this.current_editor.mergeWithUpperSection(sect);
-          if (node != null) {
+          if (node) {
             this.current_editor.setRangeAt(node);
             e.preventDefault();
             if (!node.hasClass('.item-figure')) {
@@ -107,7 +108,7 @@ Section.prototype.handleBackspaceKey = function (e, node) {
               this.current_editor.markAsSelected(node);
             }
           } else {
-            console.log('node empty');
+            this.streamer.notifySubscribers('Katana.Error', { msg: 'Node empty' });
           }
           return true;
         }
@@ -115,16 +116,16 @@ Section.prototype.handleBackspaceKey = function (e, node) {
     }
   } else {
     const sect = document.querySelector('.figure-focused.with-background');
-    if (sect != null) {
+    if (sect) {
       const sel = this.current_editor.selection();
-      if (sel && sel.type == 'Caret') {
+      if (sel && sel.type === 'Caret') {
         const { anchorNode } = sel;
         if (anchorNode.hasClass('block-background')) {
           e.preventDefault();
           this.convertBackgroundSectionToPlain(anchorNode);
           return true;
         }
-      } else if (sel && sel.type == 'None') {
+      } else if (sel && sel.type === 'None') {
         const { anchorNode } = sel;
         if (anchorNode.hasClass('block-background')) {
           e.preventDefault();
@@ -137,12 +138,13 @@ Section.prototype.handleBackspaceKey = function (e, node) {
   return false;
 };
 
-Section.prototype.convertBackgroundSectionToPlain = function (node) {
+Section.prototype.convertBackgroundSectionToPlain = function convertBgSectionToPlain(node) {
   const sect = node?.closest('.block-content');
-  if (sect != null) {
-    const newContainer = Utils.generateElement(this.current_editor.templates.getSingleSectionTemplate());
+  if (sect) {
+    const singleTemplate = this.current_editor.templates.getSingleSectionTemplate();
+    const newContainer = Utils.generateElement(singleTemplate);
     const currentBody = sect.querySelector('.main-body');
-    if (newContainer != null) {
+    if (newContainer) {
       const newContainerBody = newContainer.querySelector('.main-body');
       currentBody.parentNode.replaceChild(newContainerBody, currentBody);
       sect.parentNode.replaceChild(newContainer, sect);
@@ -153,9 +155,9 @@ Section.prototype.convertBackgroundSectionToPlain = function (node) {
   }
 };
 
-Section.prototype.handleEnterKey = function (e, node) {
+Section.prototype.handleEnterKey = function handleEnterKey(e, node) {
   if (e.ctrlKey) { //
-    if (node.querySelector('.placeholder-text') == null) {
+    if (node.querySelector('.placeholder-text')) {
       this.splitContainer(node);
       this.current_editor.content_bar.hide();
       e.handled = true;
@@ -167,36 +169,37 @@ Section.prototype.handleEnterKey = function (e, node) {
   return false;
 };
 
-Section.prototype.fillPreview = function (container, count) {
+Section.prototype.fillPreview = function fillPreview(container, count) {
   if (typeof count === 'undefined') {
-    count = 6;
+    this.current_editor.fillStoryPreview(container, count);
+  } else {
+    this.current_editor.fillStoryPreview(container, 6);
   }
-  this.current_editor.fillStoryPreview(container, count);
 };
 
-Section.prototype.handlePreviousStoryTypeOptionsAfterAddition = function (newContainer) {
+Section.prototype.handlePrevStoryAfterAdd = function fPSTYOAA(newContainer) {
   const stype = newContainer.querySelector('[data-for="storytype"]');
-  if (stype != null) {
+  if (stype) {
     const stval = stype.value;
-    if (stval == 'tagged') {
+    if (stval === 'tagged') {
       // no issue just return from here
       return;
     }
 
-    const others = this.current_editor.elNode.querySelectorAll('.block-stories [data-for="storytype"]');
+    const dSelector = '.block-stories [data-for="storytype"]';
+    const others = this.current_editor.elNode.querySelectorAll(dSelector);
 
     for (let i = 0; i < others.length; i += 1) {
       const ot = others[i];
-      if (ot == stype) {
-        continue;
-      }
-      const curral = ot.value;
-      const opts = ot.querySelectorAll('option');
-      if (opts.length) {
-        for (let m = 0; m < opts.length; m += 1) {
-          const kopts = opts[m];
-          if (kopts.attr('value') == stval && stval != curral) {
-            kopts.parentNode.removeChild(kopts);
+      if (ot !== stype) {
+        const curral = ot.value;
+        const opts = ot.querySelectorAll('option');
+        if (opts.length) {
+          for (let m = 0; m < opts.length; m += 1) {
+            const kopts = opts[m];
+            if (kopts.attr('value') === stval && stval !== curral) {
+              kopts.parentNode.removeChild(kopts);
+            }
           }
         }
       }
@@ -204,12 +207,13 @@ Section.prototype.handlePreviousStoryTypeOptionsAfterAddition = function (newCon
   }
 };
 
-Section.prototype.splitContainer = function (atNode, storiesSection) {
+Section.prototype.splitContainer = function splitContainer(atNode, storiesSection) {
   let newContainer;
+  const tmpls = this.current_editor.templates;
   if (typeof storiesSection !== 'undefined' && storiesSection) {
-    newContainer = Utils.generateElement(this.current_editor.templates.getSingleStorySectionTemplate());
+    newContainer = Utils.generateElement(tmpls.getSingleStorySectionTemplate());
   } else {
-    newContainer = Utils.generateElement(this.current_editor.templates.getSingleSectionTemplate());
+    newContainer = Utils.generateElement(tmpls.getSingleSectionTemplate());
   }
 
   this.current_editor.splitContainer(atNode);
@@ -224,17 +228,17 @@ Section.prototype.splitContainer = function (atNode, storiesSection) {
       if (ac != null) {
         // FIXME autocomplete
         // (ac).autocomplete();
-        if (ac.closest('.autocomplete-buttons') != null) {
+        if (ac.closest('.autocomplete-buttons')) {
           ac.closest('.autocomplete-buttons').addClass('hide');
         }
       }
     }
 
     this.fillPreview(newContainer.querySelector('.main-body'), 6);
-    this.handlePreviousStoryTypeOptionsAfterAddition(newContainer);
+    this.handlePrevStoryAfterAdd(newContainer);
   }
 
-  if (atNode.nextElementSibling != null && atNode.textContent.isEmpty()) {
+  if (atNode.nextElementSibling && atNode.textContent.isEmpty()) {
     const next = atNode.nextElementSibling;
     this.current_editor.setRangeAt(next);
     if (!next.hasClass('item-figure')) {
@@ -242,7 +246,7 @@ Section.prototype.splitContainer = function (atNode, storiesSection) {
       this.current_editor.markAsSelected(atNode);
     }
     atNode.parentNode.removeChild(atNode);
-  } else if (atNode.nextElementSibling == null) {
+  } else if (!atNode.nextElementSibling) {
     this.current_editor.setRangeAt(atNode);
     Utils.setCaretAtPosition(atNode);
     this.current_editor.markAsSelected(atNode);
@@ -250,12 +254,12 @@ Section.prototype.splitContainer = function (atNode, storiesSection) {
 };
 
 // commands when in publication mode
-Section.prototype.command = function (action, button) {
+Section.prototype.command = function command(action, button) {
   let section = button.closest('.block-stories');
-  if (section == null) {
+  if (!section) {
     section = button.closest('.block-content');
   }
-  if (section == null) {
+  if (!section) {
     return;
   }
   switch (action) {
@@ -283,64 +287,64 @@ Section.prototype.command = function (action, button) {
   }
 };
 
-Section.prototype.removeStructureClasses = function (section) {
+Section.prototype.removeStructureClasses = function removeStructureClasses(section) {
   section.removeClass('as-list');
   section.removeClass('as-image-grid');
   section.removeClass('as-image-list');
 };
 
-Section.prototype.commandStructureGrid = function (section) {
+Section.prototype.commandStructureGrid = function commandStructureGrid(section) {
   this.removeStructureClasses(section);
   section.addClass('as-image-grid');
 };
 
-Section.prototype.commandStructureImageList = function (section) {
+Section.prototype.commandStructureImageList = function commandStructureImageList(section) {
   this.removeStructureClasses(section);
   section.addClass('as-image-list');
 };
 
-Section.prototype.commandStructureListView = function (section) {
+Section.prototype.commandStructureListView = function commandStructureListView(section) {
   this.removeStructureClasses(section);
   section.addClass('as-list');
 };
 
-Section.prototype.removeLayoutClasses = function (section) {
+Section.prototype.removeLayoutClasses = function removeLayoutClasses(section) {
   section.removeClass('block-full-width');
   section.removeClass('block-center-width');
   section.removeClass('block-add-width');
 };
 
-Section.prototype.mightAdjustFigures = function (section) {
+Section.prototype.mightAdjustFigures = function mightAdjustFigures(section) {
   section.querySelectorAll('.item-figure:not(.figure-in-row)').forEach((item) => {
     // FIXME delayed send
     this.streamer.notifySubscribers('Katana.Images.Refit', { figure: item });
   });
 };
 
-Section.prototype.commandCenterWidth = function (section) {
+Section.prototype.commandCenterWidth = function commandCenterWidth(section) {
   this.removeLayoutClasses(section);
   section.addClass('block-center-width');
   this.mightAdjustFigures(section);
 };
 
-Section.prototype.commandAddWidth = function (section) {
+Section.prototype.commandAddWidth = function commandAddWidth(section) {
   this.removeLayoutClasses(section);
   section.addClass('block-add-width');
   this.mightAdjustFigures(section);
 };
 
-Section.prototype.commandFullWidth = function (section) {
+Section.prototype.commandFullWidth = function commandFullWidth(section) {
   this.removeLayoutClasses(section);
   section.addClass('block-full-width');
   this.mightAdjustFigures(section);
 };
 
-Section.prototype.commandRemoveBlock = function (section) {
+Section.prototype.commandRemoveBlock = function commandRemoveBlock(section) {
   const needRefresh = section.hasClass('block-stories');
   let val = '';
   if (needRefresh) {
     val = section.querySelector('[data-for="storytype"]').value;
-    if (val == 'tagged') {
+    if (val === 'tagged') {
       val = '';
     }
   }
