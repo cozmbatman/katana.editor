@@ -13,7 +13,7 @@ function ModelFactory(opts) {
   this.elNode = this.current_editor.elNode;
   this.mode = opts.mode || 'read';
 
-  this._build = this._build.bind(this);
+  this.build = this.build.bind(this);
   this.stop = this.stop.bind(this);
   this.getSerializer = this.getSerializer.bind(this);
 
@@ -26,34 +26,34 @@ function ModelFactory(opts) {
 ModelFactory.prototype.warmupOnly = false;
 ModelFactory.prototype.goingForUnload = false;
 
-ModelFactory.prototype.manage = function (warmup) {
-  if (this.mode == 'write') {
+ModelFactory.prototype.manage = function manage(warmup) {
+  if (this.mode === 'write') {
     if (typeof warmup !== 'undefined') {
       this.warmupOnly = true;
       setTimeout(() => {
-        this._build();
+        this.build();
       }, 1000);
     }
 
-    this.timer = setInterval(this._build, 8000);
+    this.timer = setInterval(this.build, 8000);
     this.streamer.subscribe('Katana.Committer.doSave', () => {
-      this._build();
+      this.build();
     });
 
     window.addEventListener('beforeunload', () => {
       this.goingForUnload = true;
-      return this._build();
+      return this.build();
     });
   }
 };
 
-ModelFactory.prototype.stop = function () {
+ModelFactory.prototype.stop = function stop() {
   clearInterval(this.timer);
 };
 
-ModelFactory.prototype._cache = {};
+ModelFactory.prototype.cache = {};
 
-ModelFactory.prototype._fixNames = function () {
+ModelFactory.prototype.fixNames = function fixNames() {
   const items = this.elNode.querySelectorAll('[name]');
 
   for (let i = 0; i < items.length; i += 1) {
@@ -70,16 +70,16 @@ ModelFactory.prototype._fixNames = function () {
   }
 };
 
-ModelFactory.prototype.successCallback = function () {
+ModelFactory.prototype.successCallback = function successCallback() {
   this.cache = this.addTo;
 };
 
-ModelFactory.prototype.errorCallback = function () {
+ModelFactory.prototype.errorCallback = function errorCallback() {
 
 };
 
-ModelFactory.prototype._build = function () {
-  this._fixNames();
+ModelFactory.prototype.build = function build() {
+  this.fixNames();
 
   const sections = this.elNode.querySelectorAll('section');
   const serializer = this.getSerializer('section');
@@ -119,32 +119,36 @@ ModelFactory.prototype._build = function () {
   }
 };
 
-ModelFactory.prototype.findDelta = function () {
+ModelFactory.prototype.findDelta = function findDelta() {
   const deltaOb = {};
   let item;
   let citem;
-  let prop;
+
   const { addTo } = this;
   const { cache } = this;
   let changeCounter = 0;
 
-  for (prop in addTo) {
+  const addToProps = Object.keys(addTo);
+  for (let i = 0; i < addToProps.length; i += 1) {
+    const prop = addToProps[i];
     item = addTo[prop];
     citem = typeof cache[prop] !== 'undefined' ? cache[prop] : false;
     if (citem && !Utils.isEqual(item, citem)) {
       deltaOb[prop] = item;
-      changeCounter++;
+      changeCounter += 1;
     } else if (!citem) {
-      changeCounter++;
+      changeCounter += 1;
       deltaOb[prop] = item;
     }
   }
 
-  for (prop in cache) {
+  const cacheProps = Object.keys(cache);
+  for (let i = 0; i < cacheProps.length; i += 1) {
+    const prop = cacheProps[i];
     citem = cache[prop];
     item = typeof addTo[prop] === 'undefined';
     if (item) {
-      changeCounter++;
+      changeCounter += 1;
       deltaOb[prop] = { removed: true };
     }
   }
@@ -155,25 +159,26 @@ ModelFactory.prototype.findDelta = function () {
   return false;
 };
 
-ModelFactory.prototype.getLayoutType = function (element) {
+ModelFactory.prototype.getLayoutType = function getLayoutType(element) {
   if (element.hasClass('full-width-column')) {
     return 6;
   } if (element.hasClass('center-column')) {
     return 5;
   }
+  return 0;
 };
 
 ModelFactory.prototype.serializers = {};
 
-ModelFactory.prototype.getSerializer = function (name) {
+ModelFactory.prototype.getSerializer = function getSerializer(name) {
   if (!this.serializers[name]) {
     let model = null;
-    if (name == 'section') {
+    if (name === 'section') {
       model = new Section({ factory: this, common: Common });
-    } else if (name == 'item') {
+    } else if (name === 'item') {
       model = new Item({ factory: this, common: Common });
     }
-    if (model != null) {
+    if (model !== null) {
       this.serializers[name] = model;
     }
   }
